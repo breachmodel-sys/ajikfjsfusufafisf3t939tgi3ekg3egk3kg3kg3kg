@@ -6939,27 +6939,7 @@
 			options = options or {}
 			local loader_title = options.title or options.name or "Loader"
 			local on_load_cb   = options.on_load or options.callback
-			local loader_size  = options.size or dim2(0, 340, 0, 275)
-
-			-- Read saved config
-			local custom_di_val = true
-			local comp_mode_val = true
-			local rejoin_val    = true
-
-			local config_file = "wizardhook_loader_config.json"
-			pcall(function()
-				if readfile and http_service then
-					local ok, raw = pcall(readfile, config_file)
-					if ok and raw then
-						local ok2, data = pcall(function() return http_service:JSONDecode(raw) end)
-						if ok2 and data then
-							if data.custom_di ~= nil        then custom_di_val = data.custom_di end
-							if data.compatibility_mode ~= nil then comp_mode_val = data.compatibility_mode end
-							if data.rejoin ~= nil           then rejoin_val     = data.rejoin     end
-						end
-					end
-				end
-			end)
+			local loader_size  = options.size or dim2(0, 340, 0, 150)
 
 			-- Create panel using the library's exact custom window structure
 			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
@@ -6994,157 +6974,113 @@
 				end
 			end)
 
-			-- Content container
-			local content = library:create("Frame", {
+			-- Status Text (Left-aligned)
+			local status_lbl = library:create("TextLabel", {
 				Parent                 = items.holder,
-				Name                   = "content",
-				Position               = dim2(0, 6, 0, 6),
-				Size                   = dim2(1, -12, 1, -44),
+				Name                   = "status_lbl",
+				Position               = dim2(0, 8, 0, 6),
+				Size                   = dim2(0.7, -8, 0, 16),
 				BackgroundTransparency = 1,
 				BorderSizePixel        = 0,
+				FontFace               = library.font,
+				Text                   = "Status: Ready",
+				TextSize               = 12,
+				TextColor3             = themes.preset.text,
+				TextXAlignment         = Enum.TextXAlignment.Left,
+				TextYAlignment         = Enum.TextYAlignment.Center,
+			})
+			library:apply_theme(status_lbl, "text", "TextColor3")
+			library:create("UIStroke", { Parent = status_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			-- Percentage Text (Right-aligned)
+			local percent_lbl = library:create("TextLabel", {
+				Parent                 = items.holder,
+				Name                   = "percent_lbl",
+				Position               = dim2(0.7, 0, 0, 6),
+				Size                   = dim2(0.3, -8, 0, 16),
+				BackgroundTransparency = 1,
+				BorderSizePixel        = 0,
+				FontFace               = library.font,
+				Text                   = "0%",
+				TextSize               = 12,
+				TextColor3             = themes.preset.accent,
+				TextXAlignment         = Enum.TextXAlignment.Right,
+				TextYAlignment         = Enum.TextYAlignment.Center,
+			})
+			library:apply_theme(percent_lbl, "accent", "TextColor3")
+			library:create("UIStroke", { Parent = percent_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			-- Progress Bar: Outline
+			local bar_outline = library:create("Frame", {
+				Parent           = items.holder,
+				Name             = "bar_outline",
+				Position         = dim2(0, 8, 0, 26),
+				Size             = dim2(1, -16, 0, 16),
+				BorderSizePixel  = 0,
+				BackgroundColor3 = themes.preset.outline,
+			})
+			library:apply_theme(bar_outline, "outline", "BackgroundColor3")
+
+			-- Progress Bar: Inline
+			local bar_inline = library:create("Frame", {
+				Parent           = bar_outline,
+				Name             = "bar_inline",
+				Position         = dim2(0, 1, 0, 1),
+				Size             = dim2(1, -2, 1, -2),
+				BorderSizePixel  = 0,
+				BackgroundColor3 = themes.preset.inline,
+			})
+			library:apply_theme(bar_inline, "inline", "BackgroundColor3")
+
+			-- Progress Bar: Track Background
+			local bar_track = library:create("Frame", {
+				Parent           = bar_inline,
+				Name             = "bar_track",
+				Position         = dim2(0, 1, 0, 1),
+				Size             = dim2(1, -2, 1, -2),
+				BorderSizePixel  = 0,
+				BackgroundColor3 = themes.preset.high_contrast,
+				ClipsDescendants = true,
+			})
+			library:apply_theme(bar_track, "high_contrast", "BackgroundColor3")
+
+			-- Progress Bar: Animated Fill
+			local bar_fill = library:create("Frame", {
+				Parent           = bar_track,
+				Name             = "bar_fill",
+				Position         = dim2(0, 0, 0, 0),
+				Size             = dim2(0, 0, 1, 0),
+				BorderSizePixel  = 0,
+				BackgroundColor3 = themes.preset.accent,
+			})
+			library:apply_theme(bar_fill, "accent", "BackgroundColor3")
+
+			local fill_grad = library:create("UIGradient", {
+				Parent   = bar_fill,
+				Rotation = 90,
+				Color    = rgbseq{
+					rgbkey(0, rgb(255, 255, 255)),
+					rgbkey(1, rgb(180, 180, 180)),
+				},
 			})
 
-			local content_layout = library:create("UIListLayout", {
-				Parent    = content,
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding   = dim(0, 4),
+			-- Divider Line
+			local div = library:create("Frame", {
+				Parent           = items.holder,
+				Name             = "divider",
+				Position         = dim2(0, 8, 0, 48),
+				Size             = dim2(1, -16, 0, 1),
+				BorderSizePixel  = 0,
+				BackgroundColor3 = themes.preset.inline,
 			})
+			library:apply_theme(div, "inline", "BackgroundColor3")
 
-			local lo = 0
-			local function no() lo = lo + 1 return lo end
-
-			local function make_label(txt)
-				local l = library:create("TextLabel", {
-					Parent                 = content,
-					Name                   = "label",
-					LayoutOrder            = no(),
-					Size                   = dim2(1, 0, 0, 16),
-					BackgroundTransparency = 1,
-					BorderSizePixel        = 0,
-					FontFace               = library.font,
-					Text                   = txt,
-					TextSize               = 12,
-					TextColor3             = themes.preset.text,
-					TextXAlignment         = Enum.TextXAlignment.Left,
-				})
-				library:apply_theme(l, "text", "TextColor3")
-				library:create("UIStroke", {
-					Parent       = l,
-					LineJoinMode = Enum.LineJoinMode.Miter,
-				})
-				return l
-			end
-
-			local function make_divider()
-				local div = library:create("Frame", {
-					Parent           = content,
-					Name             = "divider",
-					LayoutOrder      = no(),
-					Size             = dim2(1, 0, 0, 1),
-					BorderSizePixel  = 0,
-					BackgroundColor3 = themes.preset.inline,
-				})
-				library:apply_theme(div, "inline", "BackgroundColor3")
-				return div
-			end
-
-			make_label("Updated: 3 months ago")
-			make_label("Can Load: Yes")
-			make_divider()
-
-			local function make_checkbox(label_text, default_state)
-				local state = default_state
-
-				local row = library:create("TextButton", {
-					Parent                 = content,
-					Name                   = "checkbox_row",
-					LayoutOrder            = no(),
-					Size                   = dim2(1, 0, 0, 18),
-					BackgroundTransparency = 1,
-					BorderSizePixel        = 0,
-					Text                   = "",
-					AutoButtonColor        = false,
-				})
-
-				local box_outline = library:create("Frame", {
-					Parent           = row,
-					Name             = "box_outline",
-					Position         = dim2(0, 0, 0.5, -7),
-					Size             = dim2(0, 14, 0, 14),
-					BorderSizePixel  = 0,
-					BackgroundColor3 = themes.preset.outline,
-				})
-				library:apply_theme(box_outline, "outline", "BackgroundColor3")
-
-				local box_inline = library:create("Frame", {
-					Parent           = box_outline,
-					Name             = "box_inline",
-					Position         = dim2(0, 1, 0, 1),
-					Size             = dim2(1, -2, 1, -2),
-					BorderSizePixel  = 0,
-					BackgroundColor3 = themes.preset.inline,
-				})
-				library:apply_theme(box_inline, "inline", "BackgroundColor3")
-
-				local check_fill = library:create("Frame", {
-					Parent                 = box_inline,
-					Name                   = "fill",
-					Position               = dim2(0, 1, 0, 1),
-					Size                   = dim2(1, -2, 1, -2),
-					BorderSizePixel        = 0,
-					BackgroundColor3       = themes.preset.accent,
-					BackgroundTransparency = state and 0 or 1,
-				})
-				library:apply_theme(check_fill, "accent", "BackgroundColor3")
-
-				local lbl = library:create("TextLabel", {
-					Parent                 = row,
-					Name                   = "text",
-					Position               = dim2(0, 22, 0, 0),
-					Size                   = dim2(1, -22, 1, 0),
-					BackgroundTransparency = 1,
-					BorderSizePixel        = 0,
-					FontFace               = library.font,
-					Text                   = label_text,
-					TextSize               = 12,
-					TextColor3             = state and themes.preset.text or rgb(151, 151, 151),
-					TextXAlignment         = Enum.TextXAlignment.Left,
-				})
-				library:apply_theme(lbl, "text", "TextColor3")
-				library:create("UIStroke", { Parent = lbl, LineJoinMode = Enum.LineJoinMode.Miter })
-
-				local function set_state(v)
-					state = v
-					check_fill.BackgroundTransparency = state and 0 or 1
-					lbl.TextColor3 = state and rgb(255, 255, 255) or rgb(151, 151, 151)
-				end
-
-				row.MouseEnter:Connect(function()
-					lbl.TextColor3 = rgb(255, 255, 255)
-				end)
-				row.MouseLeave:Connect(function()
-					lbl.TextColor3 = state and themes.preset.text or rgb(151, 151, 151)
-				end)
-				row.MouseButton1Click:Connect(function()
-					set_state(not state)
-				end)
-
-				return { get = function() return state end, set = set_state }
-			end
-
-			local cb_custom_di = make_checkbox("Custom DI",         custom_di_val)
-			make_divider()
-			local cb_compat    = make_checkbox("Compatibility Mode", comp_mode_val)
-			local cb_rejoin    = make_checkbox("Rejoin",             rejoin_val)
-			make_divider()
-			local cb_autoload  = make_checkbox("Auto Load",          false)
-
-			-- Load Button: anchored at the very bottom ("down down") with neutral dark gradient
+			-- Load Button: Anchored at bottom ("down down")
 			local btn_outline = library:create("Frame", {
 				Parent           = items.holder,
 				Name             = "load_btn_outline",
-				Position         = dim2(0, 6, 1, -30),
-				Size             = dim2(1, -12, 0, 24),
+				Position         = dim2(0, 8, 1, -28),
+				Size             = dim2(1, -16, 0, 22),
 				BorderSizePixel  = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7230,31 +7166,48 @@
 				}
 			end)
 
-			-- Load Trigger
-			local has_loaded = false
+			-- Animated Loading sequence with progress %
+			local is_loading = false
 			click_btn.MouseButton1Click:Connect(function()
-				if has_loaded then return end
-				has_loaded = true
+				if is_loading then return end
+				is_loading = true
+
 				btn_text.Text = "Loading..."
+				click_btn.Active = false
 
-				local result_data = {
-					custom_di          = cb_custom_di.get(),
-					compatibility_mode = cb_compat.get(),
-					rejoin             = cb_rejoin.get(),
-					auto_load          = cb_autoload.get(),
-				}
+				task.spawn(function()
+					local stages = {
+						{ pct = 15,  text = "Status: Initializing..." },
+						{ pct = 35,  text = "Status: Checking modules..." },
+						{ pct = 60,  text = "Status: Loading dependencies..." },
+						{ pct = 85,  text = "Status: Injecting..." },
+						{ pct = 100, text = "Status: Loaded!" },
+					}
 
-				pcall(function()
-					if writefile and http_service then
-						writefile(config_file, http_service:JSONEncode(result_data))
+					local current_pct = 0
+					for _, stage in ipairs(stages) do
+						local target_pct = stage.pct
+						while current_pct < target_pct do
+							current_pct = math.min(target_pct, current_pct + math.random(2, 5))
+							percent_lbl.Text = tostring(math.floor(current_pct)) .. "%"
+							bar_fill.Size = dim2(current_pct / 100, 0, 1, 0)
+							status_lbl.Text = stage.text
+							task.wait(0.03)
+						end
+						task.wait(0.08)
+					end
+
+					percent_lbl.Text = "100%"
+					bar_fill.Size = dim2(1, 0, 1, 0)
+					status_lbl.Text = "Status: Loaded!"
+					task.wait(0.25)
+
+					panel.items.sgui:Destroy()
+
+					if on_load_cb then
+						task.spawn(on_load_cb)
 					end
 				end)
-
-				panel.items.sgui:Destroy()
-
-				if on_load_cb then
-					task.spawn(on_load_cb, result_data)
-				end
 			end)
 
 			return panel
