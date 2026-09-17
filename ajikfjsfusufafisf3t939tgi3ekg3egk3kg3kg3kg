@@ -215,27 +215,32 @@
 		
 	library.__index = library
 
-	for _, path in next, library.folders do 
-		makefolder(library.directory .. path)
-	end 
+	pcall(function()
+		for _, path in next, library.folders do 
+			makefolder(library.directory .. path)
+		end 
 
-	writefile("ffff.ttf", game:HttpGet("https://github.com/weasely111/beta/raw/refs/heads/main/fs-tahoma-8px.ttf"))
+		writefile("ffff.ttf", game:HttpGet("https://github.com/weasely111/beta/raw/refs/heads/main/fs-tahoma-8px.ttf"))
 
-	local tahoma = {
-		name = "SmallestPixel7",
-		faces = {
-			{
-				name = "Regular",
-				weight = 400,
-				style = "normal",
-				assetId = getcustomasset("ffff.ttf")
+		local get_asset = getcustomasset or getsynasset
+		if get_asset then
+			local tahoma = {
+				name = "SmallestPixel7",
+				faces = {
+					{
+						name = "Regular",
+						weight = 400,
+						style = "normal",
+						assetId = get_asset("ffff.ttf")
+					}
+				}
 			}
-		}
-	}
 
-	writefile("dddd.ttf", http_service:JSONEncode(tahoma))
+			writefile("dddd.ttf", http_service:JSONEncode(tahoma))
 
-	library.font = Font.new(getcustomasset("dddd.ttf"), Enum.FontWeight.Regular)
+			library.font = Font.new(get_asset("dddd.ttf"), Enum.FontWeight.Regular)
+		end
+	end)
 
 	local config_holder 
 -- 
@@ -6934,5 +6939,430 @@
 		end
 
 		library.audio_player = library.music_player
+
+		function library:loader(options)
+			options = options or {}
+			local loader_title = options.title or options.name or "Wizardhook"
+			local on_load_cb = options.on_load or options.callback
+			local accent_color = options.accent or themes.preset.accent or Color3.fromRGB(174, 147, 255)
+			
+			local custom_di_val = true
+			local comp_mode_val = true
+			local rejoin_val = true
+			local auto_load_val = false
+
+			local config_file = "wizardhook_loader_config.json"
+			pcall(function()
+				if readfile and http_service then
+					local raw = readfile(config_file)
+					local data = http_service:JSONDecode(raw)
+					if data then
+						if data.custom_di ~= nil then custom_di_val = data.custom_di end
+						if data.compatibility_mode ~= nil then comp_mode_val = data.compatibility_mode end
+						if data.rejoin ~= nil then rejoin_val = data.rejoin end
+					end
+				end
+			end)
+
+			local target_parent
+			if gethui then
+				pcall(function() target_parent = gethui() end)
+			end
+			if not target_parent and coregui then
+				pcall(function()
+					local test = Instance.new("Folder")
+					test.Parent = coregui
+					test:Destroy()
+					target_parent = coregui
+				end)
+			end
+			if not target_parent then
+				pcall(function()
+					target_parent = lp:FindFirstChildOfClass("PlayerGui") or lp:WaitForChild("PlayerGui", 3)
+				end)
+			end
+			target_parent = target_parent or coregui
+
+			local loader_sgui = Instance.new("ScreenGui")
+			loader_sgui.Name = "WizardhookLoader"
+			loader_sgui.ResetOnSpawn = false
+			loader_sgui.DisplayOrder = 99999999
+			loader_sgui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+			loader_sgui.Enabled = true
+			loader_sgui.Parent = target_parent
+
+			-- Bigger, more spacious frame matching cheat library theme
+			local main_frame = Instance.new("Frame")
+			main_frame.Name = "MainFrame"
+			main_frame.Parent = loader_sgui
+			main_frame.AnchorPoint = Vector2.new(0.5, 0.5)
+			main_frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+			main_frame.Size = UDim2.new(0, 350, 0, 275)
+			main_frame.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+			main_frame.BorderSizePixel = 0
+			main_frame.Active = true
+
+			local outer_stroke = Instance.new("UIStroke")
+			outer_stroke.Parent = main_frame
+			outer_stroke.Color = accent_color
+			outer_stroke.Thickness = 1
+			outer_stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			outer_stroke.LineJoinMode = Enum.LineJoinMode.Miter
+
+			-- Header Bar
+			local header = Instance.new("TextButton")
+			header.Name = "Header"
+			header.Parent = main_frame
+			header.Position = UDim2.new(0, 0, 0, 0)
+			header.Size = UDim2.new(1, 0, 0, 28)
+			header.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+			header.BorderSizePixel = 0
+			header.Text = ""
+			header.AutoButtonColor = false
+
+			local title_lbl = Instance.new("TextLabel")
+			title_lbl.Parent = header
+			title_lbl.Font = Enum.Font.Code
+			title_lbl.Text = loader_title
+			title_lbl.TextSize = 14
+			title_lbl.TextColor3 = Color3.fromRGB(240, 240, 240)
+			title_lbl.TextXAlignment = Enum.TextXAlignment.Center
+			title_lbl.TextYAlignment = Enum.TextYAlignment.Center
+			title_lbl.Size = UDim2.new(1, 0, 1, 0)
+			title_lbl.BackgroundTransparency = 1
+			title_lbl.BorderSizePixel = 0
+
+			local title_st = Instance.new("UIStroke")
+			title_st.Parent = title_lbl
+			title_st.Color = Color3.fromRGB(0, 0, 0)
+			title_st.LineJoinMode = Enum.LineJoinMode.Miter
+
+			local header_line = Instance.new("Frame")
+			header_line.Name = "HeaderDivider"
+			header_line.Parent = main_frame
+			header_line.Position = UDim2.new(0, 0, 0, 28)
+			header_line.Size = UDim2.new(1, 0, 0, 1)
+			header_line.BackgroundColor3 = accent_color
+			header_line.BorderSizePixel = 0
+
+			-- Dragging
+			local dragging = false
+			local drag_start = nil
+			local start_pos = nil
+
+			header.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					dragging = true
+					drag_start = input.Position
+					start_pos = main_frame.Position
+				end
+			end)
+
+			header.InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					dragging = false
+				end
+			end)
+
+			local drag_conn = uis.InputChanged:Connect(function(input)
+				if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+					local delta = input.Position - drag_start
+					main_frame.Position = UDim2.new(
+						start_pos.X.Scale,
+						start_pos.X.Offset + delta.X,
+						start_pos.Y.Scale,
+						start_pos.Y.Offset + delta.Y
+					)
+				end
+			end)
+
+			-- Inner Container Box (matching screenshot's inner border box, enlarged)
+			local inner_box = Instance.new("Frame")
+			inner_box.Name = "InnerBox"
+			inner_box.Parent = main_frame
+			inner_box.Position = UDim2.new(0, 8, 0, 36)
+			inner_box.Size = UDim2.new(1, -16, 1, -44)
+			inner_box.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+			inner_box.BorderSizePixel = 0
+
+			local inner_stroke = Instance.new("UIStroke")
+			inner_stroke.Parent = inner_box
+			inner_stroke.Color = Color3.fromRGB(28, 28, 34)
+			inner_stroke.Thickness = 1
+			inner_stroke.LineJoinMode = Enum.LineJoinMode.Miter
+
+			local content_pad = Instance.new("UIPadding")
+			content_pad.Parent = inner_box
+			content_pad.PaddingLeft = UDim.new(0, 12)
+			content_pad.PaddingRight = UDim.new(0, 12)
+			content_pad.PaddingTop = UDim.new(0, 10)
+			content_pad.PaddingBottom = UDim.new(0, 10)
+
+			local layout = Instance.new("UIListLayout")
+			layout.Parent = inner_box
+			layout.SortOrder = Enum.SortOrder.LayoutOrder
+			layout.Padding = UDim.new(0, 6)
+
+			local order_val = 0
+			local function next_order()
+				order_val = order_val + 1
+				return order_val
+			end
+
+			local function create_etched_divider()
+				local holder = Instance.new("Frame")
+				holder.Name = "EtchedDivider"
+				holder.Parent = inner_box
+				holder.LayoutOrder = next_order()
+				holder.Size = UDim2.new(1, 0, 0, 2)
+				holder.BackgroundTransparency = 1
+				holder.BorderSizePixel = 0
+
+				local top_line = Instance.new("Frame")
+				top_line.Parent = holder
+				top_line.Position = UDim2.new(0, 0, 0, 0)
+				top_line.Size = UDim2.new(1, 0, 0, 1)
+				top_line.BackgroundColor3 = Color3.fromRGB(6, 6, 8)
+				top_line.BorderSizePixel = 0
+
+				local btm_line = Instance.new("Frame")
+				btm_line.Parent = holder
+				btm_line.Position = UDim2.new(0, 0, 0, 1)
+				btm_line.Size = UDim2.new(1, 0, 0, 1)
+				btm_line.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+				btm_line.BorderSizePixel = 0
+
+				return holder
+			end
+
+			local updated_lbl = Instance.new("TextLabel")
+			updated_lbl.Parent = inner_box
+			updated_lbl.LayoutOrder = next_order()
+			updated_lbl.Font = Enum.Font.Code
+			updated_lbl.Text = "Updated: 3 months ago"
+			updated_lbl.TextSize = 12
+			updated_lbl.TextColor3 = Color3.fromRGB(195, 195, 195)
+			updated_lbl.TextXAlignment = Enum.TextXAlignment.Left
+			updated_lbl.Size = UDim2.new(1, 0, 0, 15)
+			updated_lbl.BackgroundTransparency = 1
+			updated_lbl.BorderSizePixel = 0
+
+			local ul_s = Instance.new("UIStroke")
+			ul_s.Parent = updated_lbl
+			ul_s.Color = Color3.fromRGB(0, 0, 0)
+			ul_s.LineJoinMode = Enum.LineJoinMode.Miter
+
+			local can_load_lbl = Instance.new("TextLabel")
+			can_load_lbl.Parent = inner_box
+			can_load_lbl.LayoutOrder = next_order()
+			can_load_lbl.Font = Enum.Font.Code
+			can_load_lbl.Text = "Can Load: Yes"
+			can_load_lbl.TextSize = 12
+			can_load_lbl.TextColor3 = Color3.fromRGB(195, 195, 195)
+			can_load_lbl.TextXAlignment = Enum.TextXAlignment.Left
+			can_load_lbl.Size = UDim2.new(1, 0, 0, 15)
+			can_load_lbl.BackgroundTransparency = 1
+			can_load_lbl.BorderSizePixel = 0
+
+			local cl_s = Instance.new("UIStroke")
+			cl_s.Parent = can_load_lbl
+			cl_s.Color = Color3.fromRGB(0, 0, 0)
+			cl_s.LineJoinMode = Enum.LineJoinMode.Miter
+
+			create_etched_divider()
+
+			local function create_cb(label_text, default_val)
+				local state = default_val
+				local row = Instance.new("ImageButton")
+				row.Name = "CheckboxRow"
+				row.Parent = inner_box
+				row.LayoutOrder = next_order()
+				row.Size = UDim2.new(1, 0, 0, 18)
+				row.BackgroundTransparency = 1
+				row.BorderSizePixel = 0
+				row.AutoButtonColor = false
+
+				local box = Instance.new("Frame")
+				box.Name = "Box"
+				box.Parent = row
+				box.Size = UDim2.new(0, 14, 0, 14)
+				box.Position = UDim2.new(0, 0, 0, 2)
+				box.BackgroundColor3 = (state and accent_color or Color3.fromRGB(14, 14, 16))
+				box.BorderSizePixel = 0
+
+				local box_st = Instance.new("UIStroke")
+				box_st.Parent = box
+				box_st.Color = (state and accent_color or Color3.fromRGB(36, 36, 42))
+				box_st.Thickness = 1
+				box_st.LineJoinMode = Enum.LineJoinMode.Miter
+
+				local lbl = Instance.new("TextLabel")
+				lbl.Parent = row
+				lbl.Font = Enum.Font.Code
+				lbl.Text = label_text
+				lbl.TextSize = 12
+				lbl.TextColor3 = Color3.fromRGB(225, 225, 225)
+				lbl.TextXAlignment = Enum.TextXAlignment.Left
+				lbl.Position = UDim2.new(0, 22, 0, 0)
+				lbl.Size = UDim2.new(1, -22, 1, 0)
+				lbl.BackgroundTransparency = 1
+				lbl.BorderSizePixel = 0
+
+				local lbl_s = Instance.new("UIStroke")
+				lbl_s.Parent = lbl
+				lbl_s.Color = Color3.fromRGB(0, 0, 0)
+				lbl_s.LineJoinMode = Enum.LineJoinMode.Miter
+
+				local function update_visual()
+					if state then
+						box.BackgroundColor3 = accent_color
+						box_st.Color = accent_color
+					else
+						box.BackgroundColor3 = Color3.fromRGB(14, 14, 16)
+						box_st.Color = Color3.fromRGB(36, 36, 42)
+					end
+				end
+
+				row.MouseEnter:Connect(function()
+					lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+					if not state then
+						box_st.Color = Color3.fromRGB(55, 55, 65)
+					end
+				end)
+
+				row.MouseLeave:Connect(function()
+					lbl.TextColor3 = Color3.fromRGB(225, 225, 225)
+					if not state then
+						box_st.Color = Color3.fromRGB(36, 36, 42)
+					end
+				end)
+
+				row.MouseButton1Click:Connect(function()
+					state = not state
+					update_visual()
+				end)
+
+				return {
+					get = function() return state end,
+					set = function(new_v)
+						state = new_v
+						update_visual()
+					end
+				}
+			end
+
+			local custom_di_cb = create_cb("Custom DI", custom_di_val)
+			create_etched_divider()
+			local comp_mode_cb = create_cb("Compatibility Mode", comp_mode_val)
+			local rejoin_cb = create_cb("Rejoin", rejoin_val)
+			create_etched_divider()
+			local auto_load_cb = create_cb("Auto Load", auto_load_val)
+
+			local load_btn = Instance.new("TextButton")
+			load_btn.Name = "LoadButton"
+			load_btn.Parent = inner_box
+			load_btn.LayoutOrder = next_order()
+			load_btn.Size = UDim2.new(1, 0, 0, 28)
+			load_btn.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+			load_btn.BorderSizePixel = 0
+			load_btn.Font = Enum.Font.Code
+			load_btn.Text = "Load"
+			load_btn.TextSize = 13
+			load_btn.TextColor3 = Color3.fromRGB(240, 240, 240)
+			load_btn.AutoButtonColor = false
+
+			local btn_grad = Instance.new("UIGradient")
+			btn_grad.Parent = load_btn
+			btn_grad.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(28, 28, 34)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(16, 16, 20))
+			})
+			btn_grad.Rotation = 90
+
+			local btn_st = Instance.new("UIStroke")
+			btn_st.Parent = load_btn
+			btn_st.Color = Color3.fromRGB(38, 38, 46)
+			btn_st.Thickness = 1
+			btn_st.LineJoinMode = Enum.LineJoinMode.Miter
+
+			local btn_txt_s = Instance.new("UIStroke")
+			btn_txt_s.Parent = load_btn
+			btn_txt_s.Color = Color3.fromRGB(0, 0, 0)
+			btn_txt_s.LineJoinMode = Enum.LineJoinMode.Miter
+
+			load_btn.MouseEnter:Connect(function()
+				btn_st.Color = Color3.fromRGB(65, 65, 80)
+				load_btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				btn_grad.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(36, 36, 44)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(22, 22, 28))
+				})
+			end)
+
+			load_btn.MouseLeave:Connect(function()
+				btn_st.Color = Color3.fromRGB(38, 38, 46)
+				load_btn.TextColor3 = Color3.fromRGB(240, 240, 240)
+				btn_grad.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(28, 28, 34)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(16, 16, 20))
+				})
+			end)
+
+			load_btn.MouseButton1Down:Connect(function()
+				btn_grad.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(12, 12, 14)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 22))
+				})
+			end)
+
+			load_btn.MouseButton1Up:Connect(function()
+				btn_grad.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(36, 36, 44)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(22, 22, 28))
+				})
+			end)
+
+			local has_loaded = false
+			local function trigger_load()
+				if has_loaded then return end
+				has_loaded = true
+
+				load_btn.Text = "Loading..."
+
+				if drag_conn then
+					drag_conn:Disconnect()
+					drag_conn = nil
+				end
+
+				local result_data = {
+					custom_di = custom_di_cb.get(),
+					compatibility_mode = comp_mode_cb.get(),
+					rejoin = rejoin_cb.get(),
+					auto_load = auto_load_cb.get()
+				}
+
+				pcall(function()
+					if writefile and http_service then
+						writefile(config_file, http_service:JSONEncode(result_data))
+					end
+				end)
+
+				loader_sgui:Destroy()
+
+				if on_load_cb then
+					task.spawn(on_load_cb, result_data)
+				end
+			end
+
+			load_btn.MouseButton1Click:Connect(function()
+				trigger_load()
+			end)
+
+			return {
+				gui = loader_sgui,
+				frame = main_frame,
+				destroy = function() loader_sgui:Destroy() end
+			}
+		end
 
 return library, themes;
