@@ -6943,9 +6943,9 @@
 			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
 			local cam_y = (camera and camera.ViewportSize and camera.ViewportSize.Y or 720)
 
-			local w1 = 320
-			local w2 = 220
-			local h = 255
+			local w1 = 290
+			local w2 = 150
+			local h = 165
 			local gap = 10
 			local total_w = w1 + gap + w2
 
@@ -7036,7 +7036,7 @@
 			local avatar_box = library:create("Frame", {
 				Parent = box_preview,
 				Position = dim2(0, 8, 0, 8),
-				Size = dim2(0, 48, 0, 48),
+				Size = dim2(0, 44, 0, 44),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7081,8 +7081,8 @@
 
 			local name_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 64, 0, 8),
-				Size = dim2(1, -70, 0, 16),
+				Position = dim2(0, 60, 0, 8),
+				Size = dim2(1, -68, 0, 15),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7096,8 +7096,8 @@
 
 			local handle_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 64, 0, 24),
-				Size = dim2(1, -70, 0, 14),
+				Position = dim2(0, 60, 0, 24),
+				Size = dim2(1, -68, 0, 13),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7113,8 +7113,8 @@
 			local user_id_str = lp and tostring(lp.UserId) or "Unknown"
 			local uid_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 64, 0, 40),
-				Size = dim2(1, -70, 0, 14),
+				Position = dim2(0, 60, 0, 39),
+				Size = dim2(1, -68, 0, 13),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7129,32 +7129,17 @@
 
 			local div1 = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 8, 0, 64),
+				Position = dim2(0, 8, 0, 58),
 				Size = dim2(1, -16, 0, 1),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
 			library:apply_theme(div1, "outline", "BackgroundColor3")
 
-			local disc_title = library:create("TextLabel", {
-				Parent = box_preview,
-				Position = dim2(0, 8, 0, 72),
-				Size = dim2(1, -16, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "Discord Server",
-				TextSize = 11,
-				TextColor3 = themes.preset.accent,
-				TextXAlignment = Enum.TextXAlignment.Left,
-			})
-			library:apply_theme(disc_title, "accent", "TextColor3")
-			library:create("UIStroke", { Parent = disc_title, LineJoinMode = Enum.LineJoinMode.Miter })
-
 			local srv_icon_box = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 8, 0, 92),
-				Size = dim2(0, 42, 0, 42),
+				Position = dim2(0, 8, 0, 66),
+				Size = dim2(0, 44, 0, 44),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7180,8 +7165,8 @@
 
 			local srv_name_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 58, 0, 91),
-				Size = dim2(1, -64, 0, 16),
+				Position = dim2(0, 60, 0, 66),
+				Size = dim2(1, -96, 0, 15),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7194,8 +7179,8 @@
 
 			local srv_inv_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 58, 0, 107),
-				Size = dim2(1, -64, 0, 14),
+				Position = dim2(0, 60, 0, 82),
+				Size = dim2(1, -96, 0, 13),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7209,8 +7194,8 @@
 
 			local online_dot = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 58, 0, 127),
-				Size = dim2(0, 7, 0, 7),
+				Position = dim2(0, 60, 0, 100),
+				Size = dim2(0, 6, 0, 6),
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(67, 181, 129),
 			})
@@ -7221,8 +7206,8 @@
 
 			local online_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 69, 0, 123),
-				Size = dim2(0, 65, 0, 15),
+				Position = dim2(0, 70, 0, 96),
+				Size = dim2(0, 60, 0, 14),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7235,8 +7220,8 @@
 
 			local total_dot = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 140, 0, 127),
-				Size = dim2(0, 7, 0, 7),
+				Position = dim2(0, 132, 0, 100),
+				Size = dim2(0, 6, 0, 6),
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(185, 187, 190),
 			})
@@ -7247,8 +7232,8 @@
 
 			local total_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 151, 0, 123),
-				Size = dim2(0, 80, 0, 15),
+				Position = dim2(0, 142, 0, 96),
+				Size = dim2(0, 75, 0, 14),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7260,19 +7245,10 @@
 			library:apply_theme(total_lbl, "text", "TextColor3")
 			library:create("UIStroke", { Parent = total_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local div2 = library:create("Frame", {
-				Parent = box_preview,
-				Position = dim2(0, 8, 0, 146),
-				Size = dim2(1, -16, 0, 1),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(div2, "outline", "BackgroundColor3")
-
 			local copy_btn_out = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 8, 1, -28),
-				Size = dim2(1, -16, 0, 22),
+				Position = dim2(1, -30, 0, 66),
+				Size = dim2(0, 22, 0, 22),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7304,20 +7280,16 @@
 				},
 			})
 
-			local copy_btn_text = library:create("TextLabel", {
+			local copy_icon = library:create("ImageLabel", {
 				Parent = copy_btn_bg,
-				Size = dim2(1, 0, 1, 0),
+				Position = dim2(0, 3, 0, 3),
+				Size = dim2(1, -6, 1, -6),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "Join Server (Copy Invite)",
-				TextSize = 11,
-				TextColor3 = themes.preset.text,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
+				Image = "rbxassetid://10709812159",
+				ImageColor3 = themes.preset.text,
 			})
-			library:apply_theme(copy_btn_text, "text", "TextColor3")
-			library:create("UIStroke", { Parent = copy_btn_text, LineJoinMode = Enum.LineJoinMode.Miter })
+			library:apply_theme(copy_icon, "text", "ImageColor3")
 
 			local copy_click = library:create("TextButton", {
 				Parent = copy_btn_bg,
@@ -7328,29 +7300,35 @@
 			})
 
 			copy_click.MouseEnter:Connect(function()
-				copy_btn_text.TextColor3 = rgb(255, 255, 255)
+				copy_icon.ImageColor3 = rgb(255, 255, 255)
 				copy_btn_grad.Color = rgbseq{
 					rgbkey(0, rgb(46, 46, 46)),
 					rgbkey(1, rgb(34, 34, 34)),
 				}
 			end)
 			copy_click.MouseLeave:Connect(function()
-				copy_btn_text.TextColor3 = themes.preset.text
+				copy_icon.ImageColor3 = themes.preset.text
 				copy_btn_grad.Color = rgbseq{
 					rgbkey(0, rgb(34, 34, 34)),
 					rgbkey(1, rgb(24, 24, 24)),
 				}
 			end)
 
+			local copy_deb = false
 			copy_click.MouseButton1Click:Connect(function()
 				pcall(function()
 					if setclipboard then
 						setclipboard("https://discord.gg/vulnerability")
 					end
 				end)
-				copy_btn_text.Text = "Invite Copied to Clipboard!"
+				if copy_deb then return end
+				copy_deb = true
+				copy_icon.Image = "rbxassetid://10709790644"
+				copy_icon.ImageColor3 = rgb(67, 181, 129)
 				task.delay(1.5, function()
-					copy_btn_text.Text = "Join Server (Copy Invite)"
+					copy_icon.Image = "rbxassetid://10709812159"
+					copy_icon.ImageColor3 = themes.preset.text
+					copy_deb = false
 				end)
 			end)
 
@@ -7368,7 +7346,7 @@
 					end
 				end)
 
-				if ok and resp_body then
+			if ok and resp_body then
 					local parse_ok, data = pcall(function()
 						return game:GetService("HttpService"):JSONDecode(resp_body)
 					end)
@@ -7395,158 +7373,13 @@
 				end
 			end)
 
-			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
-
-			local info_header = library:create("TextLabel", {
-				Parent = box_loader,
-				Position = dim2(0, 8, 0, 8),
-				Size = dim2(1, -16, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "System Status",
-				TextSize = 11,
-				TextColor3 = themes.preset.accent,
-				TextXAlignment = Enum.TextXAlignment.Left,
-			})
-			library:apply_theme(info_header, "accent", "TextColor3")
-			library:create("UIStroke", { Parent = info_header, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local function add_info(y, lbl, val, col)
-				local l = library:create("TextLabel", {
-					Parent = box_loader,
-					Position = dim2(0, 8, 0, y),
-					Size = dim2(0.48, 0, 0, 15),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					FontFace = library.font,
-					Text = lbl,
-					TextSize = 11,
-					TextColor3 = themes.preset.text,
-					TextXAlignment = Enum.TextXAlignment.Left,
-				})
-				library:apply_theme(l, "text", "TextColor3")
-				library:create("UIStroke", { Parent = l, LineJoinMode = Enum.LineJoinMode.Miter })
-
-				local v = library:create("TextLabel", {
-					Parent = box_loader,
-					Position = dim2(0.48, 0, 0, y),
-					Size = dim2(0.52, -8, 0, 15),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					FontFace = library.font,
-					Text = val,
-					TextSize = 11,
-					TextColor3 = col or rgb(230, 230, 230),
-					TextXAlignment = Enum.TextXAlignment.Right,
-				})
-				library:create("UIStroke", { Parent = v, LineJoinMode = Enum.LineJoinMode.Miter })
-				return v
-			end
-
-			local gname = "Roblox"
-			pcall(function()
-				gname = string.sub(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or game.Name, 1, 14)
-			end)
-
-			add_info(28, "Status:", "Ready", rgb(90, 220, 110))
-			add_info(46, "Game:", gname)
-			add_info(64, "Build:", "v2.4.1")
-
-			local div_loader = library:create("Frame", {
-				Parent = box_loader,
-				Position = dim2(0, 8, 0, 86),
-				Size = dim2(1, -16, 0, 1),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(div_loader, "outline", "BackgroundColor3")
-
-			local opts_header = library:create("TextLabel", {
-				Parent = box_loader,
-				Position = dim2(0, 8, 0, 94),
-				Size = dim2(1, -16, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "Launch Options",
-				TextSize = 11,
-				TextColor3 = themes.preset.accent,
-				TextXAlignment = Enum.TextXAlignment.Left,
-			})
-			library:apply_theme(opts_header, "accent", "TextColor3")
-			library:create("UIStroke", { Parent = opts_header, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local function add_toggle(y, txt, default)
-				local state = default ~= false
-
-				local btn = library:create("TextButton", {
-					Parent = box_loader,
-					Position = dim2(0, 8, 0, y),
-					Size = dim2(1, -16, 0, 16),
-					BackgroundTransparency = 1,
-					Text = "",
-					AutoButtonColor = false,
-				})
-
-				local o = library:create("Frame", {
-					Parent = btn,
-					Position = dim2(0, 0, 0.5, -6),
-					Size = dim2(0, 12, 0, 12),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.outline,
-				})
-				library:apply_theme(o, "outline", "BackgroundColor3")
-
-				local i = library:create("Frame", {
-					Parent = o,
-					Position = dim2(0, 1, 0, 1),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline,
-				})
-				library:apply_theme(i, "inline", "BackgroundColor3")
-
-				local fill = library:create("Frame", {
-					Parent = i,
-					Position = dim2(0, 1, 0, 1),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent,
-					BackgroundTransparency = state and 0 or 1,
-				})
-				library:apply_theme(fill, "accent", "BackgroundColor3")
-
-				local lbl = library:create("TextLabel", {
-					Parent = btn,
-					Position = dim2(0, 18, 0, 0),
-					Size = dim2(1, -18, 1, 0),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					FontFace = library.font,
-					Text = txt,
-					TextSize = 11,
-					TextColor3 = state and rgb(255, 255, 255) or themes.preset.text,
-					TextXAlignment = Enum.TextXAlignment.Left,
-				})
-				library:create("UIStroke", { Parent = lbl, LineJoinMode = Enum.LineJoinMode.Miter })
-
-				btn.MouseButton1Click:Connect(function()
-					state = not state
-					fill.BackgroundTransparency = state and 0 or 1
-					lbl.TextColor3 = state and rgb(255, 255, 255) or themes.preset.text
-				end)
-			end
-
-			add_toggle(114, "Auto Load", false)
-			add_toggle(134, "Unlock FPS", true)
-			add_toggle(154, "Compatibility", true)
+			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -16))
 
 			local btn_outline = library:create("Frame", {
-				Parent = panel_loader.items.holder,
+				Parent = box_loader,
 				Name = "load_btn_outline",
-				Position = dim2(0, 8, 1, -26),
-				Size = dim2(1, -16, 0, 22),
+				Position = dim2(0, 10, 0.5, -14),
+				Size = dim2(1, -20, 0, 28),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7588,7 +7421,7 @@
 				BorderSizePixel = 0,
 				FontFace = library.font,
 				Text = "Load",
-				TextSize = 12,
+				TextSize = 13,
 				TextColor3 = themes.preset.text,
 				TextXAlignment = Enum.TextXAlignment.Center,
 				TextYAlignment = Enum.TextYAlignment.Center,
@@ -7633,10 +7466,10 @@
 			end)
 
 			local bar_outline = library:create("Frame", {
-				Parent = panel_loader.items.holder,
+				Parent = box_loader,
 				Name = "load_bar_outline",
-				Position = dim2(0, 8, 1, -26),
-				Size = dim2(1, -16, 0, 22),
+				Position = dim2(0, 10, 0.5, -14),
+				Size = dim2(1, -20, 0, 28),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 				Visible = false,
@@ -7692,7 +7525,7 @@
 				ZIndex = 5,
 				FontFace = library.font,
 				Text = "Loading... 0%",
-				TextSize = 12,
+				TextSize = 11,
 				TextColor3 = rgb(255, 255, 255),
 				TextXAlignment = Enum.TextXAlignment.Center,
 				TextYAlignment = Enum.TextYAlignment.Center,
