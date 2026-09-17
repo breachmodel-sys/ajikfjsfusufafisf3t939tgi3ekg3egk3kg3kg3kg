@@ -1855,6 +1855,7 @@
 					end
 				end})
 
+
 			return setmetatable(window, library)
 		end
 
@@ -6935,22 +6936,23 @@
 		library.audio_player = library.music_player
 
 
-		function library:loader(options)
+function library:loader(options)
 			options = options or {}
 
-			local title_text = options.title or "homohack"
-			local scripts = options.scripts or {"PF Main"}
-			local selected_script = options.default_script or scripts[1] or "PF Main"
+			local title_text = options.title or "Wizardhook"
+			local scripts = options.scripts
+			local selected_script = options.default_script or (scripts and scripts[1]) or nil
 			local updated_text = options.updated or "3 months ago"
-			local can_load_text = options.can_load or "No"
+			local can_load_text = options.can_load or "Yes"
+			local show_key = (options.key ~= nil or options.key_placeholder ~= nil)
 			local key_placeholder = options.key_placeholder or "Enter your key here"
 			local initial_key = options.key or ""
 			local accent_col = options.accent or rgb(174, 147, 255)
 			local on_load_callback = options.on_load or function() end
 
-			local config_file = "homohack_loader_config.json"
+			local config_file = "wizardhook_loader_config.json"
 			local saved_config = {}
-			if readfile and isfile and isfile(config_file) then
+			if readfile then
 				pcall(function()
 					saved_config = http_service:JSONDecode(readfile(config_file)) or {}
 				end)
@@ -6979,7 +6981,7 @@
 			if saved_config.key and saved_config.key ~= "" and initial_key == "" then
 				initial_key = saved_config.key
 			end
-			if saved_config.script and saved_config.script ~= "" then
+			if saved_config.script and saved_config.script ~= "" and scripts then
 				selected_script = saved_config.script
 			end
 
@@ -6990,32 +6992,48 @@
 				end)
 			end
 
-			local gui_parent = (gethui and gethui()) or coregui or (lp and lp:FindFirstChild("PlayerGui"))
-			local loader_sgui = Instance.new("ScreenGui")
-			loader_sgui.Name = "HomohackLoader"
-			loader_sgui.ResetOnSpawn = false
-			loader_sgui.DisplayOrder = 999999
-			loader_sgui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-			loader_sgui.Parent = gui_parent
-			table.insert(library.guis, loader_sgui)
+			local target_parent = nil
+			if gethui then
+				pcall(function() target_parent = gethui() end)
+			end
+			if not target_parent and coregui then
+				pcall(function() target_parent = coregui end)
+			end
+			if not target_parent and lp then
+				pcall(function() target_parent = lp:FindFirstChild("PlayerGui") end)
+			end
+			if not target_parent then
+				target_parent = coregui
+			end
 
-			local vp_x = (camera and camera.ViewportSize and camera.ViewportSize.X) or 1920
-			local vp_y = (camera and camera.ViewportSize and camera.ViewportSize.Y) or 1080
-			local center_x = math.floor(vp_x / 2 - 149)
-			local center_y = math.floor(vp_y / 2 - 161)
+			local loader_sgui = Instance.new("ScreenGui")
+			loader_sgui.Name = "WizardhookLoader"
+			loader_sgui.ResetOnSpawn = false
+			loader_sgui.DisplayOrder = 10000000
+			loader_sgui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+			loader_sgui.Enabled = true
+			loader_sgui.Parent = target_parent
+
+			-- Dynamic height based on presence of scripts/key
+			local calculated_height = 205
+			if scripts and #scripts > 0 then
+				calculated_height = calculated_height + 42
+			end
+			if show_key then
+				calculated_height = calculated_height + 42
+			end
 
 			local loader_frame = Instance.new("Frame")
 			loader_frame.Name = "MainFrame"
 			loader_frame.Parent = loader_sgui
-			loader_frame.Position = dim2(0, center_x, 0, center_y)
-			loader_frame.Size = dim2(0, 298, 0, 322)
+			loader_frame.AnchorPoint = vec2(0.5, 0.5)
+			loader_frame.Position = dim2(0.5, 0, 0.5, 0)
+			loader_frame.Size = dim2(0, 298, 0, calculated_height)
 			loader_frame.BackgroundColor3 = rgb(16, 16, 16)
 			loader_frame.BorderColor3 = rgb(0, 0, 0)
 			loader_frame.BorderSizePixel = 0
 			loader_frame.Active = true
 			loader_frame.ClipsDescendants = false
-
-			library:draggify(loader_frame)
 
 			local outer_stroke = Instance.new("UIStroke")
 			outer_stroke.Parent = loader_frame
@@ -7024,26 +7042,33 @@
 			outer_stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 			outer_stroke.LineJoinMode = Enum.LineJoinMode.Miter
 
-			local header = Instance.new("Frame")
+			-- Header
+			local header = Instance.new("TextButton")
 			header.Name = "Header"
 			header.Parent = loader_frame
 			header.Position = dim2(0, 0, 0, 0)
 			header.Size = dim2(1, 0, 0, 24)
 			header.BackgroundColor3 = rgb(16, 16, 16)
 			header.BorderSizePixel = 0
+			header.Text = ""
+			header.AutoButtonColor = false
 
-			local title_label = library:create("TextLabel", {
-				Parent = header,
-				FontFace = loader_font,
-				Text = title_text,
-				TextSize = 13,
-				TextColor3 = rgb(240, 240, 240),
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				Size = dim2(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0
-			})
+			local title_label = Instance.new("TextLabel")
+			title_label.Parent = header
+			title_label.FontFace = loader_font
+			title_label.Text = title_text
+			title_label.TextSize = 13
+			title_label.TextColor3 = rgb(240, 240, 240)
+			title_label.TextXAlignment = Enum.TextXAlignment.Center
+			title_label.TextYAlignment = Enum.TextYAlignment.Center
+			title_label.Size = dim2(1, 0, 1, 0)
+			title_label.BackgroundTransparency = 1
+			title_label.BorderSizePixel = 0
+
+			local title_stroke = Instance.new("UIStroke")
+			title_stroke.Parent = title_label
+			title_stroke.Color = rgb(0, 0, 0)
+			title_stroke.LineJoinMode = Enum.LineJoinMode.Miter
 
 			local header_line = Instance.new("Frame")
 			header_line.Name = "HeaderDivider"
@@ -7053,6 +7078,38 @@
 			header_line.BackgroundColor3 = accent_col
 			header_line.BorderSizePixel = 0
 
+			-- Smooth draggable header
+			local dragging = false
+			local drag_start = nil
+			local start_pos = nil
+
+			header.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					dragging = true
+					drag_start = input.Position
+					start_pos = loader_frame.Position
+				end
+			end)
+
+			header.InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					dragging = false
+				end
+			end)
+
+			local drag_conn = uis.InputChanged:Connect(function(input)
+				if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+					local delta = input.Position - drag_start
+					loader_frame.Position = dim2(
+						start_pos.X.Scale,
+						start_pos.X.Offset + delta.X,
+						start_pos.Y.Scale,
+						start_pos.Y.Offset + delta.Y
+					)
+				end
+			end)
+
+			-- Content area
 			local content = Instance.new("Frame")
 			content.Name = "Content"
 			content.Parent = loader_frame
@@ -7096,190 +7153,214 @@
 				return div
 			end
 
-			local script_lbl = library:create("TextLabel", {
-				Parent = content,
-				LayoutOrder = next_order(),
-				FontFace = loader_font,
-				Text = "Script",
-				TextSize = 12,
-				TextColor3 = rgb(215, 215, 215),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Size = dim2(1, 0, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0
-			})
+			-- Optional Script Dropdown
+			local dropdown_popup = nil
+			local dropdown_btn = nil
+			if scripts and #scripts > 0 then
+				local script_lbl = Instance.new("TextLabel")
+				script_lbl.Parent = content
+				script_lbl.LayoutOrder = next_order()
+				script_lbl.FontFace = loader_font
+				script_lbl.Text = "Script"
+				script_lbl.TextSize = 12
+				script_lbl.TextColor3 = rgb(215, 215, 215)
+				script_lbl.TextXAlignment = Enum.TextXAlignment.Left
+				script_lbl.Size = dim2(1, 0, 0, 14)
+				script_lbl.BackgroundTransparency = 1
+				script_lbl.BorderSizePixel = 0
+				local st = Instance.new("UIStroke")
+				st.Parent = script_lbl
+				st.Color = rgb(0, 0, 0)
+				st.LineJoinMode = Enum.LineJoinMode.Miter
 
-			local dropdown_btn = Instance.new("ImageButton")
-			dropdown_btn.Name = "ScriptDropdown"
-			dropdown_btn.Parent = content
-			dropdown_btn.LayoutOrder = next_order()
-			dropdown_btn.Size = dim2(1, 0, 0, 20)
-			dropdown_btn.BackgroundColor3 = rgb(12, 12, 12)
-			dropdown_btn.BorderSizePixel = 0
-			dropdown_btn.AutoButtonColor = false
+				dropdown_btn = Instance.new("ImageButton")
+				dropdown_btn.Name = "ScriptDropdown"
+				dropdown_btn.Parent = content
+				dropdown_btn.LayoutOrder = next_order()
+				dropdown_btn.Size = dim2(1, 0, 0, 20)
+				dropdown_btn.BackgroundColor3 = rgb(12, 12, 12)
+				dropdown_btn.BorderSizePixel = 0
+				dropdown_btn.AutoButtonColor = false
 
-			local dropdown_stroke = Instance.new("UIStroke")
-			dropdown_stroke.Parent = dropdown_btn
-			dropdown_stroke.Color = rgb(28, 28, 28)
-			dropdown_stroke.Thickness = 1
-			dropdown_stroke.LineJoinMode = Enum.LineJoinMode.Miter
+				local dropdown_stroke = Instance.new("UIStroke")
+				dropdown_stroke.Parent = dropdown_btn
+				dropdown_stroke.Color = rgb(28, 28, 28)
+				dropdown_stroke.Thickness = 1
+				dropdown_stroke.LineJoinMode = Enum.LineJoinMode.Miter
 
-			local dropdown_text = library:create("TextLabel", {
-				Parent = dropdown_btn,
-				FontFace = loader_font,
-				Text = selected_script,
-				TextSize = 12,
-				TextColor3 = rgb(235, 235, 235),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Position = dim2(0, 6, 0, 0),
-				Size = dim2(1, -24, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0
-			})
+				local dropdown_text = Instance.new("TextLabel")
+				dropdown_text.Parent = dropdown_btn
+				dropdown_text.FontFace = loader_font
+				dropdown_text.Text = selected_script or scripts[1]
+				dropdown_text.TextSize = 12
+				dropdown_text.TextColor3 = rgb(235, 235, 235)
+				dropdown_text.TextXAlignment = Enum.TextXAlignment.Left
+				dropdown_text.Position = dim2(0, 6, 0, 0)
+				dropdown_text.Size = dim2(1, -24, 1, 0)
+				dropdown_text.BackgroundTransparency = 1
+				dropdown_text.BorderSizePixel = 0
+				local dt_st = Instance.new("UIStroke")
+				dt_st.Parent = dropdown_text
+				dt_st.Color = rgb(0, 0, 0)
+				dt_st.LineJoinMode = Enum.LineJoinMode.Miter
 
-			local dropdown_arrow = library:create("TextLabel", {
-				Parent = dropdown_btn,
-				FontFace = loader_font,
-				Text = "▼",
-				TextSize = 8,
-				TextColor3 = rgb(190, 190, 190),
-				TextXAlignment = Enum.TextXAlignment.Center,
-				Position = dim2(1, -16, 0, 0),
-				Size = dim2(0, 12, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0
-			})
+				local dropdown_arrow = Instance.new("TextLabel")
+				dropdown_arrow.Parent = dropdown_btn
+				dropdown_arrow.FontFace = loader_font
+				dropdown_arrow.Text = "▼"
+				dropdown_arrow.TextSize = 8
+				dropdown_arrow.TextColor3 = rgb(190, 190, 190)
+				dropdown_arrow.TextXAlignment = Enum.TextXAlignment.Center
+				dropdown_arrow.Position = dim2(1, -16, 0, 0)
+				dropdown_arrow.Size = dim2(0, 12, 1, 0)
+				dropdown_arrow.BackgroundTransparency = 1
+				dropdown_arrow.BorderSizePixel = 0
 
-			local dropdown_popup = Instance.new("Frame")
-			dropdown_popup.Name = "DropdownPopup"
-			dropdown_popup.Parent = loader_frame
-			dropdown_popup.Visible = false
-			dropdown_popup.Size = dim2(1, -24, 0, #scripts * 20)
-			dropdown_popup.Position = dim2(0, 12, 0, 52)
-			dropdown_popup.BackgroundColor3 = rgb(14, 14, 16)
-			dropdown_popup.BorderSizePixel = 0
-			dropdown_popup.ZIndex = 100
+				dropdown_popup = Instance.new("Frame")
+				dropdown_popup.Name = "DropdownPopup"
+				dropdown_popup.Parent = loader_frame
+				dropdown_popup.Visible = false
+				dropdown_popup.Size = dim2(1, -24, 0, #scripts * 20)
+				dropdown_popup.Position = dim2(0, 12, 0, 52)
+				dropdown_popup.BackgroundColor3 = rgb(14, 14, 16)
+				dropdown_popup.BorderSizePixel = 0
+				dropdown_popup.ZIndex = 100
 
-			local popup_stroke = Instance.new("UIStroke")
-			popup_stroke.Parent = dropdown_popup
-			popup_stroke.Color = rgb(35, 35, 40)
-			popup_stroke.Thickness = 1
-			popup_stroke.LineJoinMode = Enum.LineJoinMode.Miter
+				local popup_stroke = Instance.new("UIStroke")
+				popup_stroke.Parent = dropdown_popup
+				popup_stroke.Color = rgb(35, 35, 40)
+				popup_stroke.Thickness = 1
+				popup_stroke.LineJoinMode = Enum.LineJoinMode.Miter
 
-			local popup_layout = Instance.new("UIListLayout")
-			popup_layout.Parent = dropdown_popup
-			popup_layout.SortOrder = Enum.SortOrder.LayoutOrder
-			popup_layout.Padding = dim(0, 0)
+				local popup_layout = Instance.new("UIListLayout")
+				popup_layout.Parent = dropdown_popup
+				popup_layout.SortOrder = Enum.SortOrder.LayoutOrder
+				popup_layout.Padding = dim(0, 0)
 
-			local function toggle_dropdown(show)
-				if show == nil then
-					show = not dropdown_popup.Visible
-				end
-				dropdown_popup.Visible = show
-			end
-
-			dropdown_btn.MouseButton1Click:Connect(function()
-				toggle_dropdown()
-			end)
-
-			for _, s_name in ipairs(scripts) do
-				local opt_btn = Instance.new("TextButton")
-				opt_btn.Parent = dropdown_popup
-				opt_btn.Size = dim2(1, 0, 0, 20)
-				opt_btn.BackgroundColor3 = rgb(14, 14, 16)
-				opt_btn.BorderSizePixel = 0
-				opt_btn.FontFace = loader_font
-				opt_btn.Text = "   " .. s_name
-				opt_btn.TextSize = 12
-				opt_btn.TextColor3 = (selected_script == s_name and accent_col or rgb(220, 220, 220))
-				opt_btn.TextXAlignment = Enum.TextXAlignment.Left
-				opt_btn.AutoButtonColor = false
-				opt_btn.ZIndex = 101
-
-				opt_btn.MouseEnter:Connect(function()
-					opt_btn.BackgroundColor3 = rgb(26, 26, 32)
-					opt_btn.TextColor3 = accent_col
-				end)
-				opt_btn.MouseLeave:Connect(function()
-					opt_btn.BackgroundColor3 = rgb(14, 14, 16)
-					opt_btn.TextColor3 = (selected_script == s_name and accent_col or rgb(220, 220, 220))
-				end)
-				opt_btn.MouseButton1Click:Connect(function()
-					selected_script = s_name
-					dropdown_text.Text = s_name
-					toggle_dropdown(false)
-					if options.on_script_changed then
-						options.on_script_changed(s_name)
+				local function toggle_dropdown(show)
+					if show == nil then
+						show = not dropdown_popup.Visible
 					end
+					dropdown_popup.Visible = show
+				end
+
+				dropdown_btn.MouseButton1Click:Connect(function()
+					toggle_dropdown()
 				end)
+
+				for _, s_name in ipairs(scripts) do
+					local opt_btn = Instance.new("TextButton")
+					opt_btn.Parent = dropdown_popup
+					opt_btn.Size = dim2(1, 0, 0, 20)
+					opt_btn.BackgroundColor3 = rgb(14, 14, 16)
+					opt_btn.BorderSizePixel = 0
+					opt_btn.FontFace = loader_font
+					opt_btn.Text = "   " .. s_name
+					opt_btn.TextSize = 12
+					opt_btn.TextColor3 = (selected_script == s_name and accent_col or rgb(220, 220, 220))
+					opt_btn.TextXAlignment = Enum.TextXAlignment.Left
+					opt_btn.AutoButtonColor = false
+					opt_btn.ZIndex = 101
+
+					opt_btn.MouseEnter:Connect(function()
+						opt_btn.BackgroundColor3 = rgb(26, 26, 32)
+						opt_btn.TextColor3 = accent_col
+					end)
+					opt_btn.MouseLeave:Connect(function()
+						opt_btn.BackgroundColor3 = rgb(14, 14, 16)
+						opt_btn.TextColor3 = (selected_script == s_name and accent_col or rgb(220, 220, 220))
+					end)
+					opt_btn.MouseButton1Click:Connect(function()
+						selected_script = s_name
+						dropdown_text.Text = s_name
+						toggle_dropdown(false)
+						if options.on_script_changed then
+							options.on_script_changed(s_name)
+						end
+					end)
+				end
+
+				create_divider()
 			end
 
-			create_divider()
+			-- Status info labels
+			local updated_lbl = Instance.new("TextLabel")
+			updated_lbl.Parent = content
+			updated_lbl.LayoutOrder = next_order()
+			updated_lbl.FontFace = loader_font
+			updated_lbl.Text = "Updated: " .. tostring(updated_text)
+			updated_lbl.TextSize = 12
+			updated_lbl.TextColor3 = rgb(195, 195, 195)
+			updated_lbl.TextXAlignment = Enum.TextXAlignment.Left
+			updated_lbl.Size = dim2(1, 0, 0, 13)
+			updated_lbl.BackgroundTransparency = 1
+			updated_lbl.BorderSizePixel = 0
+			local ul_st = Instance.new("UIStroke")
+			ul_st.Parent = updated_lbl
+			ul_st.Color = rgb(0, 0, 0)
+			ul_st.LineJoinMode = Enum.LineJoinMode.Miter
 
-			local updated_lbl = library:create("TextLabel", {
-				Parent = content,
-				LayoutOrder = next_order(),
-				FontFace = loader_font,
-				Text = "Updated: " .. tostring(updated_text),
-				TextSize = 12,
-				TextColor3 = rgb(195, 195, 195),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Size = dim2(1, 0, 0, 13),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0
-			})
+			local can_load_lbl = Instance.new("TextLabel")
+			can_load_lbl.Parent = content
+			can_load_lbl.LayoutOrder = next_order()
+			can_load_lbl.FontFace = loader_font
+			can_load_lbl.Text = "Can Load: " .. tostring(can_load_text)
+			can_load_lbl.TextSize = 12
+			can_load_lbl.TextColor3 = rgb(195, 195, 195)
+			can_load_lbl.TextXAlignment = Enum.TextXAlignment.Left
+			can_load_lbl.Size = dim2(1, 0, 0, 13)
+			can_load_lbl.BackgroundTransparency = 1
+			can_load_lbl.BorderSizePixel = 0
+			local cl_st = Instance.new("UIStroke")
+			cl_st.Parent = can_load_lbl
+			cl_st.Color = rgb(0, 0, 0)
+			cl_st.LineJoinMode = Enum.LineJoinMode.Miter
 
-			local can_load_lbl = library:create("TextLabel", {
-				Parent = content,
-				LayoutOrder = next_order(),
-				FontFace = loader_font,
-				Text = "Can Load: " .. tostring(can_load_text),
-				TextSize = 12,
-				TextColor3 = rgb(195, 195, 195),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Size = dim2(1, 0, 0, 13),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0
-			})
+			-- Optional Key Box
+			local key_box = nil
+			if show_key then
+				local key_lbl = Instance.new("TextLabel")
+				key_lbl.Parent = content
+				key_lbl.LayoutOrder = next_order()
+				key_lbl.FontFace = loader_font
+				key_lbl.Text = "Key"
+				key_lbl.TextSize = 12
+				key_lbl.TextColor3 = rgb(215, 215, 215)
+				key_lbl.TextXAlignment = Enum.TextXAlignment.Left
+				key_lbl.Size = dim2(1, 0, 0, 14)
+				key_lbl.BackgroundTransparency = 1
+				key_lbl.BorderSizePixel = 0
+				local kl_st = Instance.new("UIStroke")
+				kl_st.Parent = key_lbl
+				kl_st.Color = rgb(0, 0, 0)
+				kl_st.LineJoinMode = Enum.LineJoinMode.Miter
 
-			local key_lbl = library:create("TextLabel", {
-				Parent = content,
-				LayoutOrder = next_order(),
-				FontFace = loader_font,
-				Text = "Key",
-				TextSize = 12,
-				TextColor3 = rgb(215, 215, 215),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Size = dim2(1, 0, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0
-			})
+				key_box = Instance.new("TextBox")
+				key_box.Parent = content
+				key_box.LayoutOrder = next_order()
+				key_box.Size = dim2(1, 0, 0, 20)
+				key_box.BackgroundColor3 = rgb(12, 12, 12)
+				key_box.BorderSizePixel = 0
+				key_box.FontFace = loader_font
+				key_box.Text = initial_key
+				key_box.PlaceholderText = key_placeholder
+				key_box.PlaceholderColor3 = rgb(95, 95, 100)
+				key_box.TextColor3 = rgb(240, 240, 240)
+				key_box.TextSize = 12
+				key_box.TextXAlignment = Enum.TextXAlignment.Left
+				key_box.ClearTextOnFocus = false
 
-			local key_box = library:create("TextBox", {
-				Parent = content,
-				LayoutOrder = next_order(),
-				Size = dim2(1, 0, 0, 20),
-				BackgroundColor3 = rgb(12, 12, 12),
-				BorderSizePixel = 0,
-				FontFace = loader_font,
-				Text = initial_key,
-				PlaceholderText = key_placeholder,
-				PlaceholderColor3 = rgb(95, 95, 100),
-				TextColor3 = rgb(240, 240, 240),
-				TextSize = 12,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				ClearTextOnFocus = false
-			})
-			local key_stroke = Instance.new("UIStroke")
-			key_stroke.Parent = key_box
-			key_stroke.Color = rgb(28, 28, 28)
-			key_stroke.Thickness = 1
-			key_stroke.LineJoinMode = Enum.LineJoinMode.Miter
+				local key_stroke = Instance.new("UIStroke")
+				key_stroke.Parent = key_box
+				key_stroke.Color = rgb(28, 28, 28)
+				key_stroke.Thickness = 1
+				key_stroke.LineJoinMode = Enum.LineJoinMode.Miter
 
-			local key_padding = Instance.new("UIPadding")
-			key_padding.Parent = key_box
-			key_padding.PaddingLeft = dim(0, 6)
-			key_padding.PaddingRight = dim(0, 6)
+				local key_padding = Instance.new("UIPadding")
+				key_padding.Parent = key_box
+				key_padding.PaddingLeft = dim(0, 6)
+				key_padding.PaddingRight = dim(0, 6)
+			end
 
 			create_divider()
 
@@ -7308,18 +7389,22 @@
 				box_stroke.Thickness = 1
 				box_stroke.LineJoinMode = Enum.LineJoinMode.Miter
 
-				local lbl = library:create("TextLabel", {
-					Parent = row,
-					FontFace = loader_font,
-					Text = label_text,
-					TextSize = 12,
-					TextColor3 = rgb(235, 235, 235),
-					TextXAlignment = Enum.TextXAlignment.Left,
-					Position = dim2(0, 20, 0, -1),
-					Size = dim2(1, -20, 1, 0),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0
-				})
+				local lbl = Instance.new("TextLabel")
+				lbl.Parent = row
+				lbl.FontFace = loader_font
+				lbl.Text = label_text
+				lbl.TextSize = 12
+				lbl.TextColor3 = rgb(235, 235, 235)
+				lbl.TextXAlignment = Enum.TextXAlignment.Left
+				lbl.Position = dim2(0, 20, 0, -1)
+				lbl.Size = dim2(1, -20, 1, 0)
+				lbl.BackgroundTransparency = 1
+				lbl.BorderSizePixel = 0
+
+				local lbl_st = Instance.new("UIStroke")
+				lbl_st.Parent = lbl
+				lbl_st.Color = rgb(0, 0, 0)
+				lbl_st.LineJoinMode = Enum.LineJoinMode.Miter
 
 				local function set_state(new_val)
 					state = new_val
@@ -7372,7 +7457,10 @@
 			load_btn_stroke.Thickness = 1
 			load_btn_stroke.LineJoinMode = Enum.LineJoinMode.Miter
 
-			library:apply_stroke(load_btn)
+			local load_txt_stroke = Instance.new("UIStroke")
+			load_txt_stroke.Parent = load_btn
+			load_txt_stroke.Color = rgb(0, 0, 0)
+			load_txt_stroke.LineJoinMode = Enum.LineJoinMode.Miter
 
 			load_btn.MouseEnter:Connect(function()
 				load_btn.BackgroundColor3 = rgb(24, 24, 28)
@@ -7390,28 +7478,34 @@
 			end)
 
 			local click_outside_conn
-			click_outside_conn = uis.InputBegan:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 then
-					if dropdown_popup.Visible then
-						local m_pos = uis:GetMouseLocation() - vec2(0, gui_offset)
-						local p_pos = dropdown_popup.AbsolutePosition
-						local p_size = dropdown_popup.AbsoluteSize
-						local b_pos = dropdown_btn.AbsolutePosition
-						local b_size = dropdown_btn.AbsoluteSize
-						local in_popup = (m_pos.X >= p_pos.X and m_pos.X <= p_pos.X + p_size.X and m_pos.Y >= p_pos.Y and m_pos.Y <= p_pos.Y + p_size.Y)
-						local in_btn = (m_pos.X >= b_pos.X and m_pos.X <= b_pos.X + b_size.X and m_pos.Y >= b_pos.Y and m_pos.Y <= b_pos.Y + b_size.Y)
-						if not in_popup and not in_btn then
-							dropdown_popup.Visible = false
+			if dropdown_popup and dropdown_btn then
+				click_outside_conn = uis.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						if dropdown_popup.Visible then
+							local m_pos = uis:GetMouseLocation() - vec2(0, gui_offset)
+							local p_pos = dropdown_popup.AbsolutePosition
+							local p_size = dropdown_popup.AbsoluteSize
+							local b_pos = dropdown_btn.AbsolutePosition
+							local b_size = dropdown_btn.AbsoluteSize
+							local in_popup = (m_pos.X >= p_pos.X and m_pos.X <= p_pos.X + p_size.X and m_pos.Y >= p_pos.Y and m_pos.Y <= p_pos.Y + p_size.Y)
+							local in_btn = (m_pos.X >= b_pos.X and m_pos.X <= b_pos.X + b_size.X and m_pos.Y >= b_pos.Y and m_pos.Y <= b_pos.Y + b_size.Y)
+							if not in_popup and not in_btn then
+								dropdown_popup.Visible = false
+							end
 						end
 					end
-				end
-			end)
+				end)
+			end
 
 			local has_loaded = false
 			local function trigger_load()
 				if has_loaded then return end
 				has_loaded = true
 
+				if drag_conn then
+					drag_conn:Disconnect()
+					drag_conn = nil
+				end
 				if click_outside_conn then
 					click_outside_conn:Disconnect()
 					click_outside_conn = nil
@@ -7419,18 +7513,18 @@
 
 				local result_data = {
 					script = selected_script,
-					key = key_box.Text,
+					key = key_box and key_box.Text or initial_key,
 					custom_di = custom_di_cb.get(),
 					compatibility_mode = comp_mode_cb.get(),
 					rejoin = rejoin_cb.get(),
 					auto_load = auto_load_cb.get()
 				}
 
-				if writefile then
-					pcall(function()
+				pcall(function()
+					if writefile then
 						writefile(config_file, http_service:JSONEncode(result_data))
-					end)
-				end
+					end
+				end)
 
 				loader_sgui:Destroy()
 				on_load_callback(result_data)
@@ -7453,6 +7547,10 @@
 				frame = loader_frame,
 				trigger_load = trigger_load,
 				close = function()
+					if drag_conn then
+						drag_conn:Disconnect()
+						drag_conn = nil
+					end
 					if click_outside_conn then
 						click_outside_conn:Disconnect()
 						click_outside_conn = nil
@@ -7473,6 +7571,5 @@
 
 			return loader_controller
 		end
-
 
 return library, themes; 
