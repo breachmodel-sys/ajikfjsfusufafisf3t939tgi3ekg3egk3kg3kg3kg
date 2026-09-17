@@ -6943,7 +6943,7 @@
 			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
 			local cam_y = (camera and camera.ViewportSize and camera.ViewportSize.Y or 720)
 
-			local w1 = 320
+			local w1 = 350
 			local w2 = 220
 			local h = 255
 			local gap = 10
@@ -7019,7 +7019,7 @@
 							rgbkey(1, rgb(20, 20, 20)),
 						}
 					end
-				end)
+			end)
 			end
 
 			apply_dark_theme(panel_preview)
@@ -7167,7 +7167,21 @@
 			})
 			library:apply_theme(div1, "outline", "BackgroundColor3")
 
-			local srv_y = 104
+			local dsc_title = library:create("TextLabel", {
+				Parent = box_preview,
+				Position = dim2(0, 8, 0, 114),
+				Size = dim2(1, -16, 0, 14),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "dsc:",
+				TextSize = 11,
+				TextColor3 = rgb(160, 160, 160),
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			library:create("UIStroke", { Parent = dsc_title, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local srv_y = 134
 
 			local srv_icon_box = library:create("Frame", {
 				Parent = box_preview,
@@ -7280,8 +7294,8 @@
 
 			local copy_btn = library:create("ImageButton", {
 				Parent = box_preview,
-				Position = dim2(1, -24, 0, srv_y),
-				Size = dim2(0, 16, 0, 16),
+				Position = dim2(1, -21, 0, srv_y + 2),
+				Size = dim2(0, 13, 0, 13),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				Image = "rbxassetid://10709812159",
