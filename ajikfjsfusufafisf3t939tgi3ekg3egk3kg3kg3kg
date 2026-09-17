@@ -6973,6 +6973,15 @@
 			})
 
 			pcall(function()
+				if panel_preview.items.glow then
+					panel_preview.items.glow:Destroy()
+				end
+				if panel_loader.items.glow then
+					panel_loader.items.glow:Destroy()
+				end
+			end)
+
+			pcall(function()
 				panel_loader.items.main_holder.Parent = panel_preview.items.sgui
 				panel_loader.items.sgui:Destroy()
 			end)
@@ -7395,13 +7404,13 @@
 				end
 			end)
 
-			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -16))
+			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
 
 			local btn_outline = library:create("Frame", {
-				Parent = box_loader,
+				Parent = panel_loader.items.holder,
 				Name = "load_btn_outline",
-				Position = dim2(0, 14, 0.5, -16),
-				Size = dim2(1, -28, 0, 32),
+				Position = dim2(0, 8, 1, -26),
+				Size = dim2(1, -16, 0, 22),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7443,7 +7452,7 @@
 				BorderSizePixel = 0,
 				FontFace = library.font,
 				Text = "Load",
-				TextSize = 13,
+				TextSize = 12,
 				TextColor3 = themes.preset.text,
 				TextXAlignment = Enum.TextXAlignment.Center,
 				TextYAlignment = Enum.TextYAlignment.Center,
@@ -7488,10 +7497,10 @@
 			end)
 
 			local bar_outline = library:create("Frame", {
-				Parent = box_loader,
+				Parent = panel_loader.items.holder,
 				Name = "load_bar_outline",
-				Position = dim2(0, 14, 0.5, -16),
-				Size = dim2(1, -28, 0, 32),
+				Position = dim2(0, 8, 1, -26),
+				Size = dim2(1, -16, 0, 22),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 				Visible = false,
