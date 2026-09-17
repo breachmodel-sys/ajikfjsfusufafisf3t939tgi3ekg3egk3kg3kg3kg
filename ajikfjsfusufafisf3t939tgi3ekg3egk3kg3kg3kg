@@ -7174,7 +7174,7 @@
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
-				Text = "dsc:",
+				Text = "Discord:",
 				TextSize = 11,
 				TextColor3 = rgb(160, 160, 160),
 				TextXAlignment = Enum.TextXAlignment.Left,
