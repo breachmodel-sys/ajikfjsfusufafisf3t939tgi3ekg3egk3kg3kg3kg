@@ -6939,7 +6939,7 @@
 			options = options or {}
 			local loader_title = options.title or options.name or "Loader"
 			local on_load_cb   = options.on_load or options.callback
-			local loader_size  = options.size or dim2(0, 260, 0, 220)
+			local loader_size  = options.size or dim2(0, 340, 0, 275)
 
 			-- Read saved config
 			local custom_di_val = true
@@ -6998,8 +6998,8 @@
 			local content = library:create("Frame", {
 				Parent                 = items.holder,
 				Name                   = "content",
-				Position               = dim2(0, 4, 0, 4),
-				Size                   = dim2(1, -8, 1, -36),
+				Position               = dim2(0, 6, 0, 6),
+				Size                   = dim2(1, -12, 1, -44),
 				BackgroundTransparency = 1,
 				BorderSizePixel        = 0,
 			})
@@ -7007,7 +7007,7 @@
 			local content_layout = library:create("UIListLayout", {
 				Parent    = content,
 				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding   = dim(0, 2),
+				Padding   = dim(0, 4),
 			})
 
 			local lo = 0
@@ -7018,7 +7018,7 @@
 					Parent                 = content,
 					Name                   = "label",
 					LayoutOrder            = no(),
-					Size                   = dim2(1, 0, 0, 14),
+					Size                   = dim2(1, 0, 0, 16),
 					BackgroundTransparency = 1,
 					BorderSizePixel        = 0,
 					FontFace               = library.font,
@@ -7059,7 +7059,7 @@
 					Parent                 = content,
 					Name                   = "checkbox_row",
 					LayoutOrder            = no(),
-					Size                   = dim2(1, 0, 0, 15),
+					Size                   = dim2(1, 0, 0, 18),
 					BackgroundTransparency = 1,
 					BorderSizePixel        = 0,
 					Text                   = "",
@@ -7069,8 +7069,8 @@
 				local box_outline = library:create("Frame", {
 					Parent           = row,
 					Name             = "box_outline",
-					Position         = dim2(0, 0, 0.5, -6),
-					Size             = dim2(0, 12, 0, 12),
+					Position         = dim2(0, 0, 0.5, -7),
+					Size             = dim2(0, 14, 0, 14),
 					BorderSizePixel  = 0,
 					BackgroundColor3 = themes.preset.outline,
 				})
@@ -7100,8 +7100,8 @@
 				local lbl = library:create("TextLabel", {
 					Parent                 = row,
 					Name                   = "text",
-					Position               = dim2(0, 18, 0, 0),
-					Size                   = dim2(1, -18, 1, 0),
+					Position               = dim2(0, 22, 0, 0),
+					Size                   = dim2(1, -22, 1, 0),
 					BackgroundTransparency = 1,
 					BorderSizePixel        = 0,
 					FontFace               = library.font,
@@ -7143,8 +7143,8 @@
 			local btn_outline = library:create("Frame", {
 				Parent           = items.holder,
 				Name             = "load_btn_outline",
-				Position         = dim2(0, 4, 1, -25),
-				Size             = dim2(1, -8, 0, 22),
+				Position         = dim2(0, 6, 1, -30),
+				Size             = dim2(1, -12, 0, 24),
 				BorderSizePixel  = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7259,5 +7259,6 @@
 
 			return panel
 		end
+
 
 return library, themes;
