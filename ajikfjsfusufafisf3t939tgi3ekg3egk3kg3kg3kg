@@ -6944,6 +6944,7 @@
 			options = options or {}
 			local loader_title = options.title or options.name or "Wizardhook"
 			local on_load_cb   = options.on_load or options.callback
+			local loader_size  = options.size or dim2(0, 270, 0, 235)
 
 			-- Read saved config
 			local custom_di_val  = true
@@ -6965,324 +6966,273 @@
 				end
 			end)
 
-			-- Parent resolution
-			local loader_parent
-			if gethui then pcall(function() loader_parent = gethui() end) end
-			if not loader_parent and coregui then
-				pcall(function()
-					local t = Instance.new("Folder")
-					t.Parent = coregui
-					t:Destroy()
-					loader_parent = coregui
-				end)
-			end
-			if not loader_parent then
-				pcall(function()
-					loader_parent = lp:FindFirstChildOfClass("PlayerGui") or lp:WaitForChild("PlayerGui", 3)
-				end)
-			end
-			loader_parent = loader_parent or coregui
-
-			-- ScreenGui
-			local loader_sgui = Instance.new("ScreenGui")
-			loader_sgui.Name           = "WizardhookLoader"
-			loader_sgui.ResetOnSpawn   = false
-			loader_sgui.DisplayOrder   = 9999998
-			loader_sgui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-			loader_sgui.Parent         = loader_parent
-
-			-- Outer outline frame  (matches themes.preset.outline — #0A0A0A)
-			local outline = library:create("Frame", {
-				Parent           = loader_sgui,
-				Name             = "",
-				AnchorPoint      = vec2(0.5, 0.5),
-				Position         = dim2(0.5, 0, 0.5, 0),
-				Size             = dim2(0, 360, 0, 285),
-				BorderSizePixel  = 0,
-				BorderColor3     = rgb(0, 0, 0),
-				BackgroundColor3 = themes.preset.outline,
-				Active           = true,
+			-- Create panel using the library's exact window/panel method (matches main UI perfectly)
+			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
+			local cam_y = (camera and camera.ViewportSize and camera.ViewportSize.Y or 720)
+			local panel = library:panel({
+				name           = loader_title,
+				size           = loader_size,
+				position       = dim2(0, math.floor(cam_x / 2 - loader_size.X.Offset / 2), 0, math.floor(cam_y / 2 - loader_size.Y.Offset / 2)),
+				anchor_point   = vec2(0, 0),
+				close_button   = false,
+				dock           = false,
+				hide_with_menu = false,
 			})
-			library:apply_theme(outline, "outline", "BackgroundColor3")
-			library:draggify(outline)
 
-			-- Inline frame (matches themes.preset.inline — #2D2D2D)
-			local inline = library:create("Frame", {
-				Parent           = outline,
-				Name             = "",
-				Position         = dim2(0, 1, 0, 1),
-				Size             = dim2(1, -2, 1, -2),
-				BorderSizePixel  = 0,
-				BorderColor3     = rgb(0, 0, 0),
-				BackgroundColor3 = themes.preset.inline,
-			})
-			library:apply_theme(inline, "inline", "BackgroundColor3")
+			local items = panel.items
 
-			-- Background / high_contrast fill
-			local background = library:create("Frame", {
-				Parent           = inline,
-				Name             = "",
-				Position         = dim2(0, 1, 0, 1),
-				Size             = dim2(1, -2, 1, -2),
-				BorderSizePixel  = 0,
-				BorderColor3     = rgb(0, 0, 0),
-				BackgroundColor3 = themes.preset.high_contrast,
-			})
-			library:apply_theme(background, "high_contrast", "BackgroundColor3")
-
-			-- Accent top bar (title strip)
-			local title_bar = library:create("Frame", {
-				Parent           = background,
-				Name             = "",
-				Position         = dim2(0, 0, 0, 0),
-				Size             = dim2(1, 0, 0, 22),
-				BorderSizePixel  = 0,
-				BorderColor3     = rgb(0, 0, 0),
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(title_bar, "outline", "BackgroundColor3")
-
-			-- Accent line below title bar
-			local accent_line = library:create("Frame", {
-				Parent           = background,
-				Name             = "",
-				Position         = dim2(0, 0, 0, 22),
-				Size             = dim2(1, 0, 0, 1),
-				BorderSizePixel  = 0,
-				BorderColor3     = rgb(0, 0, 0),
-				BackgroundColor3 = themes.preset.accent,
-			})
-			library:apply_theme(accent_line, "accent", "BackgroundColor3")
-
-			-- Title text
-			local title_lbl = library:create("TextLabel", {
-				Parent            = title_bar,
-				Name              = "",
-				Size              = dim2(1, 0, 1, 0),
+			-- Content container (leaves space at bottom for the Load button)
+			local content = library:create("Frame", {
+				Parent                 = items.holder,
+				Name                   = "content",
+				Position               = dim2(0, 4, 0, 4),
+				Size                   = dim2(1, -8, 1, -38),
 				BackgroundTransparency = 1,
-				BorderSizePixel   = 0,
-				BorderColor3      = rgb(0, 0, 0),
-				FontFace          = library.font,
-				Text              = loader_title,
-				TextSize          = 12,
-				TextColor3        = themes.preset.text,
-				TextXAlignment    = Enum.TextXAlignment.Center,
-				TextYAlignment    = Enum.TextYAlignment.Center,
-			})
-			library:apply_theme(title_lbl, "text", "TextColor3")
-
-			-- Content area with layout
-			local content_frame = library:create("Frame", {
-				Parent           = background,
-				Name             = "",
-				Position         = dim2(0, 8, 0, 30),
-				Size             = dim2(1, -16, 1, -38),
-				BorderSizePixel  = 0,
-				BorderColor3     = rgb(0, 0, 0),
-				BackgroundTransparency = 1,
+				BorderSizePixel        = 0,
 			})
 
-			local content_layout = Instance.new("UIListLayout")
-			content_layout.SortOrder  = Enum.SortOrder.LayoutOrder
-			content_layout.Padding    = UDim.new(0, 4)
-			content_layout.Parent     = content_frame
+			local content_layout = library:create("UIListLayout", {
+				Parent    = content,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding   = dim(0, 3),
+			})
 
 			local lo = 0
 			local function no() lo = lo + 1 return lo end
 
-			-- Etched divider matching xd.lua section borders
+			-- Label helper (matching library.font and theme)
+			local function make_label(txt)
+				local l = library:create("TextLabel", {
+					Parent                 = content,
+					Name                   = "label",
+					LayoutOrder            = no(),
+					Size                   = dim2(1, 0, 0, 14),
+					BackgroundTransparency = 1,
+					BorderSizePixel        = 0,
+					FontFace               = library.font,
+					Text                   = txt,
+					TextSize               = 12,
+					TextColor3             = themes.preset.text,
+					TextXAlignment         = Enum.TextXAlignment.Left,
+				})
+				library:apply_theme(l, "text", "TextColor3")
+				library:create("UIStroke", {
+					Parent       = l,
+					LineJoinMode = Enum.LineJoinMode.Miter,
+				})
+				return l
+			end
+
+			-- 1px divider helper
 			local function make_divider()
 				local div = library:create("Frame", {
-					Parent           = content_frame,
-					Name             = "",
+					Parent           = content,
+					Name             = "divider",
 					LayoutOrder      = no(),
 					Size             = dim2(1, 0, 0, 1),
 					BorderSizePixel  = 0,
-					BorderColor3     = rgb(0, 0, 0),
-					BackgroundColor3 = themes.preset.outline,
+					BackgroundColor3 = themes.preset.inline,
 				})
-				library:apply_theme(div, "outline", "BackgroundColor3")
+				library:apply_theme(div, "inline", "BackgroundColor3")
 				return div
-			end
-
-			-- Info label
-			local function make_label(txt)
-				local l = library:create("TextLabel", {
-					Parent            = content_frame,
-					Name              = "",
-					LayoutOrder       = no(),
-					Size              = dim2(1, 0, 0, 14),
-					BackgroundTransparency = 1,
-					BorderSizePixel   = 0,
-					BorderColor3      = rgb(0, 0, 0),
-					FontFace          = library.font,
-					Text              = txt,
-					TextSize          = 12,
-					TextColor3        = themes.preset.text,
-					TextXAlignment    = Enum.TextXAlignment.Left,
-				})
-				library:apply_theme(l, "text", "TextColor3")
-				return l
 			end
 
 			make_label("Updated: 3 months ago")
 			make_label("Can Load: Yes")
 			make_divider()
 
-			-- Checkbox factory using library:create + theme
+			-- Checkbox helper (matches library:toggle in xd.lua)
 			local function make_checkbox(label_text, default_state)
 				local state = default_state
 
 				local row = library:create("TextButton", {
-					Parent               = content_frame,
-					Name                 = "",
-					LayoutOrder          = no(),
-					Size                 = dim2(1, 0, 0, 16),
+					Parent                 = content,
+					Name                   = "checkbox_row",
+					LayoutOrder            = no(),
+					Size                   = dim2(1, 0, 0, 15),
 					BackgroundTransparency = 1,
-					BorderSizePixel      = 0,
-					BorderColor3         = rgb(0, 0, 0),
-					Text                 = "",
-					AutoButtonColor      = false,
+					BorderSizePixel        = 0,
+					Text                   = "",
+					AutoButtonColor        = false,
 				})
 
-				-- Box outline
 				local box_outline = library:create("Frame", {
 					Parent           = row,
-					Name             = "",
+					Name             = "box_outline",
 					Position         = dim2(0, 0, 0.5, -6),
 					Size             = dim2(0, 12, 0, 12),
 					BorderSizePixel  = 0,
-					BorderColor3     = rgb(0, 0, 0),
 					BackgroundColor3 = themes.preset.outline,
 				})
 				library:apply_theme(box_outline, "outline", "BackgroundColor3")
 
-				-- Box inline
 				local box_inline = library:create("Frame", {
 					Parent           = box_outline,
-					Name             = "",
+					Name             = "box_inline",
 					Position         = dim2(0, 1, 0, 1),
 					Size             = dim2(1, -2, 1, -2),
 					BorderSizePixel  = 0,
-					BorderColor3     = rgb(0, 0, 0),
 					BackgroundColor3 = themes.preset.inline,
 				})
 				library:apply_theme(box_inline, "inline", "BackgroundColor3")
 
-				-- Check fill (accent when ticked)
 				local check_fill = library:create("Frame", {
-					Parent           = box_inline,
-					Name             = "",
-					Position         = dim2(0, 1, 0, 1),
-					Size             = dim2(1, -2, 1, -2),
-					BorderSizePixel  = 0,
-					BorderColor3     = rgb(0, 0, 0),
-					BackgroundColor3 = state and themes.preset.accent or themes.preset.high_contrast,
+					Parent                 = box_inline,
+					Name                   = "fill",
+					Position               = dim2(0, 1, 0, 1),
+					Size                   = dim2(1, -2, 1, -2),
+					BorderSizePixel        = 0,
+					BackgroundColor3       = themes.preset.accent,
+					BackgroundTransparency = state and 0 or 1,
 				})
-				library:apply_theme(check_fill, "high_contrast", "BackgroundColor3")
+				library:apply_theme(check_fill, "accent", "BackgroundColor3")
 
-				-- Label text
 				local lbl = library:create("TextLabel", {
-					Parent            = row,
-					Name              = "",
-					Position          = dim2(0, 18, 0, 0),
-					Size              = dim2(1, -18, 1, 0),
+					Parent                 = row,
+					Name                   = "text",
+					Position               = dim2(0, 18, 0, 0),
+					Size                   = dim2(1, -18, 1, 0),
 					BackgroundTransparency = 1,
-					BorderSizePixel   = 0,
-					BorderColor3      = rgb(0, 0, 0),
-					FontFace          = library.font,
-					Text              = label_text,
-					TextSize          = 12,
-					TextColor3        = themes.preset.text,
-					TextXAlignment    = Enum.TextXAlignment.Left,
+					BorderSizePixel        = 0,
+					FontFace               = library.font,
+					Text                   = label_text,
+					TextSize               = 12,
+					TextColor3             = state and themes.preset.text or rgb(151, 151, 151),
+					TextXAlignment         = Enum.TextXAlignment.Left,
 				})
 				library:apply_theme(lbl, "text", "TextColor3")
+				library:create("UIStroke", { Parent = lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
 				local function set_state(v)
 					state = v
-					if state then
-						check_fill.BackgroundColor3 = themes.preset.accent
-						library:apply_theme(check_fill, "accent", "BackgroundColor3")
-					else
-						check_fill.BackgroundColor3 = themes.preset.high_contrast
-						library:apply_theme(check_fill, "high_contrast", "BackgroundColor3")
-					end
+					check_fill.BackgroundTransparency = state and 0 or 1
+					lbl.TextColor3 = state and rgb(255, 255, 255) or rgb(151, 151, 151)
 				end
 
+				row.MouseEnter:Connect(function()
+					lbl.TextColor3 = rgb(255, 255, 255)
+				end)
+				row.MouseLeave:Connect(function()
+					lbl.TextColor3 = state and themes.preset.text or rgb(151, 151, 151)
+				end)
 				row.MouseButton1Click:Connect(function()
 					set_state(not state)
 				end)
 
-				-- Initial state
-				if state then
-					check_fill.BackgroundColor3 = themes.preset.accent
-				end
-
 				return { get = function() return state end, set = set_state }
 			end
 
-			local cb_custom_di = make_checkbox("Custom DI",          custom_di_val)
+			local cb_custom_di = make_checkbox("Custom DI",         custom_di_val)
 			make_divider()
-			local cb_compat    = make_checkbox("Compatibility Mode",  comp_mode_val)
-			local cb_rejoin    = make_checkbox("Rejoin",              rejoin_val)
+			local cb_compat    = make_checkbox("Compatibility Mode", comp_mode_val)
+			local cb_rejoin    = make_checkbox("Rejoin",             rejoin_val)
 			make_divider()
-			local cb_autoload  = make_checkbox("Auto Load",           false)
-			make_divider()
+			local cb_autoload  = make_checkbox("Auto Load",          false)
 
-			-- Load button using xd.lua element style
+			-- Load Button: anchored at the very bottom ("down down")
 			local btn_outline = library:create("Frame", {
-				Parent           = content_frame,
-				Name             = "",
-				LayoutOrder      = no(),
-				Size             = dim2(1, 0, 0, 24),
+				Parent           = items.holder,
+				Name             = "load_btn_outline",
+				Position         = dim2(0, 4, 1, -26),
+				Size             = dim2(1, -8, 0, 22),
 				BorderSizePixel  = 0,
-				BorderColor3     = rgb(0, 0, 0),
 				BackgroundColor3 = themes.preset.outline,
 			})
 			library:apply_theme(btn_outline, "outline", "BackgroundColor3")
 
 			local btn_inline = library:create("Frame", {
 				Parent           = btn_outline,
-				Name             = "",
+				Name             = "load_btn_inline",
 				Position         = dim2(0, 1, 0, 1),
 				Size             = dim2(1, -2, 1, -2),
 				BorderSizePixel  = 0,
-				BorderColor3     = rgb(0, 0, 0),
 				BackgroundColor3 = themes.preset.inline,
 			})
 			library:apply_theme(btn_inline, "inline", "BackgroundColor3")
 
-			local btn = library:create("TextButton", {
-				Parent            = btn_inline,
-				Name              = "",
-				Position          = dim2(0, 1, 0, 1),
-				Size              = dim2(1, -2, 1, -2),
-				BorderSizePixel   = 0,
-				BorderColor3      = rgb(0, 0, 0),
-				BackgroundColor3  = themes.preset.high_contrast,
-				FontFace          = library.font,
-				Text              = "Load",
-				TextSize          = 12,
-				TextColor3        = themes.preset.text,
-				TextXAlignment    = Enum.TextXAlignment.Center,
-				AutoButtonColor   = false,
+			local btn_contrast = library:create("Frame", {
+				Parent           = btn_inline,
+				Name             = "load_btn_contrast",
+				Position         = dim2(0, 1, 0, 1),
+				Size             = dim2(1, -2, 1, -2),
+				BorderSizePixel  = 0,
+				BackgroundColor3 = rgb(255, 255, 255),
 			})
-			library:apply_theme(btn, "high_contrast", "BackgroundColor3")
-			library:apply_theme(btn, "text",          "TextColor3")
-			library:hoverify(btn, btn)
 
-			-- Load trigger
+			local btn_grad = library:create("UIGradient", {
+				Parent   = btn_contrast,
+				Rotation = 90,
+				Color    = rgbseq{
+					rgbkey(0, rgb(41, 41, 55)),
+					rgbkey(1, rgb(35, 35, 47)),
+				},
+			})
+			library:apply_theme(btn_grad, "contrast", "Color")
+
+			local btn_text = library:create("TextLabel", {
+				Parent                 = btn_contrast,
+				Name                   = "text",
+				Size                   = dim2(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				BorderSizePixel        = 0,
+				FontFace               = library.font,
+				Text                   = "Load",
+				TextSize               = 12,
+				TextColor3             = themes.preset.text,
+				TextXAlignment         = Enum.TextXAlignment.Center,
+				TextYAlignment         = Enum.TextYAlignment.Center,
+			})
+			library:apply_theme(btn_text, "text", "TextColor3")
+			library:create("UIStroke", { Parent = btn_text, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local click_btn = library:create("TextButton", {
+				Parent                 = btn_contrast,
+				Name                   = "click",
+				Size                   = dim2(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				Text                   = "",
+				AutoButtonColor        = false,
+			})
+
+			click_btn.MouseEnter:Connect(function()
+				btn_text.TextColor3 = rgb(255, 255, 255)
+				btn_grad.Color = rgbseq{
+					rgbkey(0, rgb(55, 55, 72)),
+					rgbkey(1, rgb(45, 45, 60)),
+				}
+			end)
+			click_btn.MouseLeave:Connect(function()
+				btn_text.TextColor3 = themes.preset.text
+				btn_grad.Color = rgbseq{
+					rgbkey(0, rgb(41, 41, 55)),
+					rgbkey(1, rgb(35, 35, 47)),
+				}
+			end)
+			click_btn.MouseButton1Down:Connect(function()
+				btn_grad.Color = rgbseq{
+					rgbkey(0, rgb(30, 30, 40)),
+					rgbkey(1, rgb(25, 25, 35)),
+				}
+			end)
+			click_btn.MouseButton1Up:Connect(function()
+				btn_grad.Color = rgbseq{
+					rgbkey(0, rgb(55, 55, 72)),
+					rgbkey(1, rgb(45, 45, 60)),
+				}
+			end)
+
+			-- Load Trigger
 			local has_loaded = false
-			local function trigger_load()
+			click_btn.MouseButton1Click:Connect(function()
 				if has_loaded then return end
 				has_loaded = true
-				btn.Text = "Loading..."
+				btn_text.Text = "Loading..."
 
 				local result_data = {
-					custom_di         = cb_custom_di.get(),
+					custom_di          = cb_custom_di.get(),
 					compatibility_mode = cb_compat.get(),
-					rejoin            = cb_rejoin.get(),
-					auto_load         = cb_autoload.get(),
+					rejoin             = cb_rejoin.get(),
+					auto_load          = cb_autoload.get(),
 				}
 
 				pcall(function()
@@ -7291,22 +7241,14 @@
 					end
 				end)
 
-				loader_sgui:Destroy()
+				panel.items.sgui:Destroy()
 
 				if on_load_cb then
 					task.spawn(on_load_cb, result_data)
 				end
-			end
-
-			btn.MouseButton1Click:Connect(function()
-				trigger_load()
 			end)
 
-			return {
-				gui    = loader_sgui,
-				frame  = outline,
-				destroy = function() loader_sgui:Destroy() end,
-			}
+			return panel
 		end
 
 
