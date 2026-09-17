@@ -7009,12 +7009,12 @@
 				return bg
 			end
 
-			local profile = create_box(items.holder, dim2(0, 8, 0, 6), dim2(1, -16, 0, 94))
+			local box = create_box(items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -28))
 
 			local avatar_box = library:create("Frame", {
-				Parent = profile,
+				Parent = box,
 				Position = dim2(0, 8, 0, 8),
-				Size = dim2(0, 50, 0, 50),
+				Size = dim2(0, 48, 0, 48),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7058,9 +7058,9 @@
 			local user_handle = lp and ("@" .. lp.Name) or "@user"
 
 			local name_lbl = library:create("TextLabel", {
-				Parent = profile,
-				Position = dim2(0, 66, 0, 12),
-				Size = dim2(1, -72, 0, 18),
+				Parent = box,
+				Position = dim2(0, 64, 0, 8),
+				Size = dim2(1, -70, 0, 16),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7073,9 +7073,9 @@
 			library:create("UIStroke", { Parent = name_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
 			local handle_lbl = library:create("TextLabel", {
-				Parent = profile,
-				Position = dim2(0, 66, 0, 31),
-				Size = dim2(1, -72, 0, 15),
+				Parent = box,
+				Position = dim2(0, 64, 0, 24),
+				Size = dim2(1, -70, 0, 14),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7088,50 +7088,35 @@
 			library:apply_theme(handle_lbl, "text", "TextColor3")
 			library:create("UIStroke", { Parent = handle_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local div = library:create("Frame", {
-				Parent = profile,
-				Position = dim2(0, 8, 0, 66),
-				Size = dim2(1, -16, 0, 1),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(div, "outline", "BackgroundColor3")
-
 			local user_id_str = lp and tostring(lp.UserId) or "Unknown"
 			local uid_lbl = library:create("TextLabel", {
-				Parent = profile,
-				Position = dim2(0, 10, 0, 74),
-				Size = dim2(0.48, 0, 0, 15),
+				Parent = box,
+				Position = dim2(0, 64, 0, 40),
+				Size = dim2(1, -70, 0, 14),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
-				Text = "User ID:",
+				Text = "ID: " .. user_id_str,
 				TextSize = 11,
 				TextColor3 = themes.preset.text,
 				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
 			})
 			library:apply_theme(uid_lbl, "text", "TextColor3")
 			library:create("UIStroke", { Parent = uid_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local uid_val = library:create("TextLabel", {
-				Parent = profile,
-				Position = dim2(0.48, 0, 0, 74),
-				Size = dim2(0.52, -10, 0, 15),
-				BackgroundTransparency = 1,
+			local div1 = library:create("Frame", {
+				Parent = box,
+				Position = dim2(0, 8, 0, 64),
+				Size = dim2(1, -16, 0, 1),
 				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = user_id_str,
-				TextSize = 11,
-				TextColor3 = rgb(230, 230, 230),
-				TextXAlignment = Enum.TextXAlignment.Right,
+				BackgroundColor3 = themes.preset.outline,
 			})
-			library:create("UIStroke", { Parent = uid_val, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local discord_box = create_box(items.holder, dim2(0, 8, 0, 106), dim2(1, -16, 1, -128))
+			library:apply_theme(div1, "outline", "BackgroundColor3")
 
 			local disc_title = library:create("TextLabel", {
-				Parent = discord_box,
-				Position = dim2(0, 8, 0, 5),
+				Parent = box,
+				Position = dim2(0, 8, 0, 72),
 				Size = dim2(1, -16, 0, 14),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -7145,9 +7130,9 @@
 			library:create("UIStroke", { Parent = disc_title, LineJoinMode = Enum.LineJoinMode.Miter })
 
 			local srv_icon_box = library:create("Frame", {
-				Parent = discord_box,
-				Position = dim2(0, 8, 0, 22),
-				Size = dim2(0, 38, 0, 38),
+				Parent = box,
+				Position = dim2(0, 8, 0, 92),
+				Size = dim2(0, 42, 0, 42),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7172,9 +7157,9 @@
 			})
 
 			local srv_name_lbl = library:create("TextLabel", {
-				Parent = discord_box,
-				Position = dim2(0, 54, 0, 22),
-				Size = dim2(1, -60, 0, 16),
+				Parent = box,
+				Position = dim2(0, 58, 0, 91),
+				Size = dim2(1, -64, 0, 16),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7186,9 +7171,9 @@
 			library:create("UIStroke", { Parent = srv_name_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
 			local srv_inv_lbl = library:create("TextLabel", {
-				Parent = discord_box,
-				Position = dim2(0, 54, 0, 38),
-				Size = dim2(1, -60, 0, 14),
+				Parent = box,
+				Position = dim2(0, 58, 0, 107),
+				Size = dim2(1, -64, 0, 14),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7201,15 +7186,20 @@
 			library:create("UIStroke", { Parent = srv_inv_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
 			local online_dot = library:create("Frame", {
-				Parent = discord_box,
-				Position = dim2(0, 54, 0, 58),
-				Size = dim2(0, 6, 0, 6),
+				Parent = box,
+				Position = dim2(0, 58, 0, 127),
+				Size = dim2(0, 7, 0, 7),
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(67, 181, 129),
 			})
+			library:create("UICorner", {
+				Parent = online_dot,
+				CornerRadius = dim(1, 0),
+			})
+
 			local online_lbl = library:create("TextLabel", {
-				Parent = discord_box,
-				Position = dim2(0, 64, 0, 53),
+				Parent = box,
+				Position = dim2(0, 69, 0, 123),
 				Size = dim2(0, 65, 0, 15),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -7222,15 +7212,20 @@
 			library:create("UIStroke", { Parent = online_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
 			local total_dot = library:create("Frame", {
-				Parent = discord_box,
-				Position = dim2(0, 135, 0, 58),
-				Size = dim2(0, 6, 0, 6),
+				Parent = box,
+				Position = dim2(0, 140, 0, 127),
+				Size = dim2(0, 7, 0, 7),
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(185, 187, 190),
 			})
+			library:create("UICorner", {
+				Parent = total_dot,
+				CornerRadius = dim(1, 0),
+			})
+
 			local total_lbl = library:create("TextLabel", {
-				Parent = discord_box,
-				Position = dim2(0, 145, 0, 53),
+				Parent = box,
+				Position = dim2(0, 151, 0, 123),
 				Size = dim2(0, 80, 0, 15),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -7243,19 +7238,19 @@
 			library:apply_theme(total_lbl, "text", "TextColor3")
 			library:create("UIStroke", { Parent = total_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local disc_div = library:create("Frame", {
-				Parent = discord_box,
-				Position = dim2(0, 8, 0, 72),
+			local div2 = library:create("Frame", {
+				Parent = box,
+				Position = dim2(0, 8, 0, 146),
 				Size = dim2(1, -16, 0, 1),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
-			library:apply_theme(disc_div, "outline", "BackgroundColor3")
+			library:apply_theme(div2, "outline", "BackgroundColor3")
 
 			local copy_btn_out = library:create("Frame", {
-				Parent = discord_box,
-				Position = dim2(0, 8, 1, -26),
-				Size = dim2(1, -16, 0, 20),
+				Parent = box,
+				Position = dim2(0, 8, 1, -28),
+				Size = dim2(1, -16, 0, 22),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
