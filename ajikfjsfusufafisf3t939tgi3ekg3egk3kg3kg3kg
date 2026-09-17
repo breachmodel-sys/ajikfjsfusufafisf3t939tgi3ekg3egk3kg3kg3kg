@@ -6939,7 +6939,7 @@
 			options = options or {}
 			local loader_title = options.title or options.name or "Loader"
 			local on_load_cb   = options.on_load or options.callback
-			local loader_size  = options.size or dim2(0, 340, 0, 275)
+			local loader_size  = options.size or dim2(0, 360, 0, 290)
 
 			-- Read saved config
 			local custom_di_val = true
