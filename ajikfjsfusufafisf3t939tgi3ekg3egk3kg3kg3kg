@@ -7009,7 +7009,7 @@
 				return bg
 			end
 
-			local profile = create_box(items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -28))
+			local profile = create_box(items.holder, dim2(0, 8, 0, 6), dim2(1, -16, 0, 94))
 
 			local avatar_box = library:create("Frame", {
 				Parent = profile,
@@ -7097,59 +7097,285 @@
 			})
 			library:apply_theme(div, "outline", "BackgroundColor3")
 
-			local function add_row(y, label, val, color)
-				local l = library:create("TextLabel", {
-					Parent = profile,
-					Position = dim2(0, 10, 0, y),
-					Size = dim2(0.48, 0, 0, 15),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					FontFace = library.font,
-					Text = label,
-					TextSize = 11,
-					TextColor3 = themes.preset.text,
-					TextXAlignment = Enum.TextXAlignment.Left,
-				})
-				library:apply_theme(l, "text", "TextColor3")
-				library:create("UIStroke", { Parent = l, LineJoinMode = Enum.LineJoinMode.Miter })
-
-				local v = library:create("TextLabel", {
-					Parent = profile,
-					Position = dim2(0.48, 0, 0, y),
-					Size = dim2(0.52, -10, 0, 15),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					FontFace = library.font,
-					Text = val,
-					TextSize = 11,
-					TextColor3 = color or rgb(230, 230, 230),
-					TextXAlignment = Enum.TextXAlignment.Right,
-				})
-				library:create("UIStroke", { Parent = v, LineJoinMode = Enum.LineJoinMode.Miter })
-				return v
-			end
-
 			local user_id_str = lp and tostring(lp.UserId) or "Unknown"
+			local uid_lbl = library:create("TextLabel", {
+				Parent = profile,
+				Position = dim2(0, 10, 0, 74),
+				Size = dim2(0.48, 0, 0, 15),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "User ID:",
+				TextSize = 11,
+				TextColor3 = themes.preset.text,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			library:apply_theme(uid_lbl, "text", "TextColor3")
+			library:create("UIStroke", { Parent = uid_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			add_row(74, "User ID:", user_id_str)
+			local uid_val = library:create("TextLabel", {
+				Parent = profile,
+				Position = dim2(0.48, 0, 0, 74),
+				Size = dim2(0.52, -10, 0, 15),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = user_id_str,
+				TextSize = 11,
+				TextColor3 = rgb(230, 230, 230),
+				TextXAlignment = Enum.TextXAlignment.Right,
+			})
+			library:create("UIStroke", { Parent = uid_val, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local disc_val = add_row(94, "Discord:", "discord.gg/vulnerability", themes.preset.accent)
-			local disc_btn = library:create("TextButton", {
-				Parent = disc_val,
+			local discord_box = create_box(items.holder, dim2(0, 8, 0, 106), dim2(1, -16, 1, -128))
+
+			local disc_title = library:create("TextLabel", {
+				Parent = discord_box,
+				Position = dim2(0, 8, 0, 5),
+				Size = dim2(1, -16, 0, 14),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "Discord Server",
+				TextSize = 11,
+				TextColor3 = themes.preset.accent,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			library:apply_theme(disc_title, "accent", "TextColor3")
+			library:create("UIStroke", { Parent = disc_title, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local srv_icon_box = library:create("Frame", {
+				Parent = discord_box,
+				Position = dim2(0, 8, 0, 22),
+				Size = dim2(0, 38, 0, 38),
+				BorderSizePixel = 0,
+				BackgroundColor3 = themes.preset.outline,
+			})
+			library:apply_theme(srv_icon_box, "outline", "BackgroundColor3")
+
+			local srv_icon_in = library:create("Frame", {
+				Parent = srv_icon_box,
+				Position = dim2(0, 1, 0, 1),
+				Size = dim2(1, -2, 1, -2),
+				BorderSizePixel = 0,
+				BackgroundColor3 = themes.preset.inline,
+			})
+			library:apply_theme(srv_icon_in, "inline", "BackgroundColor3")
+
+			local srv_icon_img = library:create("ImageLabel", {
+				Parent = srv_icon_in,
+				Position = dim2(0, 1, 0, 1),
+				Size = dim2(1, -2, 1, -2),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				Image = "rbxassetid://13470766440",
+			})
+
+			local srv_name_lbl = library:create("TextLabel", {
+				Parent = discord_box,
+				Position = dim2(0, 54, 0, 22),
+				Size = dim2(1, -60, 0, 16),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "222",
+				TextSize = 13,
+				TextColor3 = rgb(255, 255, 255),
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			library:create("UIStroke", { Parent = srv_name_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local srv_inv_lbl = library:create("TextLabel", {
+				Parent = discord_box,
+				Position = dim2(0, 54, 0, 38),
+				Size = dim2(1, -60, 0, 14),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "discord.gg/vulnerability",
+				TextSize = 11,
+				TextColor3 = themes.preset.text,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			library:apply_theme(srv_inv_lbl, "text", "TextColor3")
+			library:create("UIStroke", { Parent = srv_inv_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local online_dot = library:create("Frame", {
+				Parent = discord_box,
+				Position = dim2(0, 54, 0, 58),
+				Size = dim2(0, 6, 0, 6),
+				BorderSizePixel = 0,
+				BackgroundColor3 = rgb(67, 181, 129),
+			})
+			local online_lbl = library:create("TextLabel", {
+				Parent = discord_box,
+				Position = dim2(0, 64, 0, 53),
+				Size = dim2(0, 65, 0, 15),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "5 Online",
+				TextSize = 11,
+				TextColor3 = rgb(67, 181, 129),
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			library:create("UIStroke", { Parent = online_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local total_dot = library:create("Frame", {
+				Parent = discord_box,
+				Position = dim2(0, 135, 0, 58),
+				Size = dim2(0, 6, 0, 6),
+				BorderSizePixel = 0,
+				BackgroundColor3 = rgb(185, 187, 190),
+			})
+			local total_lbl = library:create("TextLabel", {
+				Parent = discord_box,
+				Position = dim2(0, 145, 0, 53),
+				Size = dim2(0, 80, 0, 15),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "35 Members",
+				TextSize = 11,
+				TextColor3 = themes.preset.text,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			library:apply_theme(total_lbl, "text", "TextColor3")
+			library:create("UIStroke", { Parent = total_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local disc_div = library:create("Frame", {
+				Parent = discord_box,
+				Position = dim2(0, 8, 0, 72),
+				Size = dim2(1, -16, 0, 1),
+				BorderSizePixel = 0,
+				BackgroundColor3 = themes.preset.outline,
+			})
+			library:apply_theme(disc_div, "outline", "BackgroundColor3")
+
+			local copy_btn_out = library:create("Frame", {
+				Parent = discord_box,
+				Position = dim2(0, 8, 1, -26),
+				Size = dim2(1, -16, 0, 20),
+				BorderSizePixel = 0,
+				BackgroundColor3 = themes.preset.outline,
+			})
+			library:apply_theme(copy_btn_out, "outline", "BackgroundColor3")
+
+			local copy_btn_in = library:create("Frame", {
+				Parent = copy_btn_out,
+				Position = dim2(0, 1, 0, 1),
+				Size = dim2(1, -2, 1, -2),
+				BorderSizePixel = 0,
+				BackgroundColor3 = themes.preset.inline,
+			})
+			library:apply_theme(copy_btn_in, "inline", "BackgroundColor3")
+
+			local copy_btn_bg = library:create("Frame", {
+				Parent = copy_btn_in,
+				Position = dim2(0, 1, 0, 1),
+				Size = dim2(1, -2, 1, -2),
+				BorderSizePixel = 0,
+				BackgroundColor3 = rgb(255, 255, 255),
+			})
+
+			local copy_btn_grad = library:create("UIGradient", {
+				Parent = copy_btn_bg,
+				Rotation = 90,
+				Color = rgbseq{
+					rgbkey(0, rgb(34, 34, 34)),
+					rgbkey(1, rgb(24, 24, 24)),
+				},
+			})
+
+			local copy_btn_text = library:create("TextLabel", {
+				Parent = copy_btn_bg,
+				Size = dim2(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "Join Server (Copy Invite)",
+				TextSize = 11,
+				TextColor3 = themes.preset.text,
+				TextXAlignment = Enum.TextXAlignment.Center,
+				TextYAlignment = Enum.TextYAlignment.Center,
+			})
+			library:apply_theme(copy_btn_text, "text", "TextColor3")
+			library:create("UIStroke", { Parent = copy_btn_text, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local copy_click = library:create("TextButton", {
+				Parent = copy_btn_bg,
 				Size = dim2(1, 0, 1, 0),
 				BackgroundTransparency = 1,
 				Text = "",
+				AutoButtonColor = false,
 			})
-			disc_btn.MouseButton1Click:Connect(function()
+
+			copy_click.MouseEnter:Connect(function()
+				copy_btn_text.TextColor3 = rgb(255, 255, 255)
+				copy_btn_grad.Color = rgbseq{
+					rgbkey(0, rgb(46, 46, 46)),
+					rgbkey(1, rgb(34, 34, 34)),
+				}
+			end)
+			copy_click.MouseLeave:Connect(function()
+				copy_btn_text.TextColor3 = themes.preset.text
+				copy_btn_grad.Color = rgbseq{
+					rgbkey(0, rgb(34, 34, 34)),
+					rgbkey(1, rgb(24, 24, 24)),
+				}
+			end)
+
+			copy_click.MouseButton1Click:Connect(function()
 				pcall(function()
 					if setclipboard then
 						setclipboard("https://discord.gg/vulnerability")
 					end
 				end)
-				disc_val.Text = "Copied!"
+				copy_btn_text.Text = "Invite Copied to Clipboard!"
 				task.delay(1.5, function()
-					disc_val.Text = "discord.gg/vulnerability"
+					copy_btn_text.Text = "Join Server (Copy Invite)"
 				end)
+			end)
+
+			task.spawn(function()
+				local req_fn = (syn and syn.request) or (http and http.request) or http_request or request
+				local ok, resp_body = pcall(function()
+					if req_fn then
+						local res = req_fn({
+							Url = "https://discord.com/api/v10/invites/vulnerability?with_counts=true",
+							Method = "GET",
+						})
+						return res and res.Body
+					else
+						return game:HttpGet("https://discord.com/api/v10/invites/vulnerability?with_counts=true")
+					end
+				end)
+
+				if ok and resp_body then
+					local parse_ok, data = pcall(function()
+						return game:GetService("HttpService"):JSONDecode(resp_body)
+					end)
+
+					if parse_ok and type(data) == "table" then
+						if data.guild and data.guild.name then
+							srv_name_lbl.Text = tostring(data.guild.name)
+						end
+						if data.approximate_presence_count then
+							online_lbl.Text = tostring(data.approximate_presence_count) .. " Online"
+						end
+						if data.approximate_member_count then
+							total_lbl.Text = tostring(data.approximate_member_count) .. " Members"
+						end
+						if data.guild and data.guild.id and data.guild.icon and writefile and getcustomasset then
+							pcall(function()
+								local icon_url = "https://cdn.discordapp.com/icons/" .. tostring(data.guild.id) .. "/" .. tostring(data.guild.icon) .. ".png?size=128"
+								local icon_bytes = req_fn and req_fn({Url = icon_url, Method = "GET"}).Body or game:HttpGet(icon_url)
+								writefile("vulnerability_discord.png", icon_bytes)
+								srv_icon_img.Image = getcustomasset("vulnerability_discord.png")
+							end)
+						end
+					end
+				end
 			end)
 
 			local btn_outline = library:create("Frame", {
@@ -7285,27 +7511,27 @@
 			library:apply_theme(bar_fill, "accent", "BackgroundColor3")
 
 			library:create("UIGradient", {
-				Parent   = bar_fill,
+				Parent = bar_fill,
 				Rotation = 90,
-				Color    = rgbseq{
+				Color = rgbseq{
 					rgbkey(0, rgb(255, 255, 255)),
 					rgbkey(1, rgb(180, 180, 180)),
 				},
 			})
 
 			local bar_text = library:create("TextLabel", {
-				Parent                 = bar_track,
-				Name                   = "text",
-				Size                   = dim2(1, 0, 1, 0),
+				Parent = bar_track,
+				Name = "text",
+				Size = dim2(1, 0, 1, 0),
 				BackgroundTransparency = 1,
-				BorderSizePixel        = 0,
-				ZIndex                 = 5,
-				FontFace               = library.font,
-				Text                   = "Loading... 0%",
-				TextSize               = 12,
-				TextColor3             = rgb(255, 255, 255),
-				TextXAlignment         = Enum.TextXAlignment.Center,
-				TextYAlignment         = Enum.TextYAlignment.Center,
+				BorderSizePixel = 0,
+				ZIndex = 5,
+				FontFace = library.font,
+				Text = "Loading... 0%",
+				TextSize = 12,
+				TextColor3 = rgb(255, 255, 255),
+				TextXAlignment = Enum.TextXAlignment.Center,
+				TextYAlignment = Enum.TextYAlignment.Center,
 			})
 			library:create("UIStroke", { Parent = bar_text, LineJoinMode = Enum.LineJoinMode.Miter })
 
