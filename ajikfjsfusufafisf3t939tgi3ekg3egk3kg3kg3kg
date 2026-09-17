@@ -6966,7 +6966,7 @@
 				end
 			end)
 
-			-- Create panel using the library's exact window/panel method (matches main UI perfectly)
+			-- Create panel using the library's exact window/panel method
 			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
 			local cam_y = (camera and camera.ViewportSize and camera.ViewportSize.Y or 720)
 			local panel = library:panel({
@@ -6980,6 +6980,24 @@
 			})
 
 			local items = panel.items
+
+			-- Match exact dark interior color (28, 28, 28) from the main cheat UI instead of bluish tint
+			pcall(function()
+				local holder_grad = items.holder:FindFirstChildOfClass("UIGradient")
+				if holder_grad then
+					holder_grad.Color = rgbseq{
+						rgbkey(0, rgb(28, 28, 28)),
+						rgbkey(1, rgb(20, 20, 20)),
+					}
+				end
+				local win_grad = items.window_holder:FindFirstChildOfClass("UIGradient")
+				if win_grad then
+					win_grad.Color = rgbseq{
+						rgbkey(0, rgb(28, 28, 28)),
+						rgbkey(1, rgb(20, 20, 20)),
+					}
+				end
+			end)
 
 			-- Content container (leaves space at bottom for the Load button)
 			local content = library:create("Frame", {
@@ -7129,7 +7147,7 @@
 			make_divider()
 			local cb_autoload  = make_checkbox("Auto Load",          false)
 
-			-- Load Button: anchored at the very bottom ("down down")
+			-- Load Button: anchored at the very bottom ("down down") with neutral dark gradient
 			local btn_outline = library:create("Frame", {
 				Parent           = items.holder,
 				Name             = "load_btn_outline",
@@ -7163,11 +7181,10 @@
 				Parent   = btn_contrast,
 				Rotation = 90,
 				Color    = rgbseq{
-					rgbkey(0, rgb(41, 41, 55)),
-					rgbkey(1, rgb(35, 35, 47)),
+					rgbkey(0, rgb(34, 34, 34)),
+					rgbkey(1, rgb(24, 24, 24)),
 				},
 			})
-			library:apply_theme(btn_grad, "contrast", "Color")
 
 			local btn_text = library:create("TextLabel", {
 				Parent                 = btn_contrast,
@@ -7197,27 +7214,27 @@
 			click_btn.MouseEnter:Connect(function()
 				btn_text.TextColor3 = rgb(255, 255, 255)
 				btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(55, 55, 72)),
-					rgbkey(1, rgb(45, 45, 60)),
+					rgbkey(0, rgb(46, 46, 46)),
+					rgbkey(1, rgb(34, 34, 34)),
 				}
 			end)
 			click_btn.MouseLeave:Connect(function()
 				btn_text.TextColor3 = themes.preset.text
 				btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(41, 41, 55)),
-					rgbkey(1, rgb(35, 35, 47)),
+					rgbkey(0, rgb(34, 34, 34)),
+					rgbkey(1, rgb(24, 24, 24)),
 				}
 			end)
 			click_btn.MouseButton1Down:Connect(function()
 				btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(30, 30, 40)),
-					rgbkey(1, rgb(25, 25, 35)),
+					rgbkey(0, rgb(20, 20, 20)),
+					rgbkey(1, rgb(16, 16, 16)),
 				}
 			end)
 			click_btn.MouseButton1Up:Connect(function()
 				btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(55, 55, 72)),
-					rgbkey(1, rgb(45, 45, 60)),
+					rgbkey(0, rgb(46, 46, 46)),
+					rgbkey(1, rgb(34, 34, 34)),
 				}
 			end)
 
