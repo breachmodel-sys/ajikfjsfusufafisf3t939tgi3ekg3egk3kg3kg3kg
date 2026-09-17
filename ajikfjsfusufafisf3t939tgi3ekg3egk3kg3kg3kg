@@ -6937,11 +6937,11 @@
 
 		function library:loader(options)
 			options = options or {}
-			local loader_title = options.title or options.name or "Loader"
+			local loader_title = options.title or options.name or "Wizardhook Loader"
 			local on_load_cb   = options.on_load or options.callback
-			local loader_size  = options.size or dim2(0, 360, 0, 290)
+			local loader_size  = options.size or dim2(0, 390, 0, 325)
 
-			-- Create panel using the library's exact custom window structure (same size as before)
+			-- Create panel using the library's custom window structure
 			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
 			local cam_y = (camera and camera.ViewportSize and camera.ViewportSize.Y or 720)
 			local panel = library:panel({
@@ -6956,7 +6956,7 @@
 
 			local items = panel.items
 
-			-- Neutral dark inside color (28, 28, 28) matching the cheat UI
+			-- Neutral dark inside color (28, 28, 28) matching cheat UI
 			pcall(function()
 				local holder_grad = items.holder:FindFirstChildOfClass("UIGradient")
 				if holder_grad then
@@ -6974,14 +6974,376 @@
 				end
 			end)
 
+			-- Helper: Section Box
+			local function create_box(parent, pos, sz)
+				local o = library:create("Frame", {
+					Parent           = parent,
+					Position         = pos,
+					Size             = sz,
+					BorderSizePixel  = 0,
+					BackgroundColor3 = themes.preset.outline,
+				})
+				library:apply_theme(o, "outline", "BackgroundColor3")
+
+				local i = library:create("Frame", {
+					Parent           = o,
+					Position         = dim2(0, 1, 0, 1),
+					Size             = dim2(1, -2, 1, -2),
+					BorderSizePixel  = 0,
+					BackgroundColor3 = themes.preset.inline,
+				})
+				library:apply_theme(i, "inline", "BackgroundColor3")
+
+				local bg = library:create("Frame", {
+					Parent           = i,
+					Position         = dim2(0, 1, 0, 1),
+					Size             = dim2(1, -2, 1, -2),
+					BorderSizePixel  = 0,
+					BackgroundColor3 = rgb(255, 255, 255),
+				})
+				local grad = library:create("UIGradient", {
+					Parent   = bg,
+					Rotation = 90,
+					Color    = rgbseq{
+						rgbkey(0, rgb(28, 28, 28)),
+						rgbkey(1, rgb(20, 20, 20)),
+					},
+				})
+				return bg
+			end
+
 			-- ============================================================
-			-- Load Button (at the bottom)
+			-- 1. Profile / User Card Banner
+			-- ============================================================
+			local banner = create_box(items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 0, 46))
+
+			-- Avatar Headshot
+			local avatar_box = library:create("Frame", {
+				Parent           = banner,
+				Position         = dim2(0, 5, 0.5, -17),
+				Size             = dim2(0, 34, 0, 34),
+				BorderSizePixel  = 0,
+				BackgroundColor3 = themes.preset.outline,
+			})
+			library:apply_theme(avatar_box, "outline", "BackgroundColor3")
+
+			local avatar_in = library:create("Frame", {
+				Parent           = avatar_box,
+				Position         = dim2(0, 1, 0, 1),
+				Size             = dim2(1, -2, 1, -2),
+				BorderSizePixel  = 0,
+				BackgroundColor3 = themes.preset.accent,
+			})
+			library:apply_theme(avatar_in, "accent", "BackgroundColor3")
+
+			local avatar_img = library:create("ImageLabel", {
+				Parent                 = avatar_in,
+				Position               = dim2(0, 1, 0, 1),
+				Size                   = dim2(1, -2, 1, -2),
+				BackgroundTransparency = 1,
+				BorderSizePixel        = 0,
+				Image                  = "rbxassetid://0",
+			})
+
+			task.spawn(function()
+				pcall(function()
+					if lp and players then
+						local thumb = players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+						avatar_img.Image = thumb
+					end
+				end)
+			end)
+
+			-- User Name
+			local user_str = lp and (lp.DisplayName .. " (@" .. lp.Name .. ")") or "Welcome to Wizardhook"
+			local name_lbl = library:create("TextLabel", {
+				Parent                 = banner,
+				Position               = dim2(0, 46, 0, 6),
+				Size                   = dim2(1, -50, 0, 16),
+				BackgroundTransparency = 1,
+				BorderSizePixel        = 0,
+				FontFace               = library.font,
+				Text                   = user_str,
+				TextSize               = 12,
+				TextColor3             = rgb(255, 255, 255),
+				TextXAlignment         = Enum.TextXAlignment.Left,
+				TextYAlignment         = Enum.TextYAlignment.Center,
+			})
+			library:create("UIStroke", { Parent = name_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			-- Tag info
+			local tag_lbl = library:create("TextLabel", {
+				Parent                 = banner,
+				Position               = dim2(0, 46, 0, 24),
+				Size                   = dim2(1, -50, 0, 14),
+				BackgroundTransparency = 1,
+				BorderSizePixel        = 0,
+				FontFace               = library.font,
+				Text                   = "Subscription: Lifetime [VIP]  •  Build: v2.4.1 (Stable)",
+				TextSize               = 11,
+				TextColor3             = themes.preset.accent,
+				TextXAlignment         = Enum.TextXAlignment.Left,
+				TextYAlignment         = Enum.TextYAlignment.Center,
+			})
+			library:apply_theme(tag_lbl, "accent", "TextColor3")
+			library:create("UIStroke", { Parent = tag_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			-- ============================================================
+			-- 2. Two Columns (Info & Features)
+			-- ============================================================
+			local col_w = 0.485
+			local col_y = 60
+			local col_h = 135
+
+			-- Left Column: Session / Game Info
+			local left_box = create_box(items.holder, dim2(0, 8, 0, col_y), dim2(col_w, -8, 0, col_h))
+
+			local info_title = library:create("TextLabel", {
+				Parent                 = left_box,
+				Position               = dim2(0, 6, 0, 4),
+				Size                   = dim2(1, -12, 0, 15),
+				BackgroundTransparency = 1,
+				BorderSizePixel        = 0,
+				FontFace               = library.font,
+				Text                   = "Session Information",
+				TextSize               = 12,
+				TextColor3             = themes.preset.accent,
+				TextXAlignment         = Enum.TextXAlignment.Left,
+			})
+			library:apply_theme(info_title, "accent", "TextColor3")
+			library:create("UIStroke", { Parent = info_title, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local function add_info_row(y, label_t, val_t, val_col)
+				local l = library:create("TextLabel", {
+					Parent                 = left_box,
+					Position               = dim2(0, 6, 0, y),
+					Size                   = dim2(0.48, 0, 0, 14),
+					BackgroundTransparency = 1,
+					BorderSizePixel        = 0,
+					FontFace               = library.font,
+					Text                   = label_t,
+					TextSize               = 11,
+					TextColor3             = themes.preset.text,
+					TextXAlignment         = Enum.TextXAlignment.Left,
+				})
+				library:apply_theme(l, "text", "TextColor3")
+				library:create("UIStroke", { Parent = l, LineJoinMode = Enum.LineJoinMode.Miter })
+
+				local v = library:create("TextLabel", {
+					Parent                 = left_box,
+					Position               = dim2(0.48, 0, 0, y),
+					Size                   = dim2(0.52, -6, 0, 14),
+					BackgroundTransparency = 1,
+					BorderSizePixel        = 0,
+					FontFace               = library.font,
+					Text                   = val_t,
+					TextSize               = 11,
+					TextColor3             = val_col or rgb(230, 230, 230),
+					TextXAlignment         = Enum.TextXAlignment.Right,
+				})
+				library:create("UIStroke", { Parent = v, LineJoinMode = Enum.LineJoinMode.Miter })
+				return v
+			end
+
+			local game_name = "Roblox"
+			pcall(function() game_name = string.sub(game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or game.Name, 1, 14) end)
+			add_info_row(24, "Game:", game_name)
+			add_info_row(42, "Status:", "Undetected", rgb(90, 220, 110))
+			add_info_row(60, "Platform:", "Windows (x64)")
+			add_info_row(78, "Anti-Cheat:", "Bypassed", rgb(90, 220, 110))
+
+			local fps_lbl = add_info_row(96, "Performance:", "60 FPS")
+			local ping_lbl = add_info_row(114, "Latency:", "32ms")
+
+			task.spawn(function()
+				local frames = 0
+				local last = tick()
+				pcall(function()
+					run.RenderStepped:Connect(function()
+						frames += 1
+						if tick() - last >= 1 then
+							fps_lbl.Text = tostring(frames) .. " FPS"
+							frames = 0
+							last = tick()
+							if stats and stats.Network and stats.Network.ServerStatsItem then
+								local ping = math.floor(stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+								ping_lbl.Text = tostring(ping) .. "ms"
+							end
+						end
+					end)
+				end)
+			end)
+
+			-- Right Column: Launch Features / Toggles
+			local right_box = create_box(items.holder, dim2(1 - col_w, 0, 0, col_y), dim2(col_w, -8, 0, col_h))
+
+			local feat_title = library:create("TextLabel", {
+				Parent                 = right_box,
+				Position               = dim2(0, 6, 0, 4),
+				Size                   = dim2(1, -12, 0, 15),
+				BackgroundTransparency = 1,
+				BorderSizePixel        = 0,
+				FontFace               = library.font,
+				Text                   = "Launch Features",
+				TextSize               = 12,
+				TextColor3             = themes.preset.accent,
+				TextXAlignment         = Enum.TextXAlignment.Left,
+			})
+			library:apply_theme(feat_title, "accent", "TextColor3")
+			library:create("UIStroke", { Parent = feat_title, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local feature_states = {
+				unlock_fps = true,
+				bypass_hooks = true,
+				auto_rejoin = true,
+				streamer_mode = false,
+			}
+
+			local function add_feature_toggle(y, text_label, opt_key)
+				local state = feature_states[opt_key]
+
+				local btn = library:create("TextButton", {
+					Parent                 = right_box,
+					Position               = dim2(0, 6, 0, y),
+					Size                   = dim2(1, -12, 0, 18),
+					BackgroundTransparency = 1,
+					BorderSizePixel        = 0,
+					Text                   = "",
+					AutoButtonColor        = false,
+				})
+
+				local box_out = library:create("Frame", {
+					Parent           = btn,
+					Position         = dim2(0, 0, 0.5, -6),
+					Size             = dim2(0, 12, 0, 12),
+					BorderSizePixel  = 0,
+					BackgroundColor3 = themes.preset.outline,
+				})
+				library:apply_theme(box_out, "outline", "BackgroundColor3")
+
+				local box_in = library:create("Frame", {
+					Parent           = box_out,
+					Position         = dim2(0, 1, 0, 1),
+					Size             = dim2(1, -2, 1, -2),
+					BorderSizePixel  = 0,
+					BackgroundColor3 = themes.preset.inline,
+				})
+				library:apply_theme(box_in, "inline", "BackgroundColor3")
+
+				local fill = library:create("Frame", {
+					Parent                 = box_in,
+					Position               = dim2(0, 1, 0, 1),
+					Size                   = dim2(1, -2, 1, -2),
+					BorderSizePixel        = 0,
+					BackgroundColor3       = themes.preset.accent,
+					BackgroundTransparency = state and 0 or 1,
+				})
+				library:apply_theme(fill, "accent", "BackgroundColor3")
+
+				local lbl = library:create("TextLabel", {
+					Parent                 = btn,
+					Position               = dim2(0, 18, 0, 0),
+					Size                   = dim2(1, -18, 1, 0),
+					BackgroundTransparency = 1,
+					BorderSizePixel        = 0,
+					FontFace               = library.font,
+					Text                   = text_label,
+					TextSize               = 11,
+					TextColor3             = state and rgb(255, 255, 255) or themes.preset.text,
+					TextXAlignment         = Enum.TextXAlignment.Left,
+				})
+				library:create("UIStroke", { Parent = lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+				btn.MouseButton1Click:Connect(function()
+					state = not state
+					feature_states[opt_key] = state
+					fill.BackgroundTransparency = state and 0 or 1
+					lbl.TextColor3 = state and rgb(255, 255, 255) or themes.preset.text
+				end)
+			end
+
+			add_feature_toggle(24, "Unlock FPS (999)", "unlock_fps")
+			add_feature_toggle(48, "Bypass AC Hooks", "bypass_hooks")
+			add_feature_toggle(72, "Auto-Rejoin on Kick", "auto_rejoin")
+			add_feature_toggle(96, "Streamer Mode", "streamer_mode")
+
+			-- ============================================================
+			-- 3. Preset Selector Row
+			-- ============================================================
+			local preset_box = create_box(items.holder, dim2(0, 8, 0, 202), dim2(1, -16, 0, 38))
+
+			local preset_lbl = library:create("TextLabel", {
+				Parent                 = preset_box,
+				Position               = dim2(0, 8, 0, 0),
+				Size                   = dim2(0, 95, 1, 0),
+				BackgroundTransparency = 1,
+				BorderSizePixel        = 0,
+				FontFace               = library.font,
+				Text                   = "Configuration:",
+				TextSize               = 11,
+				TextColor3             = themes.preset.text,
+				TextXAlignment         = Enum.TextXAlignment.Left,
+			})
+			library:apply_theme(preset_lbl, "text", "TextColor3")
+			library:create("UIStroke", { Parent = preset_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
+
+			local active_preset = "Default"
+			local preset_buttons = {}
+
+			local function make_preset_btn(name, x_offset)
+				local p_btn = library:create("TextButton", {
+					Parent           = preset_box,
+					Position         = dim2(0, x_offset, 0.5, -11),
+					Size             = dim2(0, 72, 0, 22),
+					BorderSizePixel  = 0,
+					BackgroundColor3 = (active_preset == name) and themes.preset.accent or themes.preset.inline,
+					Text             = "",
+					AutoButtonColor  = false,
+				})
+				if active_preset == name then
+					library:apply_theme(p_btn, "accent", "BackgroundColor3")
+				end
+
+				local p_txt = library:create("TextLabel", {
+					Parent                 = p_btn,
+					Size                   = dim2(1, 0, 1, 0),
+					BackgroundTransparency = 1,
+					BorderSizePixel        = 0,
+					FontFace               = library.font,
+					Text                   = name,
+					TextSize               = 11,
+					TextColor3             = (active_preset == name) and rgb(255, 255, 255) or themes.preset.text,
+				})
+				library:create("UIStroke", { Parent = p_txt, LineJoinMode = Enum.LineJoinMode.Miter })
+
+				preset_buttons[name] = { btn = p_btn, txt = p_txt }
+
+				p_btn.MouseButton1Click:Connect(function()
+					active_preset = name
+					for p_name, data in pairs(preset_buttons) do
+						if p_name == name then
+							data.btn.BackgroundColor3 = themes.preset.accent
+							data.txt.TextColor3 = rgb(255, 255, 255)
+						else
+							data.btn.BackgroundColor3 = themes.preset.inline
+							data.txt.TextColor3 = themes.preset.text
+						end
+					end
+				end)
+			end
+
+			make_preset_btn("Default", 110)
+			make_preset_btn("Legit", 188)
+			make_preset_btn("Rage", 266)
+
+			-- ============================================================
+			-- 4. Load Button & Loading Progress Bar (Replaces Load on Click)
 			-- ============================================================
 			local btn_outline = library:create("Frame", {
 				Parent           = items.holder,
 				Name             = "load_btn_outline",
-				Position         = dim2(0, 10, 1, -34),
-				Size             = dim2(1, -20, 0, 26),
+				Position         = dim2(0, 8, 1, -34),
+				Size             = dim2(1, -16, 0, 26),
 				BorderSizePixel  = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7022,7 +7384,7 @@
 				BackgroundTransparency = 1,
 				BorderSizePixel        = 0,
 				FontFace               = library.font,
-				Text                   = "Load",
+				Text                   = "Load Wizardhook",
 				TextSize               = 12,
 				TextColor3             = themes.preset.text,
 				TextXAlignment         = Enum.TextXAlignment.Center,
@@ -7067,14 +7429,12 @@
 				}
 			end)
 
-			-- ============================================================
-			-- Loading Progress Bar (replaces Load button when clicked)
-			-- ============================================================
+			-- The Loading Progress Bar (replaces Load button when clicked)
 			local bar_outline = library:create("Frame", {
 				Parent           = items.holder,
 				Name             = "load_bar_outline",
-				Position         = dim2(0, 10, 1, -34),
-				Size             = dim2(1, -20, 0, 26),
+				Position         = dim2(0, 8, 1, -34),
+				Size             = dim2(1, -16, 0, 26),
 				BorderSizePixel  = 0,
 				BackgroundColor3 = themes.preset.outline,
 				Visible          = false,
@@ -7137,19 +7497,19 @@
 			})
 			library:create("UIStroke", { Parent = bar_text, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			-- Click handler: Replaces Load button with progress bar and animates %
+			-- Click Handler: Progress % animation, then says "Loaded Wizardhook"
 			local is_loading = false
 			click_btn.MouseButton1Click:Connect(function()
 				if is_loading then return end
 				is_loading = true
 
-				-- Replace Load button with the loading bar
+				-- Replace Load button with progress bar
 				btn_outline.Visible = false
 				bar_outline.Visible = true
 
 				task.spawn(function()
 					local current_pct = 0
-					local targets = { 20, 45, 70, 90, 100 }
+					local targets = { 25, 50, 75, 92, 100 }
 
 					for _, target in ipairs(targets) do
 						while current_pct < target do
@@ -7158,17 +7518,31 @@
 							bar_text.Text = "Loading... " .. tostring(math.floor(current_pct)) .. "%"
 							task.wait(0.03)
 						end
-						task.wait(0.07)
+						task.wait(0.06)
 					end
 
-					bar_text.Text = "Loaded! 100%"
+					-- Says "Loaded Wizardhook" ONLY AFTER reaching 100%
 					bar_fill.Size = dim2(1, 0, 1, 0)
-					task.wait(0.25)
+					bar_text.Text = "Loaded Wizardhook"
+					task.wait(0.4)
+
+					-- Apply features if selected
+					pcall(function()
+						if feature_states.unlock_fps and setfpscap then
+							setfpscap(999)
+						end
+						if feature_states.streamer_mode then
+							getgenv().Wizardhook_StreamerMode = true
+						end
+					end)
 
 					panel.items.sgui:Destroy()
 
 					if on_load_cb then
-						task.spawn(on_load_cb)
+						task.spawn(on_load_cb, {
+							preset = active_preset,
+							features = feature_states,
+						})
 					end
 				end)
 			end)
