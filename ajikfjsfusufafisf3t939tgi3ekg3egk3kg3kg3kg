@@ -7160,16 +7160,18 @@
 
 			local div1 = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 8, 0, 70),
+				Position = dim2(0, 8, 0, 72),
 				Size = dim2(1, -16, 0, 1),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
 			library:apply_theme(div1, "outline", "BackgroundColor3")
 
+			local srv_y = 104
+
 			local srv_icon_box = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 8, 0, 82),
+				Position = dim2(0, 8, 0, srv_y),
 				Size = dim2(0, 46, 0, 46),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
@@ -7196,8 +7198,8 @@
 
 			local srv_name_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 66, 0, 82),
-				Size = dim2(1, -104, 0, 16),
+				Position = dim2(0, 66, 0, srv_y),
+				Size = dim2(1, -96, 0, 16),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7210,8 +7212,8 @@
 
 			local srv_inv_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 66, 0, 100),
-				Size = dim2(1, -104, 0, 14),
+				Position = dim2(0, 66, 0, srv_y + 17),
+				Size = dim2(1, -96, 0, 14),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7225,7 +7227,7 @@
 
 			local online_dot = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 66, 0, 122),
+				Position = dim2(0, 66, 0, srv_y + 37),
 				Size = dim2(0, 7, 0, 7),
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(67, 181, 129),
@@ -7237,7 +7239,7 @@
 
 			local online_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 77, 0, 118),
+				Position = dim2(0, 77, 0, srv_y + 33),
 				Size = dim2(0, 65, 0, 15),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -7251,7 +7253,7 @@
 
 			local total_dot = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 146, 0, 122),
+				Position = dim2(0, 146, 0, srv_y + 37),
 				Size = dim2(0, 7, 0, 7),
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(185, 187, 190),
@@ -7263,7 +7265,7 @@
 
 			local total_lbl = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 157, 0, 118),
+				Position = dim2(0, 157, 0, srv_y + 33),
 				Size = dim2(0, 80, 0, 15),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -7276,77 +7278,26 @@
 			library:apply_theme(total_lbl, "text", "TextColor3")
 			library:create("UIStroke", { Parent = total_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local copy_btn_out = library:create("Frame", {
+			local copy_btn = library:create("ImageButton", {
 				Parent = box_preview,
-				Position = dim2(1, -30, 0, 82),
-				Size = dim2(0, 22, 0, 22),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(copy_btn_out, "outline", "BackgroundColor3")
-
-			local copy_btn_in = library:create("Frame", {
-				Parent = copy_btn_out,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.inline,
-			})
-			library:apply_theme(copy_btn_in, "inline", "BackgroundColor3")
-
-			local copy_btn_bg = library:create("Frame", {
-				Parent = copy_btn_in,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(255, 255, 255),
-			})
-
-			local copy_btn_grad = library:create("UIGradient", {
-				Parent = copy_btn_bg,
-				Rotation = 90,
-				Color = rgbseq{
-					rgbkey(0, rgb(34, 34, 34)),
-					rgbkey(1, rgb(24, 24, 24)),
-				},
-			})
-
-			local copy_icon = library:create("ImageLabel", {
-				Parent = copy_btn_bg,
-				Position = dim2(0, 3, 0, 3),
-				Size = dim2(1, -6, 1, -6),
+				Position = dim2(1, -24, 0, srv_y),
+				Size = dim2(0, 16, 0, 16),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				Image = "rbxassetid://10709812159",
 				ImageColor3 = themes.preset.text,
 			})
-			library:apply_theme(copy_icon, "text", "ImageColor3")
+			library:apply_theme(copy_btn, "text", "ImageColor3")
 
-			local copy_click = library:create("TextButton", {
-				Parent = copy_btn_bg,
-				Size = dim2(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Text = "",
-				AutoButtonColor = false,
-			})
-
-			copy_click.MouseEnter:Connect(function()
-				copy_icon.ImageColor3 = rgb(255, 255, 255)
-				copy_btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(46, 46, 46)),
-					rgbkey(1, rgb(34, 34, 34)),
-				}
+			copy_btn.MouseEnter:Connect(function()
+				copy_btn.ImageColor3 = rgb(255, 255, 255)
 			end)
-			copy_click.MouseLeave:Connect(function()
-				copy_icon.ImageColor3 = themes.preset.text
-				copy_btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(34, 34, 34)),
-					rgbkey(1, rgb(24, 24, 24)),
-				}
+			copy_btn.MouseLeave:Connect(function()
+				copy_btn.ImageColor3 = themes.preset.text
 			end)
 
 			local copy_deb = false
-			copy_click.MouseButton1Click:Connect(function()
+			copy_btn.MouseButton1Click:Connect(function()
 				pcall(function()
 					if setclipboard then
 						setclipboard("https://discord.gg/vulnerability")
@@ -7354,11 +7305,11 @@
 				end)
 				if copy_deb then return end
 				copy_deb = true
-				copy_icon.Image = "rbxassetid://10709790644"
-				copy_icon.ImageColor3 = rgb(67, 181, 129)
+				copy_btn.Image = "rbxassetid://10709790644"
+				copy_btn.ImageColor3 = rgb(67, 181, 129)
 				task.delay(1.5, function()
-					copy_icon.Image = "rbxassetid://10709812159"
-					copy_icon.ImageColor3 = themes.preset.text
+					copy_btn.Image = "rbxassetid://10709812159"
+					copy_btn.ImageColor3 = themes.preset.text
 					copy_deb = false
 				end)
 			end)
