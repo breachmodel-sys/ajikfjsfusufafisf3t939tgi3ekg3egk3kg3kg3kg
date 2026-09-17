@@ -6974,24 +6974,6 @@
 				end
 			end)
 
-			-- Status Label
-			local status_lbl = library:create("TextLabel", {
-				Parent                 = items.holder,
-				Name                   = "status_lbl",
-				Position               = dim2(0, 10, 0, 10),
-				Size                   = dim2(1, -20, 0, 18),
-				BackgroundTransparency = 1,
-				BorderSizePixel        = 0,
-				FontFace               = library.font,
-				Text                   = "Status: Ready",
-				TextSize               = 12,
-				TextColor3             = themes.preset.text,
-				TextXAlignment         = Enum.TextXAlignment.Left,
-				TextYAlignment         = Enum.TextYAlignment.Center,
-			})
-			library:apply_theme(status_lbl, "text", "TextColor3")
-			library:create("UIStroke", { Parent = status_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
-
 			-- ============================================================
 			-- Load Button (at the bottom)
 			-- ============================================================
@@ -7164,7 +7146,6 @@
 				-- Replace Load button with the loading bar
 				btn_outline.Visible = false
 				bar_outline.Visible = true
-				status_lbl.Text = "Status: Loading..."
 
 				task.spawn(function()
 					local current_pct = 0
@@ -7182,7 +7163,6 @@
 
 					bar_text.Text = "Loaded! 100%"
 					bar_fill.Size = dim2(1, 0, 1, 0)
-					status_lbl.Text = "Status: Loaded!"
 					task.wait(0.25)
 
 					panel.items.sgui:Destroy()
