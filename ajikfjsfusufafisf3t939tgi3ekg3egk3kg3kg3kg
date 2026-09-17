@@ -6939,7 +6939,7 @@
 			options = options or {}
 			local loader_title = options.title or options.name or "Wizardhook"
 			local on_load_cb   = options.on_load or options.callback
-			local loader_size  = options.size or dim2(0, 340, 0, 175)
+			local loader_size  = options.size or dim2(0, 360, 0, 290)
 
 			-- Create panel using the library's custom window structure
 			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
@@ -7015,7 +7015,7 @@
 			-- ============================================================
 			-- Profile Box (Only Profile Card)
 			-- ============================================================
-			local profile_card = create_box(items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -42))
+			local profile_card = create_box(items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -44))
 
 			-- Avatar Headshot Frame
 			local avatar_box = library:create("Frame", {
@@ -7150,8 +7150,8 @@
 
 			local user_id_str = lp and tostring(lp.UserId) or "Unknown"
 
-			add_profile_row(70,  "User ID:", user_id_str)
-			add_profile_row(86,  "Build:", "v2.4.1 (Stable)", themes.preset.accent)
+			add_profile_row(72,  "User ID:", user_id_str)
+			add_profile_row(90,  "Build:", "v2.4.1 (Stable)", themes.preset.accent)
 
 			-- ============================================================
 			-- Load Button & Loading Progress Bar (Replaces Load on Click)
@@ -7159,8 +7159,8 @@
 			local btn_outline = library:create("Frame", {
 				Parent           = items.holder,
 				Name             = "load_btn_outline",
-				Position         = dim2(0, 8, 1, -30),
-				Size             = dim2(1, -16, 0, 22),
+				Position         = dim2(0, 8, 1, -34),
+				Size             = dim2(1, -16, 0, 26),
 				BorderSizePixel  = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
@@ -7250,8 +7250,8 @@
 			local bar_outline = library:create("Frame", {
 				Parent           = items.holder,
 				Name             = "load_bar_outline",
-				Position         = dim2(0, 8, 1, -30),
-				Size             = dim2(1, -16, 0, 22),
+				Position         = dim2(0, 8, 1, -34),
+				Size             = dim2(1, -16, 0, 26),
 				BorderSizePixel  = 0,
 				BackgroundColor3 = themes.preset.outline,
 				Visible          = false,
