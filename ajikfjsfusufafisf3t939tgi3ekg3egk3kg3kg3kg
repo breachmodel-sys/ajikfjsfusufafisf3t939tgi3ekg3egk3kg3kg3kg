@@ -7009,7 +7009,7 @@
 				return bg
 			end
 
-			local profile = create_box(items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -32))
+			local profile = create_box(items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -28))
 
 			local avatar_box = library:create("Frame", {
 				Parent = profile,
@@ -7136,7 +7136,7 @@
 			local btn_outline = library:create("Frame", {
 				Parent = items.holder,
 				Name = "load_btn_outline",
-				Position = dim2(0, 8, 1, -20),
+				Position = dim2(0, 8, 1, -15),
 				Size = dim2(1, -16, 0, 24),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
@@ -7226,7 +7226,7 @@
 			local bar_outline = library:create("Frame", {
 				Parent = items.holder,
 				Name = "load_bar_outline",
-				Position = dim2(0, 8, 1, -20),
+				Position = dim2(0, 8, 1, -15),
 				Size = dim2(1, -16, 0, 24),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
@@ -7266,27 +7266,27 @@
 			library:apply_theme(bar_fill, "accent", "BackgroundColor3")
 
 			library:create("UIGradient", {
-				Parent = bar_fill,
+				Parent   = bar_fill,
 				Rotation = 90,
-				Color = rgbseq{
+				Color    = rgbseq{
 					rgbkey(0, rgb(255, 255, 255)),
 					rgbkey(1, rgb(180, 180, 180)),
 				},
 			})
 
 			local bar_text = library:create("TextLabel", {
-				Parent = bar_track,
-				Name = "text",
-				Size = dim2(1, 0, 1, 0),
+				Parent                 = bar_track,
+				Name                   = "text",
+				Size                   = dim2(1, 0, 1, 0),
 				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				ZIndex = 5,
-				FontFace = library.font,
-				Text = "Loading... 0%",
-				TextSize = 12,
-				TextColor3 = rgb(255, 255, 255),
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
+				BorderSizePixel        = 0,
+				ZIndex                 = 5,
+				FontFace               = library.font,
+				Text                   = "Loading... 0%",
+				TextSize               = 12,
+				TextColor3             = rgb(255, 255, 255),
+				TextXAlignment         = Enum.TextXAlignment.Center,
+				TextYAlignment         = Enum.TextYAlignment.Center,
 			})
 			library:create("UIStroke", { Parent = bar_text, LineJoinMode = Enum.LineJoinMode.Miter })
 
