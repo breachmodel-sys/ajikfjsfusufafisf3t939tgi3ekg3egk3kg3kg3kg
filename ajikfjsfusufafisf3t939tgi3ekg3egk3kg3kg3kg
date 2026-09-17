@@ -215,32 +215,27 @@
 		
 	library.__index = library
 
-	pcall(function()
-		for _, path in next, library.folders do 
-			makefolder(library.directory .. path)
-		end 
+	for _, path in next, library.folders do 
+		makefolder(library.directory .. path)
+	end 
 
-		writefile("ffff.ttf", game:HttpGet("https://github.com/weasely111/beta/raw/refs/heads/main/fs-tahoma-8px.ttf"))
+	writefile("ffff.ttf", game:HttpGet("https://github.com/weasely111/beta/raw/refs/heads/main/fs-tahoma-8px.ttf"))
 
-		local get_asset = getcustomasset or getsynasset
-		if get_asset then
-			local tahoma = {
-				name = "SmallestPixel7",
-				faces = {
-					{
-						name = "Regular",
-						weight = 400,
-						style = "normal",
-						assetId = get_asset("ffff.ttf")
-					}
-				}
+	local tahoma = {
+		name = "SmallestPixel7",
+		faces = {
+			{
+				name = "Regular",
+				weight = 400,
+				style = "normal",
+				assetId = getcustomasset("ffff.ttf")
 			}
+		}
+	}
 
-			writefile("dddd.ttf", http_service:JSONEncode(tahoma))
+	writefile("dddd.ttf", http_service:JSONEncode(tahoma))
 
-			library.font = Font.new(get_asset("dddd.ttf"), Enum.FontWeight.Regular)
-		end
-	end)
+	library.font = Font.new(getcustomasset("dddd.ttf"), Enum.FontWeight.Regular)
 
 	local config_holder 
 -- 
@@ -6942,14 +6937,14 @@
 
 		function library:loader(options)
 			options = options or {}
-			local loader_title = options.title or options.name or "Wizardhook"
+			local loader_title = options.title or options.name or "Loader"
 			local on_load_cb   = options.on_load or options.callback
-			local loader_size  = options.size or dim2(0, 270, 0, 235)
+			local loader_size  = options.size or dim2(0, 260, 0, 220)
 
 			-- Read saved config
-			local custom_di_val  = true
-			local comp_mode_val  = true
-			local rejoin_val     = true
+			local custom_di_val = true
+			local comp_mode_val = true
+			local rejoin_val    = true
 
 			local config_file = "wizardhook_loader_config.json"
 			pcall(function()
@@ -6966,7 +6961,7 @@
 				end
 			end)
 
-			-- Create panel using the library's exact window/panel method
+			-- Create panel using the library's exact custom window structure
 			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
 			local cam_y = (camera and camera.ViewportSize and camera.ViewportSize.Y or 720)
 			local panel = library:panel({
@@ -6981,7 +6976,7 @@
 
 			local items = panel.items
 
-			-- Match exact dark interior color (28, 28, 28) from the main cheat UI instead of bluish tint
+			-- Neutral dark inside color (28, 28, 28) matching the cheat UI
 			pcall(function()
 				local holder_grad = items.holder:FindFirstChildOfClass("UIGradient")
 				if holder_grad then
@@ -6999,12 +6994,12 @@
 				end
 			end)
 
-			-- Content container (leaves space at bottom for the Load button)
+			-- Content container
 			local content = library:create("Frame", {
 				Parent                 = items.holder,
 				Name                   = "content",
 				Position               = dim2(0, 4, 0, 4),
-				Size                   = dim2(1, -8, 1, -38),
+				Size                   = dim2(1, -8, 1, -36),
 				BackgroundTransparency = 1,
 				BorderSizePixel        = 0,
 			})
@@ -7012,13 +7007,12 @@
 			local content_layout = library:create("UIListLayout", {
 				Parent    = content,
 				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding   = dim(0, 3),
+				Padding   = dim(0, 2),
 			})
 
 			local lo = 0
 			local function no() lo = lo + 1 return lo end
 
-			-- Label helper (matching library.font and theme)
 			local function make_label(txt)
 				local l = library:create("TextLabel", {
 					Parent                 = content,
@@ -7041,7 +7035,6 @@
 				return l
 			end
 
-			-- 1px divider helper
 			local function make_divider()
 				local div = library:create("Frame", {
 					Parent           = content,
@@ -7059,7 +7052,6 @@
 			make_label("Can Load: Yes")
 			make_divider()
 
-			-- Checkbox helper (matches library:toggle in xd.lua)
 			local function make_checkbox(label_text, default_state)
 				local state = default_state
 
@@ -7151,7 +7143,7 @@
 			local btn_outline = library:create("Frame", {
 				Parent           = items.holder,
 				Name             = "load_btn_outline",
-				Position         = dim2(0, 4, 1, -26),
+				Position         = dim2(0, 4, 1, -25),
 				Size             = dim2(1, -8, 0, 22),
 				BorderSizePixel  = 0,
 				BackgroundColor3 = themes.preset.outline,
@@ -7267,6 +7259,5 @@
 
 			return panel
 		end
-
 
 return library, themes;
