@@ -1999,7 +1999,7 @@
 				items.anime_image = library:create("ImageLabel", {
 					Parent = self.holder;
 					BackgroundTransparency = 1;
-					Size = dim2(1, 0, 1, 0);
+					Size = dim2(1, 0, 0, 220);
 					Position = dim2(0, 0, 0, 0);
 					Image = "rbxassetid://139399821337795";
 					ScaleType = Enum.ScaleType.Fit;
