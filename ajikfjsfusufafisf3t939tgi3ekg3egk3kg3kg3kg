@@ -6953,7 +6953,7 @@
 			local start_y = math.floor(cam_y / 2 - h / 2)
 
 			local panel_preview = library:panel({
-				name = "Updates",
+				name = " Update Logs",
 				size = dim2(0, w1, 0, h),
 				position = dim2(0, start_x, 0, start_y),
 				anchor_point = vec2(0, 0),
