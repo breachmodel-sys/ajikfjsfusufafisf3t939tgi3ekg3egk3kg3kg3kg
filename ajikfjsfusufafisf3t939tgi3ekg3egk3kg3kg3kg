@@ -7096,7 +7096,7 @@
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
-				Text = "Profile card removed",
+				Text = "In testing",
 				TextSize = 13,
 				TextColor3 = rgb(255, 255, 255),
 				TextXAlignment = Enum.TextXAlignment.Left,
