@@ -7064,6 +7064,33 @@
 
 			local box_preview = create_box(panel_preview.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -16))
 
+			local update_icon = library:create("Frame", {
+				Parent = box_preview,
+				Position = dim2(0, 10, 0, 14),
+				Size = dim2(0, 10, 0, 10),
+				BorderSizePixel = 0,
+				BackgroundColor3 = rgb(220, 70, 70),
+			})
+			library:create("UICorner", {
+				Parent = update_icon,
+				CornerRadius = dim(1, 0),
+			})
+
+			local update_label = library:create("TextLabel", {
+				Parent = box_preview,
+				Position = dim2(0, 28, 0, 10),
+				Size = dim2(1, -38, 0, 18),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "Profile card removed",
+				TextSize = 13,
+				TextColor3 = rgb(220, 70, 70),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				TextYAlignment = Enum.TextYAlignment.Center,
+			})
+			library:create("UIStroke", { Parent = update_label, LineJoinMode = Enum.LineJoinMode.Miter })
+
 			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
 
 			local btn_outline = library:create("Frame", {
