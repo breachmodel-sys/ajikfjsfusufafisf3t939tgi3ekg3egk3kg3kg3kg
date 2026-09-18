@@ -7410,7 +7410,7 @@
 
 			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
 
-			local first_game_id = 123974602339071
+			local first_game_id = 9825515356
 			local first_game_name = "[UP] Just a baseplate."
 			local first_game_icon = "rbxthumb://type=Asset&id=" .. tostring(first_game_id) .. "&w=150&h=150"
 			local first_game_members = "1.4k Playing"
