@@ -1812,7 +1812,7 @@
 				local items = holder.items
 				
 				local column = setmetatable(items, library):column() 
-				window.esp_section = column:section({name = "Main"})
+				window.esp_section = column:section({name = "Main", scrollable = true})
 			--  
 
 			-- playerlist 
@@ -1980,7 +1980,6 @@
 					BorderColor3 = rgb(0, 0, 0);
 					ZIndex = 1;
 					LayoutOrder = 1;
-					Position = dim2(0, 0, 0, 10);
 					BorderSizePixel = 0;
 					BackgroundColor3 = rgb(255, 255, 255)
 				});
