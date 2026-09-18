@@ -7158,15 +7158,6 @@
 			library:apply_theme(uid_lbl, "text", "TextColor3")
 			library:create("UIStroke", { Parent = uid_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local div1 = library:create("Frame", {
-				Parent = box_preview,
-				Position = dim2(0, 8, 0, 72),
-				Size = dim2(1, -16, 0, 1),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(div1, "outline", "BackgroundColor3")
-
 
 			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
 
