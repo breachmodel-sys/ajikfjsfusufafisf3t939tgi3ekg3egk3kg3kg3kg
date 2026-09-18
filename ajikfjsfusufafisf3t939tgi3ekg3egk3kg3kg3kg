@@ -7800,7 +7800,6 @@
 				if selected_game == game_info then
 					sel_members_lbl.Text = game_info.members
 				end
-				end
 			end
 
 			task.spawn(function()
