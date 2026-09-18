@@ -6948,15 +6948,16 @@
 			local w3 = 240
 			local h = 255
 			local gap = 10
-			local total_w = w1 + gap + w2
+			local total_w = w3 + gap + w1 + gap + w2
 
 			local start_x = math.floor(cam_x / 2 - total_w / 2)
 			local start_y = math.floor(cam_y / 2 - h / 2)
+			local preview_x = start_x + w3 + gap
 
 			local panel_preview = library:panel({
 				name = "Preview",
 				size = dim2(0, w1, 0, h),
-				position = dim2(0, start_x, 0, start_y),
+				position = dim2(0, preview_x, 0, start_y),
 				anchor_point = vec2(0, 0),
 				close_button = false,
 				dock = false,
@@ -6966,7 +6967,7 @@
 			local panel_loader = library:panel({
 				name = loader_title,
 				size = dim2(0, w2, 0, h),
-				position = dim2(0, start_x + w1 + gap, 0, start_y),
+				position = dim2(0, preview_x + w1 + gap, 0, start_y),
 				anchor_point = vec2(0, 0),
 				close_button = false,
 				dock = false,
@@ -6976,7 +6977,7 @@
 			local panel_games = library:panel({
 				name = "Games",
 				size = dim2(0, w3, 0, h),
-				position = dim2(0, start_x + w1 + gap + w2 + gap + 18, 0, start_y),
+				position = dim2(0, start_x, 0, start_y),
 				anchor_point = vec2(0, 0),
 				close_button = false,
 				dock = false,
@@ -7010,13 +7011,13 @@
 				syncing = true
 				if source == "preview" then
 					panel_loader.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w1 + gap, p.Y.Scale, p.Y.Offset)
-					panel_games.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w1 + gap + w2 + gap + 18, p.Y.Scale, p.Y.Offset)
+					panel_games.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w3 + gap), p.Y.Scale, p.Y.Offset)
 				elseif source == "loader" then
 					panel_preview.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w1 + gap), p.Y.Scale, p.Y.Offset)
-					panel_games.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w2 + gap + 18, p.Y.Scale, p.Y.Offset)
+					panel_games.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w1 + gap) - (w3 + gap), p.Y.Scale, p.Y.Offset)
 				elseif source == "games" then
-					panel_loader.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w2 + gap + 18), p.Y.Scale, p.Y.Offset)
-					panel_preview.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w2 + gap + 18) - (w1 + gap), p.Y.Scale, p.Y.Offset)
+					panel_preview.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w3 + gap, p.Y.Scale, p.Y.Offset)
+					panel_loader.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w3 + gap + w1 + gap, p.Y.Scale, p.Y.Offset)
 				end
 				syncing = false
 			end
@@ -7767,7 +7768,7 @@
 				local gdot = library:create("Frame", {
 					Parent = card_bg,
 					Position = dim2(0, 40, 0, 22),
-					Size = dim2(0, 5, 0, 5),
+					Size = dim2(0, 6, 0, 6),
 					BorderSizePixel = 0,
 					BackgroundColor3 = rgb(67, 181, 129),
 				})
