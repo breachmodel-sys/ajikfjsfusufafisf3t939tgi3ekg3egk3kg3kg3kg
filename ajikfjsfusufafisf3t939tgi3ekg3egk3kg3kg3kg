@@ -7066,20 +7066,33 @@
 
 			local update_icon = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 10, 0, 14),
-				Size = dim2(0, 10, 0, 10),
+				Position = dim2(0, 8, 0, 10),
+				Size = dim2(0, 18, 0, 18),
 				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(220, 70, 70),
+				BackgroundTransparency = 1,
 			})
 			library:create("UICorner", {
 				Parent = update_icon,
 				CornerRadius = dim(1, 0),
 			})
+			library:create("UIStroke", {
+				Parent = update_icon,
+				Color = rgb(220, 70, 70),
+				Thickness = 2,
+				LineJoinMode = Enum.LineJoinMode.Round,
+			})
+			library:create("Frame", {
+				Parent = update_icon,
+				Position = dim2(0, 5, 0.5, -1),
+				Size = dim2(0, 8, 0, 2),
+				BorderSizePixel = 0,
+				BackgroundColor3 = rgb(220, 70, 70),
+			})
 
 			local update_label = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 28, 0, 10),
-				Size = dim2(1, -38, 0, 18),
+				Position = dim2(0, 34, 0, 10),
+				Size = dim2(1, -44, 0, 18),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
