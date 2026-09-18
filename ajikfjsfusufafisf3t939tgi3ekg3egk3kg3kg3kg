@@ -7081,7 +7081,7 @@
 
 			local update_label = library:create("TextLabel", {
 				Parent = box_preview,
-				Position = dim2(0, 24, 0, 10),
+				Position = dim2(0, 24, 0, 8),
 				Size = dim2(1, -34, 0, 18),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
