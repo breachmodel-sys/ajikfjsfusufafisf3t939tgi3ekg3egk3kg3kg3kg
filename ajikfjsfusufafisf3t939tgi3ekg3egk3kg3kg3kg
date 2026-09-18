@@ -1966,7 +1966,7 @@
 		end 
 
 		function library:esp_preview(properties)
-			local cfg = {items = {}, rotation = 0; objects = {};}
+			local cfg = {items = {}, rotation = 0; objects = {}, preview_mode = "Character";}
 
 			lp.Character.Archivable = true
 			local character = lp.Character:Clone()
@@ -1995,6 +1995,17 @@
 
 				items.viewportframe.CurrentCamera = items.camera -- sick
 				character.Parent = items.viewportframe
+
+				items.anime_image = library:create("ImageLabel", {
+					Parent = items.viewportframe;
+					BackgroundTransparency = 1;
+					Size = dim2(1, 0, 1, 0);
+					Position = dim2(0, 0, 0, 0);
+					Image = "rbxassetid://139399821337795";
+					ScaleType = Enum.ScaleType.Fit;
+					Visible = false;
+					ZIndex = 2;
+				});
 
 				items.camera.CameraSubject = character
 
@@ -2324,7 +2335,7 @@
 			end -- wtf why diff func defining
 
 			function cfg.refresh_elements( )                                
-				objects.holder.Parent = flags["Enabled"] and items.viewportframe or library.cache
+				objects.holder.Parent = flags["Enabled"] and cfg.preview_mode == "Character" and items.viewportframe or library.cache
 
 				local temp = {
 					["Names"] = objects["name"]; 
@@ -2367,6 +2378,14 @@
 				for _, corner in objects[ "corners" ]:GetChildren() do
 					corner.Frame.BackgroundColor3 = flags["Box_Color"].Color
 				end
+			end
+
+			function cfg.set_preview(mode)
+				cfg.preview_mode = mode
+				local is_anime = mode == "Anime"
+				items.anime_image.Visible = is_anime
+				character.Parent = is_anime and library.cache or items.viewportframe
+				cfg.refresh_elements()
 			end
 
 			task.spawn(function()
