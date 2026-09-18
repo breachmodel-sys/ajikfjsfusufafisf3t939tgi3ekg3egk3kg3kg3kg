@@ -7063,7 +7063,6 @@
 			end
 
 			local box_preview = create_box(panel_preview.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -16))
-			panel_preview.items.main_holder.Visible = false
 
 			local update_icon = library:create("Frame", {
 				Parent = box_preview,
@@ -7095,92 +7094,7 @@
 			})
 			library:create("UIStroke", { Parent = update_label, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local tab_holder = library:create("Frame", {
-				Parent = panel_loader.items.holder,
-				Position = dim2(0, 8, 0, 8),
-				Size = dim2(1, -16, 0, 20),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-			})
-			library:create("UIListLayout", {
-				Parent = tab_holder,
-				FillDirection = Enum.FillDirection.Horizontal,
-				Padding = dim(0, 4),
-				SortOrder = Enum.SortOrder.LayoutOrder,
-			})
-
-			local load_tab = library:create("TextButton", {
-				Parent = tab_holder,
-				Size = dim2(0.5, -2, 1, 0),
-				BackgroundColor3 = themes.preset.accent,
-				BorderSizePixel = 0,
-				AutoButtonColor = false,
-				FontFace = library.font,
-				Text = "Load",
-				TextSize = 11,
-				TextColor3 = rgb(255, 255, 255),
-			})
-			local logs_tab = library:create("TextButton", {
-				Parent = tab_holder,
-				Size = dim2(0.5, -2, 1, 0),
-				BackgroundColor3 = themes.preset.outline,
-				BorderSizePixel = 0,
-				AutoButtonColor = false,
-				FontFace = library.font,
-				Text = "Update Logs",
-				TextSize = 11,
-				TextColor3 = themes.preset.text,
-			})
-			library:create("UIStroke", { Parent = load_tab, LineJoinMode = Enum.LineJoinMode.Miter })
-			library:create("UIStroke", { Parent = logs_tab, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 34), dim2(1, -16, 1, -66))
-			local box_logs = create_box(panel_loader.items.holder, dim2(0, 8, 0, 34), dim2(1, -16, 1, -66))
-			box_logs.Visible = false
-
-			local logs_icon = library:create("Frame", {
-				Parent = box_logs,
-				Position = dim2(0, 8, 0, 15),
-				Size = dim2(0, 14, 0, 12),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-			})
-			library:create("Frame", {
-				Parent = logs_icon,
-				Position = dim2(0, 0, 0.5, -1),
-				Size = dim2(0, 7, 0, 2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(220, 70, 70),
-			})
-			local logs_label = library:create("TextLabel", {
-				Parent = box_logs,
-				Position = dim2(0, 24, 0, 10),
-				Size = dim2(1, -34, 0, 18),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "In testing",
-				TextSize = 13,
-				TextColor3 = rgb(255, 255, 255),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Center,
-			})
-			library:create("UIStroke", { Parent = logs_label, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local function select_loader_tab(show_logs)
-				box_loader.Visible = not show_logs
-				box_logs.Visible = show_logs
-				load_tab.BackgroundColor3 = show_logs and themes.preset.outline or themes.preset.accent
-				load_tab.TextColor3 = show_logs and themes.preset.text or rgb(255, 255, 255)
-				logs_tab.BackgroundColor3 = show_logs and themes.preset.accent or themes.preset.outline
-				logs_tab.TextColor3 = show_logs and rgb(255, 255, 255) or themes.preset.text
-			end
-			load_tab.MouseButton1Click:Connect(function()
-				select_loader_tab(false)
-			end)
-			logs_tab.MouseButton1Click:Connect(function()
-				select_loader_tab(true)
-			end)
+			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
 
 			local btn_outline = library:create("Frame", {
 				Parent = panel_loader.items.holder,
