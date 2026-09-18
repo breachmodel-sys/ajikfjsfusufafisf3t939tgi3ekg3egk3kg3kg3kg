@@ -7294,20 +7294,26 @@
 
 			local copy_btn = library:create("ImageButton", {
 				Parent = box_preview,
-				Position = dim2(1, -21, 0, srv_y + 2),
-				Size = dim2(0, 13, 0, 13),
+				Position = dim2(1, -21, 0, srv_y + 3),
+				Size = dim2(0, 11, 0, 11),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				Image = "rbxassetid://10709812159",
 				ImageColor3 = themes.preset.text,
+				ImageTransparency = 0.25,
 			})
 			library:apply_theme(copy_btn, "text", "ImageColor3")
+			pcall(function()
+				copy_btn.ResampleMode = Enum.ResamplerMode.Pixelated
+			end)
 
 			copy_btn.MouseEnter:Connect(function()
 				copy_btn.ImageColor3 = rgb(255, 255, 255)
+				copy_btn.ImageTransparency = 0
 			end)
 			copy_btn.MouseLeave:Connect(function()
 				copy_btn.ImageColor3 = themes.preset.text
+				copy_btn.ImageTransparency = 0.25
 			end)
 
 			local copy_deb = false
@@ -7321,9 +7327,11 @@
 				copy_deb = true
 				copy_btn.Image = "rbxassetid://10709790644"
 				copy_btn.ImageColor3 = rgb(67, 181, 129)
+				copy_btn.ImageTransparency = 0
 				task.delay(1.5, function()
 					copy_btn.Image = "rbxassetid://10709812159"
 					copy_btn.ImageColor3 = themes.preset.text
+					copy_btn.ImageTransparency = 0.25
 					copy_deb = false
 				end)
 			end)
