@@ -1997,7 +1997,7 @@
 				character.Parent = items.viewportframe
 
 				items.anime_image = library:create("ImageLabel", {
-					Parent = items.viewportframe;
+					Parent = self.holder;
 					BackgroundTransparency = 1;
 					Size = dim2(1, 0, 1, 0);
 					Position = dim2(0, 0, 0, 0);
@@ -2005,6 +2005,7 @@
 					ScaleType = Enum.ScaleType.Fit;
 					Visible = false;
 					ZIndex = 1;
+					LayoutOrder = 1;
 				});
 
 				items.camera.CameraSubject = character
@@ -2336,7 +2337,8 @@
 			end -- wtf why diff func defining
 
 			function cfg.refresh_elements( )                                
-				objects.holder.Parent = flags["Enabled"] and items.viewportframe or library.cache
+				local preview_parent = cfg.preview_mode == "Anime" and items.anime_image or items.viewportframe
+				objects.holder.Parent = flags["Enabled"] and preview_parent or library.cache
 
 				local temp = {
 					["Names"] = objects["name"]; 
@@ -2385,6 +2387,7 @@
 				cfg.preview_mode = mode
 				local is_anime = mode == "Anime"
 				items.anime_image.Visible = is_anime
+				items.viewportframe.Visible = not is_anime
 				character.Parent = is_anime and library.cache or items.viewportframe
 				cfg.refresh_elements()
 			end
