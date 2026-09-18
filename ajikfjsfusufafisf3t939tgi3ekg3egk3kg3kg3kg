@@ -7417,13 +7417,11 @@
 
 			pcall(function()
 				local info = game:GetService("MarketplaceService"):GetProductInfo(first_game_id)
-				if info and info.Name then
-					first_game_name = info.Name
-					if info.IconImageAssetId and info.IconImageAssetId ~= 0 then
-						first_game_icon = "rbxassetid://" .. tostring(info.IconImageAssetId)
-					end
+				if info and info.IconImageAssetId and info.IconImageAssetId ~= 0 then
+					first_game_icon = "rbxassetid://" .. tostring(info.IconImageAssetId)
 				end
 			end)
+			first_game_name = "Hood Customs"
 
 			local selected_game = {
 				name = first_game_name,
@@ -7487,19 +7485,10 @@
 			})
 			library:create("UIStroke", { Parent = sel_name_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local sel_dot = library:create("Frame", {
-				Parent = box_loader,
-				Position = dim2(0, 58, 0, 48),
-				Size = dim2(0, 6, 0, 6),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(67, 181, 129),
-			})
-			library:create("UICorner", { Parent = sel_dot, CornerRadius = dim(1, 0) })
-
 			local sel_members_lbl = library:create("TextLabel", {
 				Parent = box_loader,
-				Position = dim2(0, 68, 0, 44),
-				Size = dim2(1, -74, 0, 14),
+				Position = dim2(0, 58, 0, 44),
+				Size = dim2(1, -64, 0, 14),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				FontFace = library.font,
@@ -7518,21 +7507,6 @@
 				BackgroundColor3 = themes.preset.outline,
 			})
 			library:apply_theme(sel_div, "outline", "BackgroundColor3")
-
-			local sel_hint = library:create("TextLabel", {
-				Parent = box_loader,
-				Position = dim2(0, 8, 0, 88),
-				Size = dim2(1, -16, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "Click > to change game",
-				TextSize = 11,
-				TextColor3 = themes.preset.text,
-				TextXAlignment = Enum.TextXAlignment.Left,
-			})
-			library:apply_theme(sel_hint, "text", "TextColor3")
-			library:create("UIStroke", { Parent = sel_hint, LineJoinMode = Enum.LineJoinMode.Miter })
 
 			local arrow_tab = library:create("Frame", {
 				Parent = panel_loader.items.main_holder,
@@ -7650,18 +7624,6 @@
 					place_id = first_game_id,
 				},
 				{
-					name = "Rivals",
-					icon = "rbxthumb://type=Asset&id=17625359962&w=150&h=150",
-					members = "28.4k Playing",
-					place_id = 17625359962,
-				},
-				{
-					name = "Arsenal",
-					icon = "rbxthumb://type=Asset&id=286090429&w=150&h=150",
-					members = "12.8k Playing",
-					place_id = 286090429,
-				},
-				{
 					name = "Da Hood",
 					icon = "rbxthumb://type=Asset&id=2788229376&w=150&h=150",
 					members = "16.1k Playing",
@@ -7765,19 +7727,10 @@
 				})
 				library:create("UIStroke", { Parent = gname_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
 
-				local gdot = library:create("Frame", {
-					Parent = card_bg,
-					Position = dim2(0, 40, 0, 22),
-					Size = dim2(0, 6, 0, 6),
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(67, 181, 129),
-				})
-				library:create("UICorner", { Parent = gdot, CornerRadius = dim(1, 0) })
-
 				local gmem_lbl = library:create("TextLabel", {
 					Parent = card_bg,
-					Position = dim2(0, 48, 0, 18),
-					Size = dim2(1, -52, 0, 14),
+					Position = dim2(0, 40, 0, 18),
+					Size = dim2(1, -44, 0, 14),
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					FontFace = library.font,
