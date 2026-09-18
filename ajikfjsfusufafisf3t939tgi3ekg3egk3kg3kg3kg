@@ -7412,8 +7412,8 @@
 
 			local first_game_id = 9825515356
 			local first_game_name = "[UP] Just a baseplate."
-			local first_game_icon = "rbxthumb://type=Asset&id=" .. tostring(first_game_id) .. "&w=150&h=150"
-			local first_game_members = "Loading..."
+			local first_game_icon = "rbxthumb://type=Asset&id=" .. tostring(first_game_id) .. "&w=420&h=420"
+			local first_game_members = "Players unavailable"
 
 			pcall(function()
 				local info = game:GetService("MarketplaceService"):GetProductInfo(first_game_id)
@@ -7625,8 +7625,8 @@
 				},
 				{
 					name = "Da Hood",
-					icon = "rbxthumb://type=Asset&id=2788229376&w=150&h=150",
-					members = "Loading...",
+					icon = "rbxthumb://type=Asset&id=2788229376&w=420&h=420",
+					members = "Players unavailable",
 					place_id = 2788229376,
 				},
 				{
@@ -7790,12 +7790,16 @@
 					return game_data and game_data.data and game_data.data[1]
 				end)
 
-				if ok and response and response.playing then
+				if ok and response and response.playing ~= nil then
 					game_info.members = tostring(response.playing) .. " Playing"
-					card.members_lbl.Text = game_info.members
-					if selected_game == game_info then
-						sel_members_lbl.Text = game_info.members
-					end
+				else
+					game_info.members = "Players unavailable"
+				end
+
+				card.members_lbl.Text = game_info.members
+				if selected_game == game_info then
+					sel_members_lbl.Text = game_info.members
+				end
 				end
 			end
 
