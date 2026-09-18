@@ -7329,12 +7329,16 @@
 				task.spawn(function()
 					local current_pct = 0
 					local targets = { 25, 50, 75, 92, 100 }
+					local stages = { "Preparing UI", "Loading settings", "Building preview", "Applying theme", "Finalizing" }
+					local animation_tick = 0
 
-					for _, target in ipairs(targets) do
+					for stage_index, target in ipairs(targets) do
 						while current_pct < target do
 							current_pct = math.min(target, current_pct + math.random(2, 6))
+							animation_tick = animation_tick + 1
+							local dots = string.rep(".", (animation_tick % 3) + 1)
 							bar_fill.Size = dim2(current_pct / 100, 0, 1, 0)
-							bar_text.Text = "Loading... " .. tostring(math.floor(current_pct)) .. "%"
+							bar_text.Text = stages[stage_index] .. dots .. " " .. tostring(math.floor(current_pct)) .. "%"
 							task.wait(0.03)
 						end
 						task.wait(0.06)
