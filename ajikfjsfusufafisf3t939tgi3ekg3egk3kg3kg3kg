@@ -5984,8 +5984,17 @@
 				Parent = avatar_inline,
 				Position = dim2(0, 1, 0, 1),
 				Size = dim2(1, -2, 1, -2),
-				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(25, 25, 25),
+			})
+
+			local avatar_image = library:create("ImageLabel", {
+				Parent = avatar_bg,
+				Position = dim2(0, 0, 0, 0),
+				Size = dim2(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				Image = "rbxthumb://type=AvatarBust&id=" .. lp.UserId .. "&w=150&h=150",
+				BorderSizePixel = 0,
 			})
 			cfg.avatar_image = avatar_image
 
@@ -6936,19 +6945,17 @@
 
 			local w1 = 350
 			local w2 = 220
-			local w3 = 240
 			local h = 255
 			local gap = 10
-			local total_w = w3 + gap + w1 + gap + w2
+			local total_w = w1 + gap + w2
 
 			local start_x = math.floor(cam_x / 2 - total_w / 2)
 			local start_y = math.floor(cam_y / 2 - h / 2)
-			local preview_x = start_x + w3 + gap
 
 			local panel_preview = library:panel({
 				name = "Preview",
 				size = dim2(0, w1, 0, h),
-				position = dim2(0, preview_x, 0, start_y),
+				position = dim2(0, start_x, 0, start_y),
 				anchor_point = vec2(0, 0),
 				close_button = false,
 				dock = false,
@@ -6958,17 +6965,7 @@
 			local panel_loader = library:panel({
 				name = loader_title,
 				size = dim2(0, w2, 0, h),
-				position = dim2(0, preview_x + w1 + gap, 0, start_y),
-				anchor_point = vec2(0, 0),
-				close_button = false,
-				dock = false,
-				hide_with_menu = false,
-			})
-
-			local panel_games = library:panel({
-				name = "Games",
-				size = dim2(0, w3, 0, h),
-				position = dim2(0, start_x, 0, start_y),
+				position = dim2(0, start_x + w1 + gap, 0, start_y),
 				anchor_point = vec2(0, 0),
 				close_button = false,
 				dock = false,
@@ -6982,47 +6979,28 @@
 				if panel_loader.items.glow then
 					panel_loader.items.glow:Destroy()
 				end
-				if panel_games.items.glow then
-					panel_games.items.glow:Destroy()
-				end
 			end)
 
 			pcall(function()
 				panel_loader.items.main_holder.Parent = panel_preview.items.sgui
 				panel_loader.items.sgui:Destroy()
-				panel_games.items.main_holder.Parent = panel_preview.items.sgui
-				panel_games.items.sgui:Destroy()
 			end)
 
-			panel_games.items.main_holder.Visible = false
-
 			local syncing = false
-			local function sync_positions(p, source)
+			panel_preview.items.main_holder:GetPropertyChangedSignal("Position"):Connect(function()
 				if syncing then return end
 				syncing = true
-				if source == "preview" then
-					panel_loader.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w1 + gap, p.Y.Scale, p.Y.Offset)
-					panel_games.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w3 + gap), p.Y.Scale, p.Y.Offset)
-				elseif source == "loader" then
-					panel_preview.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w1 + gap), p.Y.Scale, p.Y.Offset)
-					panel_games.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w1 + gap) - (w3 + gap), p.Y.Scale, p.Y.Offset)
-				elseif source == "games" then
-					panel_preview.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w3 + gap, p.Y.Scale, p.Y.Offset)
-					panel_loader.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w3 + gap + w1 + gap, p.Y.Scale, p.Y.Offset)
-				end
+				local p = panel_preview.items.main_holder.Position
+				panel_loader.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w1 + gap, p.Y.Scale, p.Y.Offset)
 				syncing = false
-			end
-
-			panel_preview.items.main_holder:GetPropertyChangedSignal("Position"):Connect(function()
-				sync_positions(panel_preview.items.main_holder.Position, "preview")
 			end)
 
 			panel_loader.items.main_holder:GetPropertyChangedSignal("Position"):Connect(function()
-				sync_positions(panel_loader.items.main_holder.Position, "loader")
-			end)
-
-			panel_games.items.main_holder:GetPropertyChangedSignal("Position"):Connect(function()
-				sync_positions(panel_games.items.main_holder.Position, "games")
+				if syncing then return end
+				syncing = true
+				local p = panel_loader.items.main_holder.Position
+				panel_preview.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w1 + gap), p.Y.Scale, p.Y.Offset)
+				syncing = false
 			end)
 
 			local function apply_dark_theme(panel)
@@ -7041,12 +7019,11 @@
 							rgbkey(1, rgb(20, 20, 20)),
 						}
 					end
-				end)
+			end)
 			end
 
 			apply_dark_theme(panel_preview)
 			apply_dark_theme(panel_loader)
-			apply_dark_theme(panel_games)
 
 			local function create_box(parent, pos, sz)
 				local o = library:create("Frame", {
@@ -7368,8 +7345,9 @@
 							Method = "GET",
 						})
 						return res and res.Body
+					else
+						return game:HttpGet("https://discord.com/api/v10/invites/vulnerability?with_counts=true")
 					end
-					return game:HttpGet("https://discord.com/api/v10/invites/vulnerability?with_counts=true")
 				end)
 
 				if ok and resp_body then
@@ -7400,355 +7378,6 @@
 			end)
 
 			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
-
-			local first_game_id = 9825515356
-			local first_game_name = "[UP] Just a baseplate."
-			local first_game_icon = "rbxthumb://type=Asset&id=" .. tostring(first_game_id) .. "&w=420&h=420"
-			local first_game_members = "Players unavailable"
-
-			pcall(function()
-				local info = game:GetService("MarketplaceService"):GetProductInfo(first_game_id)
-				if info and info.IconImageAssetId and info.IconImageAssetId ~= 0 then
-					first_game_icon = "rbxassetid://" .. tostring(info.IconImageAssetId)
-				end
-			end)
-			first_game_name = "Hood Customs"
-
-			local selected_game = {
-				name = first_game_name,
-				icon = first_game_icon,
-				members = first_game_members,
-				place_id = first_game_id
-			}
-
-			local sel_header = library:create("TextLabel", {
-				Parent = box_loader,
-				Position = dim2(0, 8, 0, 8),
-				Size = dim2(1, -16, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "Selected Game:",
-				TextSize = 11,
-				TextColor3 = rgb(160, 160, 160),
-				TextXAlignment = Enum.TextXAlignment.Left,
-			})
-			library:create("UIStroke", { Parent = sel_header, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local sel_pfp_box = library:create("Frame", {
-				Parent = box_loader,
-				Position = dim2(0, 8, 0, 28),
-				Size = dim2(0, 44, 0, 44),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(sel_pfp_box, "outline", "BackgroundColor3")
-
-			local sel_pfp_in = library:create("Frame", {
-				Parent = sel_pfp_box,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.inline,
-			})
-			library:apply_theme(sel_pfp_in, "inline", "BackgroundColor3")
-
-			local sel_pfp_img = library:create("ImageLabel", {
-				Parent = sel_pfp_in,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				Image = first_game_icon,
-			})
-
-			local sel_name_lbl = library:create("TextLabel", {
-				Parent = box_loader,
-				Position = dim2(0, 58, 0, 28),
-				Size = dim2(1, -64, 0, 16),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = first_game_name,
-				TextSize = 12,
-				TextColor3 = rgb(255, 255, 255),
-				TextXAlignment = Enum.TextXAlignment.Left,
-			})
-			library:create("UIStroke", { Parent = sel_name_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local sel_div = library:create("Frame", {
-				Parent = box_loader,
-				Position = dim2(0, 8, 0, 80),
-				Size = dim2(1, -16, 0, 1),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(sel_div, "outline", "BackgroundColor3")
-
-			local arrow_tab = library:create("Frame", {
-				Parent = panel_preview.items.main_holder,
-				Position = dim2(0, -1, 0.5, -18),
-				Size = dim2(0, 16, 0, 36),
-				BorderSizePixel = 0,
-				BackgroundTransparency = 1,
-			})
-
-			local arrow_in = library:create("Frame", {
-				Parent = arrow_tab,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundTransparency = 1,
-			})
-
-			local arrow_bg = library:create("Frame", {
-				Parent = arrow_in,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundTransparency = 1,
-			})
-
-			local arrow_lbl = library:create("TextLabel", {
-				Parent = arrow_bg,
-				Size = dim2(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = ">",
-				TextSize = 14,
-				TextColor3 = rgb(255, 255, 255),
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
-			})
-			library:create("UIStroke", { Parent = arrow_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local arrow_btn = library:create("TextButton", {
-				Parent = arrow_bg,
-				Size = dim2(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Text = "",
-				AutoButtonColor = false,
-			})
-
-			arrow_btn.MouseEnter:Connect(function()
-				arrow_lbl.TextColor3 = rgb(255, 255, 255)
-			end)
-			arrow_btn.MouseLeave:Connect(function()
-				arrow_lbl.TextColor3 = rgb(255, 255, 255)
-			end)
-
-			local games_open = false
-			arrow_btn.MouseButton1Click:Connect(function()
-				games_open = not games_open
-				panel_games.items.main_holder.Visible = games_open
-				arrow_lbl.Text = games_open and "<" or ">"
-			end)
-
-			local box_games = create_box(panel_games.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -16))
-
-			local games_title = library:create("TextLabel", {
-				Parent = box_games,
-				Position = dim2(0, 8, 0, 8),
-				Size = dim2(1, -16, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "Choose Game:",
-				TextSize = 11,
-				TextColor3 = rgb(160, 160, 160),
-				TextXAlignment = Enum.TextXAlignment.Left,
-			})
-			library:create("UIStroke", { Parent = games_title, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local games_scroll = library:create("ScrollingFrame", {
-				Parent = box_games,
-				Position = dim2(0, 4, 0, 26),
-				Size = dim2(1, -8, 1, -30),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				ScrollBarThickness = 2,
-				ScrollBarImageColor3 = themes.preset.accent,
-				CanvasSize = dim2(0, 0, 0, 240),
-			})
-			library:apply_theme(games_scroll, "accent", "ScrollBarImageColor3")
-
-			local games_list = {
-				{
-					name = first_game_name,
-					icon = first_game_icon,
-					members = first_game_members,
-					place_id = first_game_id,
-				},
-				{
-					name = "Da Hood",
-					icon = "rbxthumb://type=Asset&id=2788229376&w=420&h=420",
-					members = "Players unavailable",
-					place_id = 2788229376,
-				},
-				{
-					name = "Universal",
-					icon = "rbxassetid://10709782582",
-					members = "All Games",
-					place_id = 0,
-				},
-			}
-
-			local game_cards = {}
-			local function refresh_game_selection(target_name)
-				for _, card in ipairs(game_cards) do
-					local is_sel = (card.info.name == target_name)
-					card.outline.BackgroundColor3 = is_sel and themes.preset.accent or themes.preset.outline
-					card.name_lbl.TextColor3 = is_sel and rgb(255, 255, 255) or themes.preset.text
-				end
-				sel_pfp_img.Image = selected_game.icon
-				sel_name_lbl.Text = selected_game.name
-			end
-
-			for idx, g in ipairs(games_list) do
-				local card_y = (idx - 1) * 46
-
-				local card_out = library:create("Frame", {
-					Parent = games_scroll,
-					Position = dim2(0, 4, 0, card_y),
-					Size = dim2(1, -8, 0, 42),
-					BorderSizePixel = 0,
-					BackgroundColor3 = (g.name == selected_game.name) and themes.preset.accent or themes.preset.outline,
-				})
-
-				local card_in = library:create("Frame", {
-					Parent = card_out,
-					Position = dim2(0, 1, 0, 1),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline,
-				})
-				library:apply_theme(card_in, "inline", "BackgroundColor3")
-
-				local card_bg = library:create("Frame", {
-					Parent = card_in,
-					Position = dim2(0, 1, 0, 1),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255),
-				})
-
-				local card_grad = library:create("UIGradient", {
-					Parent = card_bg,
-					Rotation = 90,
-					Color = rgbseq{
-						rgbkey(0, rgb(32, 32, 32)),
-						rgbkey(1, rgb(22, 22, 22)),
-					},
-				})
-
-				local pfp_out = library:create("Frame", {
-					Parent = card_bg,
-					Position = dim2(0, 4, 0, 4),
-					Size = dim2(0, 30, 0, 30),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.outline,
-				})
-				library:apply_theme(pfp_out, "outline", "BackgroundColor3")
-
-				local pfp_in = library:create("Frame", {
-					Parent = pfp_out,
-					Position = dim2(0, 1, 0, 1),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline,
-				})
-				library:apply_theme(pfp_in, "inline", "BackgroundColor3")
-
-				local pfp_img = library:create("ImageLabel", {
-					Parent = pfp_in,
-					Position = dim2(0, 1, 0, 1),
-					Size = dim2(1, -2, 1, -2),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					Image = g.icon,
-				})
-
-				local gname_lbl = library:create("TextLabel", {
-					Parent = card_bg,
-					Position = dim2(0, 40, 0, 4),
-					Size = dim2(1, -44, 0, 14),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					FontFace = library.font,
-					Text = g.name,
-					TextSize = 11,
-					TextColor3 = (g.name == selected_game.name) and rgb(255, 255, 255) or themes.preset.text,
-					TextXAlignment = Enum.TextXAlignment.Left,
-				})
-				library:create("UIStroke", { Parent = gname_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
-
-				local card_btn = library:create("TextButton", {
-					Parent = card_bg,
-					Size = dim2(1, 0, 1, 0),
-					BackgroundTransparency = 1,
-					Text = "",
-					AutoButtonColor = false,
-				})
-
-				card_btn.MouseEnter:Connect(function()
-					card_grad.Color = rgbseq{
-						rgbkey(0, rgb(42, 42, 42)),
-						rgbkey(1, rgb(30, 30, 30)),
-					}
-				end)
-				card_btn.MouseLeave:Connect(function()
-					card_grad.Color = rgbseq{
-						rgbkey(0, rgb(32, 32, 32)),
-						rgbkey(1, rgb(22, 22, 22)),
-					}
-				end)
-
-				card_btn.MouseButton1Click:Connect(function()
-					selected_game = g
-					refresh_game_selection(g.name)
-				end)
-
-				table.insert(game_cards, {
-					info = g,
-					outline = card_out,
-					name_lbl = gname_lbl,
-				})
-			end
-
-			local function update_game_stats(game_info, card)
-				if game_info.place_id == 0 then
-					game_info.members = "All Games"
-					return
-				end
-
-				local ok, response = pcall(function()
-					local place_data = http_service:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/multiget-place-details?placeIds=" .. tostring(game_info.place_id)))
-					local universe_id = place_data and place_data[1] and place_data[1].universeId
-					if not universe_id then return nil end
-					local game_data = http_service:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games?universeIds=" .. tostring(universe_id)))
-					return game_data and game_data.data and game_data.data[1]
-				end)
-
-				if ok and response and response.playing ~= nil then
-					game_info.members = tostring(response.playing) .. " Playing"
-				else
-					game_info.members = "Players unavailable"
-				end
-
-			end
-
-			task.spawn(function()
-				while task.wait(30) do
-					for index, game_info in ipairs(games_list) do
-						update_game_stats(game_info, game_cards[index])
-					end
-				end
-			end)
-
-			for index, game_info in ipairs(games_list) do
-				update_game_stats(game_info, game_cards[index])
-			end
 
 			local btn_outline = library:create("Frame", {
 				Parent = panel_loader.items.holder,
@@ -7930,13 +7559,13 @@
 					end
 
 					bar_fill.Size = dim2(1, 0, 1, 0)
-					bar_text.Text = "Loaded " .. selected_game.name
+					bar_text.Text = "Loaded Wizardhook"
 					task.wait(0.4)
 
 					panel_preview.items.sgui:Destroy()
 
 					if callback then
-						task.spawn(callback, selected_game)
+						task.spawn(callback)
 					end
 				end)
 			end)
