@@ -6996,8 +6996,30 @@
 				AutoButtonColor = false,
 				Text = "",
 			})
-			local startup_icon = library:create("ImageLabel", {
+			local startup_inline = library:create("Frame", {
 				Parent = startup_button,
+				Position = dim2(0, 1, 0, 1),
+				Size = dim2(1, -2, 1, -2),
+				BorderSizePixel = 0,
+				BackgroundColor3 = themes.preset.inline,
+			})
+			local startup_background = library:create("Frame", {
+				Parent = startup_inline,
+				Position = dim2(0, 1, 0, 1),
+				Size = dim2(1, -2, 1, -2),
+				BorderSizePixel = 0,
+				BackgroundColor3 = rgb(255, 255, 255),
+			})
+			library:create("UIGradient", {
+				Parent = startup_background,
+				Rotation = 90,
+				Color = rgbseq{
+					rgbkey(0, rgb(41, 41, 55)),
+					rgbkey(1, rgb(35, 35, 47)),
+				},
+			})
+			local startup_icon = library:create("ImageLabel", {
+				Parent = startup_background,
 				Position = dim2(0, 5, 0, 4),
 				Size = dim2(0, 17, 0, 16),
 				BackgroundTransparency = 1,
