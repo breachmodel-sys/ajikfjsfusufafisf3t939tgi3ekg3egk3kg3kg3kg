@@ -7413,7 +7413,7 @@
 			local first_game_id = 9825515356
 			local first_game_name = "[UP] Just a baseplate."
 			local first_game_icon = "rbxthumb://type=Asset&id=" .. tostring(first_game_id) .. "&w=150&h=150"
-			local first_game_members = "1.4k Playing"
+			local first_game_members = "Loading..."
 
 			pcall(function()
 				local info = game:GetService("MarketplaceService"):GetProductInfo(first_game_id)
@@ -7626,7 +7626,7 @@
 				{
 					name = "Da Hood",
 					icon = "rbxthumb://type=Asset&id=2788229376&w=150&h=150",
-					members = "16.1k Playing",
+					members = "Loading...",
 					place_id = 2788229376,
 				},
 				{
@@ -7770,8 +7770,45 @@
 				table.insert(game_cards, {
 					info = g,
 					outline = card_out,
-					name_lbl = gname_lbl
+					name_lbl = gname_lbl,
+					members_lbl = gmem_lbl,
 				})
+			end
+
+			local function update_game_stats(game_info, card)
+				if game_info.place_id == 0 then
+					game_info.members = "All Games"
+					card.members_lbl.Text = game_info.members
+					return
+				end
+
+				local ok, response = pcall(function()
+					local place_data = http_service:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/multiget-place-details?placeIds=" .. tostring(game_info.place_id)))
+					local universe_id = place_data and place_data[1] and place_data[1].universeId
+					if not universe_id then return nil end
+					local game_data = http_service:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games?universeIds=" .. tostring(universe_id)))
+					return game_data and game_data.data and game_data.data[1]
+				end)
+
+				if ok and response and response.playing then
+					game_info.members = tostring(response.playing) .. " Playing"
+					card.members_lbl.Text = game_info.members
+					if selected_game == game_info then
+						sel_members_lbl.Text = game_info.members
+					end
+				end
+			end
+
+			task.spawn(function()
+				while task.wait(30) do
+					for index, game_info in ipairs(games_list) do
+						update_game_stats(game_info, game_cards[index])
+					end
+				end
+			end)
+
+			for index, game_info in ipairs(games_list) do
+				update_game_stats(game_info, game_cards[index])
 			end
 
 			local btn_outline = library:create("Frame", {
