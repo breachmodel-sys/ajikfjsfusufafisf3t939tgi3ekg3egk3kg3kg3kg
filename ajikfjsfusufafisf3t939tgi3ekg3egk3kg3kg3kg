@@ -2388,6 +2388,8 @@
 				cfg.refresh_elements()
 			end
 
+			self:dropdown({name = "Preview", flag = "Preview_Mode", items = {"Character", "Anime"}, default = "Character", callback = cfg.set_preview})
+
 			task.spawn(function()
 				while true do 
 					task.wait()
