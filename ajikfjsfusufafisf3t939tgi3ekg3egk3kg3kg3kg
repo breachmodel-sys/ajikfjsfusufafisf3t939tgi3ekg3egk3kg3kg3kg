@@ -1979,6 +1979,7 @@
 					Size = dim2(1, 0, 0, 220);
 					BorderColor3 = rgb(0, 0, 0);
 					ZIndex = 1;
+					LayoutOrder = 1;
 					Position = dim2(0, 0, 0, 10);
 					BorderSizePixel = 0;
 					BackgroundColor3 = rgb(255, 255, 255)
@@ -2004,7 +2005,7 @@
 					Image = "rbxassetid://139399821337795";
 					ScaleType = Enum.ScaleType.Fit;
 					Visible = false;
-					ZIndex = 2;
+					ZIndex = 1;
 				});
 
 				items.camera.CameraSubject = character
@@ -2020,6 +2021,7 @@
 				objects[ "holder" ] = library:create( "Frame" , {
 					Parent = items.viewportframe;
 					Name = "\0";
+					ZIndex = 2;
 					BackgroundTransparency = 1;
 					Position = dim2(0.5, 0, 0.5, 10);
 					BorderColor3 = rgb(0, 0, 0);
@@ -2335,7 +2337,7 @@
 			end -- wtf why diff func defining
 
 			function cfg.refresh_elements( )                                
-				objects.holder.Parent = flags["Enabled"] and cfg.preview_mode == "Character" and items.viewportframe or library.cache
+				objects.holder.Parent = flags["Enabled"] and items.viewportframe or library.cache
 
 				local temp = {
 					["Names"] = objects["name"]; 
@@ -2389,6 +2391,10 @@
 			end
 
 			self:dropdown({name = "Preview", flag = "Preview_Mode", items = {"Character", "Anime"}, default = "Character", callback = cfg.set_preview})
+			local preview_dropdown = self.holder:FindFirstChild("dropdown")
+			if preview_dropdown then
+				preview_dropdown.LayoutOrder = 2
+			end
 
 			task.spawn(function()
 				while true do 
