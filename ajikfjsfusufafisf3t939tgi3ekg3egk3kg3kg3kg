@@ -7066,15 +7066,15 @@
 
 			local update_icon = library:create("Frame", {
 				Parent = box_preview,
-				Position = dim2(0, 10, 0, 14),
-				Size = dim2(0, 10, 0, 10),
+				Position = dim2(0, 8, 0, 13),
+				Size = dim2(0, 14, 0, 12),
 				BorderSizePixel = 0,
 				BackgroundTransparency = 1,
 			})
 			library:create("Frame", {
 				Parent = update_icon,
-				Position = dim2(0, 3, 0.5, -1),
-				Size = dim2(0, 4, 0, 2),
+				Position = dim2(0, 0, 0.5, -1),
+				Size = dim2(0, 7, 0, 2),
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(220, 70, 70),
 			})
