@@ -6953,7 +6953,7 @@
 			local start_y = math.floor(cam_y / 2 - h / 2)
 
 			local panel_preview = library:panel({
-				name = "Preview",
+				name = "Updates",
 				size = dim2(0, w1, 0, h),
 				position = dim2(0, start_x, 0, start_y),
 				anchor_point = vec2(0, 0),
@@ -7063,101 +7063,6 @@
 			end
 
 			local box_preview = create_box(panel_preview.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -16))
-
-			local avatar_box = library:create("Frame", {
-				Parent = box_preview,
-				Position = dim2(0, 8, 0, 10),
-				Size = dim2(0, 48, 0, 48),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(avatar_box, "outline", "BackgroundColor3")
-
-			local avatar_in = library:create("Frame", {
-				Parent = avatar_box,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.inline,
-			})
-			library:apply_theme(avatar_in, "inline", "BackgroundColor3")
-
-			local avatar_bg = library:create("Frame", {
-				Parent = avatar_in,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(24, 24, 24),
-			})
-
-			local avatar_img = library:create("ImageLabel", {
-				Parent = avatar_bg,
-				Size = dim2(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				Image = "rbxassetid://0",
-			})
-
-			task.spawn(function()
-				pcall(function()
-					if lp and players then
-						local thumb = players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-						avatar_img.Image = thumb
-					end
-				end)
-			end)
-
-			local user_display = lp and lp.DisplayName or "Wizardhook User"
-			local user_handle = lp and ("@" .. lp.Name) or "@user"
-
-			local name_lbl = library:create("TextLabel", {
-				Parent = box_preview,
-				Position = dim2(0, 68, 0, 10),
-				Size = dim2(1, -76, 0, 16),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = user_display,
-				TextSize = 13,
-				TextColor3 = rgb(255, 255, 255),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Center,
-			})
-			library:create("UIStroke", { Parent = name_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local handle_lbl = library:create("TextLabel", {
-				Parent = box_preview,
-				Position = dim2(0, 68, 0, 28),
-				Size = dim2(1, -76, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = user_handle,
-				TextSize = 11,
-				TextColor3 = themes.preset.text,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Center,
-			})
-			library:apply_theme(handle_lbl, "text", "TextColor3")
-			library:create("UIStroke", { Parent = handle_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local user_id_str = lp and tostring(lp.UserId) or "Unknown"
-			local uid_lbl = library:create("TextLabel", {
-				Parent = box_preview,
-				Position = dim2(0, 68, 0, 44),
-				Size = dim2(1, -76, 0, 14),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "ID: " .. user_id_str,
-				TextSize = 11,
-				TextColor3 = themes.preset.text,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Center,
-			})
-			library:apply_theme(uid_lbl, "text", "TextColor3")
-			library:create("UIStroke", { Parent = uid_lbl, LineJoinMode = Enum.LineJoinMode.Miter })
-
 
 			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
 
