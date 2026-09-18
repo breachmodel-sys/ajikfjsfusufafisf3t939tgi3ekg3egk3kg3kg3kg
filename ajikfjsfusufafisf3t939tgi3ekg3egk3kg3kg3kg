@@ -7073,7 +7073,7 @@
 			})
 			library:create("Frame", {
 				Parent = update_icon,
-				Position = dim2(0, 0, 0.5, -1),
+				Position = dim2(0, 0, 0.5, 1),
 				Size = dim2(0, 7, 0, 2),
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(220, 70, 70),
