@@ -7125,40 +7125,6 @@
 
 			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
 
-			local analyzer_holder = library:create("Frame", {
-				Parent = box_loader,
-				Name = "analyzer_holder",
-				Position = dim2(0, 10, 1, -44),
-				Size = dim2(1, -20, 0, 38),
-				BorderSizePixel = 0,
-				BackgroundTransparency = 1,
-			})
-
-			local analyzer_bars = {}
-			for i = 1, 18 do
-				local bar = library:create("Frame", {
-					Parent = analyzer_holder,
-					Name = "bar_" .. i,
-					Position = dim2(0, (i - 1) * 8.5 + 2, 1, 0),
-					Size = dim2(0, 4, 0, 8),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent,
-					BackgroundTransparency = 0.25,
-					AnchorPoint = vec2(0, 1),
-				})
-				library:apply_theme(bar, "accent", "BackgroundColor3")
-				analyzer_bars[#analyzer_bars + 1] = bar
-			end
-
-			library:connection(run.RenderStepped, function()
-				for i, bar in ipairs(analyzer_bars) do
-					local t = os.clock() * 8 + i * 0.7
-					local height = 10 + (math.sin(t) * 0.5 + 0.5) * (analyzer_holder.AbsoluteSize.Y - 12)
-					bar.Size = dim2(0, 4, 0, math.max(10, height))
-					bar.BackgroundTransparency = 0.18 + ((i % 4) * 0.06)
-				end
-			end)
-
 			local btn_outline = library:create("Frame", {
 				Parent = panel_loader.items.holder,
 				Name = "load_btn_outline",
