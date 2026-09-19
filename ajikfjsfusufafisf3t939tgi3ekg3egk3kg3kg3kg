@@ -1812,7 +1812,7 @@
 				local items = holder.items
 				
 				local column = setmetatable(items, library):column() 
-				window.esp_section = column:section({name = "Main", scrollable = true})
+				window.esp_section = column:section({name = "Main", scrollable = false})
 			--  
 
 			-- playerlist 
