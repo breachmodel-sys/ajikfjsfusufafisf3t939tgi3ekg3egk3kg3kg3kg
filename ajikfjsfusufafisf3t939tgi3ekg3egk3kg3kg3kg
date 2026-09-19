@@ -6972,9 +6972,9 @@
 			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
 			local cam_y = (camera and camera.ViewportSize and camera.ViewportSize.Y or 720)
 
-			local w1 = 420
-			local w2 = 280
-			local h = 330
+			local w1 = 390
+			local w2 = 255
+			local h = 300
 			local gap = 10
 			local total_w = w1 + gap + w2
 
