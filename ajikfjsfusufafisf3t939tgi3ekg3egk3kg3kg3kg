@@ -7207,7 +7207,7 @@
 			})
 
 			pcall(function()
-				if players.LocalPlayer and players:GetUserThumbnailAsync then
+				if players.LocalPlayer and players.GetUserThumbnailAsync then
 					profile_avatar.Image = players:GetUserThumbnailAsync(players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
 				end
 			end)
