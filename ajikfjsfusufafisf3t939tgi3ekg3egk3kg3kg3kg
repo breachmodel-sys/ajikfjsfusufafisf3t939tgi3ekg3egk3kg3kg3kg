@@ -7125,22 +7125,11 @@
 
 			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
 
-			local loader_divider = library:create("Frame", {
-				Parent = box_loader,
-				Name = "loader_divider",
-				Position = dim2(0, 8, 0.5, -1),
-				Size = dim2(1, -16, 0, 1),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.accent,
-				BackgroundTransparency = 0.4,
-			})
-			library:apply_theme(loader_divider, "accent", "BackgroundColor3")
-
 			local analyzer_holder = library:create("Frame", {
 				Parent = box_loader,
 				Name = "analyzer_holder",
-				Position = dim2(0, 10, 0, 24),
-				Size = dim2(1, -20, 0, 42),
+				Position = dim2(0, 8, 0, 8),
+				Size = dim2(1, -16, 1, -16),
 				BorderSizePixel = 0,
 				BackgroundTransparency = 1,
 			})
@@ -7150,11 +7139,11 @@
 				local bar = library:create("Frame", {
 					Parent = analyzer_holder,
 					Name = "bar_" .. i,
-					Position = dim2(0, (i - 1) * 9 + 2, 1, -8),
-					Size = dim2(0, 4, 0, 10),
+					Position = dim2(0, (i - 1) * 8.5 + 2, 1, 0),
+					Size = dim2(0, 4, 0, 8),
 					BorderSizePixel = 0,
 					BackgroundColor3 = themes.preset.accent,
-					BackgroundTransparency = 0.35,
+					BackgroundTransparency = 0.25,
 					AnchorPoint = vec2(0, 1),
 				})
 				library:apply_theme(bar, "accent", "BackgroundColor3")
@@ -7163,10 +7152,10 @@
 
 			library:connection(run.RenderStepped, function()
 				for i, bar in ipairs(analyzer_bars) do
-					local t = os.clock() * 6 + i * 0.65
-					local height = 8 + (math.sin(t) * 0.5 + 0.5) * 24
+					local t = os.clock() * 8 + i * 0.7
+					local height = 8 + (math.sin(t) * 0.5 + 0.5) * (analyzer_holder.AbsoluteSize.Y - 8)
 					bar.Size = dim2(0, 4, 0, math.max(8, height))
-					bar.BackgroundTransparency = 0.25 + ((i % 3) * 0.08)
+					bar.BackgroundTransparency = 0.18 + ((i % 4) * 0.06)
 				end
 			end)
 
