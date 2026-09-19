@@ -7122,19 +7122,58 @@
 				burger_lines[#burger_lines + 1] = line
 			end
 
-			local sidebar = library:create("Frame", {
-				Parent = panel_preview.items.holder,
-				Name = "sidebar",
-				Position = dim2(0, 0, 0, 0),
-				Size = dim2(0, 120, 1, 0),
-				BackgroundColor3 = themes.preset.high_contrast,
-				BackgroundTransparency = 0.05,
+			local sidebar = create_box(panel_preview.items.holder, dim2(0, 0, 0, 0), dim2(0, 120, 1, 0))
+			sidebar.Visible = false
+			sidebar.ZIndex = 4
+			sidebar.BackgroundTransparency = 0.05
+
+			local sidebar_inner = library:create("Frame", {
+				Parent = sidebar,
+				Name = "inner",
+				Position = dim2(0, 1, 0, 1),
+				Size = dim2(1, -2, 1, -2),
 				BorderSizePixel = 0,
-				Visible = false,
-				ZIndex = 4,
+				BackgroundTransparency = 1,
+				ZIndex = 5,
 			})
-			library:apply_theme(sidebar, "high_contrast", "BackgroundColor3")
-			library:create("UIStroke", { Parent = sidebar, Color = themes.preset.outline, Transparency = 0.75 })
+
+			local sidebar_title = library:create("TextLabel", {
+				Parent = sidebar_inner,
+				Position = dim2(0, 10, 0, 8),
+				Size = dim2(1, -20, 0, 18),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				FontFace = library.font,
+				Text = "Test",
+				TextSize = 12,
+				TextColor3 = themes.preset.text,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				ZIndex = 5,
+			})
+			library:apply_theme(sidebar_title, "text", "TextColor3")
+
+			local sidebar_section = library:create("Frame", {
+				Parent = sidebar_inner,
+				Position = dim2(0, 8, 0, 34),
+				Size = dim2(1, -16, 0, 1),
+				BackgroundColor3 = themes.preset.accent,
+				BackgroundTransparency = 0.25,
+				BorderSizePixel = 0,
+				ZIndex = 5,
+			})
+			library:apply_theme(sidebar_section, "accent", "BackgroundColor3")
+
+			local profile_holder = library:create("Frame", {
+				Parent = sidebar_inner,
+				Position = dim2(0, 8, 1, -50),
+				Size = dim2(1, -16, 0, 42),
+				BackgroundColor3 = themes.preset.low_contrast,
+				BackgroundTransparency = 0.1,
+				BorderSizePixel = 0,
+				ZIndex = 5,
+			})
+			library:apply_theme(profile_holder, "low_contrast", "BackgroundColor3")
+			library:create("UIStroke", { Parent = profile_holder, Color = themes.preset.accent, Transparency = 0.85 })
 
 			local sidebar_title = library:create("TextLabel", {
 				Parent = sidebar,
