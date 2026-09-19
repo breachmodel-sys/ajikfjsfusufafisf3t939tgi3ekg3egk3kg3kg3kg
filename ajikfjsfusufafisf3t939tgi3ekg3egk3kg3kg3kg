@@ -7093,56 +7093,6 @@
 
 			local box_preview = create_box(panel_preview.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -16))
 
-			local profile_avatar = library:create("ImageLabel", {
-				Parent = profile_holder,
-				Position = dim2(0, 6, 0.5, -15),
-				Size = dim2(0, 30, 0, 30),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				Image = "rbxasset://textures/ui/GuiImagePlaceholder.png",
-				ScaleType = Enum.ScaleType.Fit,
-				ZIndex = 6,
-			})
-
-			local profile_name = library:create("TextLabel", {
-				Parent = profile_holder,
-				Position = dim2(0, 42, 0.5, -10),
-				Size = dim2(1, -48, 0, 16),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = players.LocalPlayer and (players.LocalPlayer.DisplayName or players.LocalPlayer.Name) or "Player",
-				TextSize = 11,
-				TextColor3 = themes.preset.text,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				ZIndex = 6,
-			})
-			library:apply_theme(profile_name, "text", "TextColor3")
-
-			local profile_user = library:create("TextLabel", {
-				Parent = profile_holder,
-				Position = dim2(0, 42, 0.5, 8),
-				Size = dim2(1, -48, 0, 12),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = players.LocalPlayer and ("@" .. players.LocalPlayer.Name) or "@user",
-				TextSize = 10,
-				TextColor3 = rgb(180, 180, 180),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				ZIndex = 6,
-			})
-
-			pcall(function()
-				if players.LocalPlayer and players.GetUserThumbnailAsync then
-					profile_avatar.Image = players:GetUserThumbnailAsync(players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
-				end
-			end)
-
-			burger_button.MouseButton1Click:Connect(function()
-				sidebar.Visible = not sidebar.Visible
-			end)
-
 			local update_icon = library:create("Frame", {
 				Parent = box_preview,
 				Position = dim2(0, 8, 0, 13),
