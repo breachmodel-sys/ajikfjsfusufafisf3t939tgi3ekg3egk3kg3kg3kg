@@ -7098,11 +7098,13 @@
 				Name = "burger_button",
 				Position = dim2(0, 10, 0, 10),
 				Size = dim2(0, 18, 0, 18),
-				BackgroundTransparency = 1,
+				BackgroundColor3 = themes.preset.outline,
+				BorderSizePixel = 0,
 				Text = "",
 				AutoButtonColor = false,
 				ZIndex = 5,
 			})
+			library:apply_theme(burger_button, "outline", "BackgroundColor3")
 
 			local burger_lines = {}
 			for i = 1, 3 do
@@ -7112,10 +7114,11 @@
 					Position = dim2(0, 0, 0, (i - 1) * 6),
 					Size = dim2(1, 0, 0, 2),
 					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255),
-					BackgroundTransparency = 0.15,
+					BackgroundColor3 = themes.preset.text,
+					BackgroundTransparency = 0.1,
 					ZIndex = 6,
 				})
+				library:apply_theme(line, "text", "BackgroundColor3")
 				burger_lines[#burger_lines + 1] = line
 			end
 
@@ -7124,13 +7127,14 @@
 				Name = "sidebar",
 				Position = dim2(0, 0, 0, 0),
 				Size = dim2(0, 120, 1, 0),
-				BackgroundColor3 = rgb(15, 15, 15),
-				BackgroundTransparency = 0.2,
+				BackgroundColor3 = themes.preset.inline,
+				BackgroundTransparency = 0.15,
 				BorderSizePixel = 0,
 				Visible = false,
 				ZIndex = 4,
 			})
-			library:create("UIStroke", { Parent = sidebar, Color = rgb(255, 255, 255), Transparency = 0.8 })
+			library:apply_theme(sidebar, "inline", "BackgroundColor3")
+			library:create("UIStroke", { Parent = sidebar, Color = themes.preset.outline, Transparency = 0.7 })
 
 			local sidebar_title = library:create("TextLabel", {
 				Parent = sidebar,
@@ -7141,31 +7145,34 @@
 				FontFace = library.font,
 				Text = "Test",
 				TextSize = 12,
-				TextColor3 = rgb(255, 255, 255),
+				TextColor3 = themes.preset.text,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				ZIndex = 5,
 			})
+			library:apply_theme(sidebar_title, "text", "TextColor3")
 
 			local sidebar_section = library:create("Frame", {
 				Parent = sidebar,
 				Position = dim2(0, 8, 0, 34),
 				Size = dim2(1, -16, 0, 6),
-				BackgroundColor3 = rgb(120, 120, 120),
-				BackgroundTransparency = 0.6,
+				BackgroundColor3 = themes.preset.accent,
+				BackgroundTransparency = 0.45,
 				BorderSizePixel = 0,
 				ZIndex = 5,
 			})
+			library:apply_theme(sidebar_section, "accent", "BackgroundColor3")
 
 			local profile_holder = library:create("Frame", {
 				Parent = sidebar,
 				Position = dim2(0, 8, 1, -50),
 				Size = dim2(1, -16, 0, 42),
-				BackgroundColor3 = rgb(25, 25, 25),
+				BackgroundColor3 = themes.preset.outline,
 				BackgroundTransparency = 0.15,
 				BorderSizePixel = 0,
 				ZIndex = 5,
 			})
-			library:create("UIStroke", { Parent = profile_holder, Color = rgb(255, 255, 255), Transparency = 0.85 })
+			library:apply_theme(profile_holder, "outline", "BackgroundColor3")
+			library:create("UIStroke", { Parent = profile_holder, Color = themes.preset.accent, Transparency = 0.85 })
 
 			local profile_avatar = library:create("ImageLabel", {
 				Parent = profile_holder,
@@ -7187,10 +7194,11 @@
 				FontFace = library.font,
 				Text = players.LocalPlayer and (players.LocalPlayer.DisplayName or players.LocalPlayer.Name) or "Player",
 				TextSize = 11,
-				TextColor3 = rgb(255, 255, 255),
+				TextColor3 = themes.preset.text,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				ZIndex = 6,
 			})
+			library:apply_theme(profile_name, "text", "TextColor3")
 
 			local profile_user = library:create("TextLabel", {
 				Parent = profile_holder,
