@@ -942,7 +942,7 @@
 			local range = options.range or 250
 			local panel = library:panel({
 				name = options.name or "Radar",
-				size = options.size or dim2(0, 310, 0, 335),
+				size = options.size or dim2(0, 280, 0, 305),
 				position = options.position or dim2(0, 25, 0, 15),
 				close_button = true,
 				dock = false,
@@ -975,19 +975,6 @@
 			end
 			grid_line(dim2(0.5, 0, 0, 0), dim2(0, 1, 1, 0))
 			grid_line(dim2(0, 0, 0.5, 0), dim2(1, 0, 0, 1))
-
-			local label = library:create("TextLabel", {
-				Parent = board,
-				Position = dim2(0, 8, 0, 6),
-				Size = dim2(1, -16, 0, 18),
-				BackgroundTransparency = 1,
-				Text = "LIVE  /  " .. tostring(range) .. " STUDS",
-				TextColor3 = rgb(48, 48, 58),
-				TextSize = 12,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				ZIndex = 3,
-			})
-			library:create("UIStroke", {Parent = label, Color = rgb(0, 0, 0)})
 
 			local center = library:create("Frame", {
 				Parent = board,
