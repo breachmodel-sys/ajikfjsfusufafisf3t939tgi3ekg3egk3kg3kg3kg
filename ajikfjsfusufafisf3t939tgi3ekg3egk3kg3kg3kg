@@ -939,79 +939,55 @@
 
 		function library:radar(options)
 			options = options or {}
-
 			local range = options.range or 250
 			local panel = library:panel({
 				name = options.name or "Radar",
 				size = options.size or dim2(0, 310, 0, 335),
-				position = options.position or dim2(0, 25, 0, 235),
-				image = options.image or "rbxassetid://79856374238119",
-				dock = options.dock ~= false,
-				hide_with_menu = options.hide_with_menu ~= false,
+				position = options.position or dim2(0, 25, 0, 15),
+				close_button = true,
+				dock = false,
+				hide_with_menu = true,
 			})
 			local items = panel.items
-
-			if items.holder:FindFirstChildOfClass("UIGradient") then
-				items.holder:FindFirstChildOfClass("UIGradient"):Destroy()
-			end
-			items.holder.BackgroundColor3 = rgb(5, 6, 9)
+			local gradient = items.holder:FindFirstChildOfClass("UIGradient")
+			if gradient then gradient:Destroy() end
+			items.holder.BackgroundColor3 = rgb(2, 2, 5)
 
 			local board = library:create("Frame", {
 				Parent = items.holder,
-				Position = dim2(0, 4, 0, 4),
-				Size = dim2(1, -8, 1, -8),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(4, 5, 8),
-				ZIndex = 3,
+				Position = dim2(0, 5, 0, 5),
+				Size = dim2(1, -10, 1, -10),
+				BorderSizePixel = 1,
+				BorderColor3 = rgb(45, 45, 52),
+				BackgroundColor3 = rgb(1, 1, 3),
 				ClipsDescendants = true,
 			})
-			library:create("UIStroke", {
-				Parent = board,
-				Color = themes.preset.inline,
-				Thickness = 1,
-			})
-			library:create("UICorner", {
-				Parent = board,
-				CornerRadius = dim(0, 2),
-			})
 
-			local function line(parent, position, size, transparency)
-				return library:create("Frame", {
-					Parent = parent,
+			local function grid_line(position, size)
+				library:create("Frame", {
+					Parent = board,
 					Position = position,
 					Size = size,
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline,
-					BackgroundTransparency = transparency or 0.2,
+					BackgroundColor3 = rgb(28, 28, 35),
+					BackgroundTransparency = 0.35,
 				})
 			end
+			grid_line(dim2(0.5, 0, 0, 0), dim2(0, 1, 1, 0))
+			grid_line(dim2(0, 0, 0.5, 0), dim2(1, 0, 0, 1))
 
-			line(board, dim2(0.5, 0, 0, 0), dim2(0, 1, 1, 0), 0.05)
-			line(board, dim2(0, 0, 0.5, 0), dim2(1, 0, 0, 1), 0.05)
-			line(board, dim2(0.25, 0, 0, 0), dim2(0, 1, 1, 0), 0.65)
-			line(board, dim2(0.75, 0, 0, 0), dim2(0, 1, 1, 0), 0.65)
-			line(board, dim2(0, 0, 0.25, 0), dim2(1, 0, 0, 1), 0.65)
-			line(board, dim2(0, 0, 0.75, 0), dim2(1, 0, 0, 1), 0.65)
-
-			local function ring(size, transparency)
-				local circle = library:create("Frame", {
-					Parent = board,
-					AnchorPoint = vec2(0.5, 0.5),
-					Position = dim2(0.5, 0, 0.5, 0),
-					Size = dim2(0, size, 0, size),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-				})
-				library:create("UICorner", {Parent = circle, CornerRadius = dim(1, 0)})
-				library:create("UIStroke", {
-					Parent = circle,
-					Color = themes.preset.inline,
-					Transparency = transparency,
-					Thickness = 1,
-				})
-			end
-			ring(72, 0.35)
-			ring(144, 0.55)
+			local label = library:create("TextLabel", {
+				Parent = board,
+				Position = dim2(0, 8, 0, 6),
+				Size = dim2(1, -16, 0, 18),
+				BackgroundTransparency = 1,
+				Text = "LIVE  /  " .. tostring(range) .. " STUDS",
+				TextColor3 = rgb(48, 48, 58),
+				TextSize = 12,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				ZIndex = 3,
+			})
+			library:create("UIStroke", {Parent = label, Color = rgb(0, 0, 0)})
 
 			local center = library:create("Frame", {
 				Parent = board,
@@ -1019,42 +995,23 @@
 				Position = dim2(0.5, 0, 0.5, 0),
 				Size = dim2(0, 6, 0, 6),
 				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.accent,
-				ZIndex = 5,
+				BackgroundColor3 = rgb(103, 126, 224),
+				ZIndex = 4,
 			})
-			library:apply_theme(center, "accent", "BackgroundColor3")
 			library:create("UICorner", {Parent = center, CornerRadius = dim(1, 0)})
-
-			local status = library:create("TextLabel", {
-				Parent = board,
-				Position = dim2(0, 8, 0, 6),
-				Size = dim2(1, -16, 0, 16),
-				BackgroundTransparency = 1,
-				Text = "LIVE  /  " .. tostring(range) .. " STUDS",
-				TextSize = 10,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				ZIndex = 6,
-			})
-			library:apply_theme(status, "text_dim", "TextColor3")
 
 			local markers = {}
 			local function remove_marker(player)
-				if markers[player] then
-					markers[player]:Destroy()
-					markers[player] = nil
-				end
+				if markers[player] then markers[player]:Destroy(); markers[player] = nil end
 			end
-
-			local function get_marker(player)
-				if markers[player] then
-					return markers[player]
-				end
+			local function marker_for(player)
+				if markers[player] then return markers[player] end
 				local marker = library:create("Frame", {
 					Parent = board,
 					AnchorPoint = vec2(0.5, 0.5),
 					Size = dim2(0, 5, 0, 5),
 					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(235, 235, 240),
+					BackgroundColor3 = rgb(238, 238, 242),
 					ZIndex = 4,
 				})
 				library:create("UICorner", {Parent = marker, CornerRadius = dim(1, 0)})
@@ -1064,45 +1021,34 @@
 
 			library:connection(players.PlayerRemoving, remove_marker)
 			library:connection(run.RenderStepped, function()
-				local character = lp.Character
-				local root = character and character:FindFirstChild("HumanoidRootPart")
+				local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 				if not root then return end
-
 				local look = camera.CFrame.LookVector
 				local forward = vec3(look.X, 0, look.Z)
 				if forward.Magnitude < 0.01 then return end
 				forward = forward.Unit
 				local right = vec3(-forward.Z, 0, forward.X)
-				local visible = {}
-
+				local seen = {}
 				for _, player in players:GetPlayers() do
 					if player ~= lp then
-						local target_character = player.Character
-						local target_root = target_character and target_character:FindFirstChild("HumanoidRootPart")
-						if target_root then
-							local offset = target_root.Position - root.Position
-							local distance = offset.Magnitude
-							local marker = get_marker(player)
-							if distance <= range then
-								local x = offset:Dot(right) / range
-								local y = offset:Dot(forward) / range
-								marker.Position = dim2(0.5 + x * 0.46, 0, 0.5 - y * 0.46, 0)
+						local target = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+						if target then
+							local offset = target.Position - root.Position
+							local marker = marker_for(player)
+							if offset.Magnitude <= range then
+								marker.Position = dim2(0.5 + offset:Dot(right) / range * 0.46, 0, 0.5 - offset:Dot(forward) / range * 0.46, 0)
 								marker.Visible = true
-								visible[player] = true
+								seen[player] = true
 							else
 								marker.Visible = false
 							end
 						end
 					end
 				end
-
 				for player in next, markers do
-					if not visible[player] and not players:FindFirstChild(player.Name) then
-						remove_marker(player)
-					end
+					if not seen[player] and not players:FindFirstChild(player.Name) then remove_marker(player) end
 				end
 			end)
-
 			return panel
 		end
 
@@ -2025,9 +1971,7 @@
 				end})
 
 
-			window.radar = library:radar({
-				position = dim2(0, 25, 0, 235),
-			})
+			window.radar = library:radar({})
 
 			return setmetatable(window, library)
 		end
