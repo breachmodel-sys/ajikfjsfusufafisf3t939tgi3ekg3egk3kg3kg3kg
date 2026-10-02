@@ -238,6 +238,7 @@
 	library.font = Font.new(getcustomasset("dddd.ttf"), Enum.FontWeight.Regular)
 
 	local config_holder 
+	local auto_load_config_checked = false
 -- 
 
 -- library functions 
@@ -480,6 +481,47 @@
 				return a:lower() < b:lower()
 			end)
 			config_holder.refresh_options(list)
+
+			if not auto_load_config_checked then
+				auto_load_config_checked = true
+				task.defer(function()
+					local autoload_path = library.directory .. "/autoload.txt"
+					if not isfile(autoload_path) then
+						return
+					end
+
+					local ok, config_name = pcall(function()
+						return get_config_name(readfile(autoload_path))
+					end)
+					if not ok then
+						warn("Failed to read autoload config name: " .. tostring(config_name))
+						library:notification({text = "Failed to read autoload config", time = 3})
+						return
+					end
+					if not config_name then
+						library:notification({text = "Autoload config name is invalid", time = 3})
+						return
+					end
+
+					local config_path = get_config_path(config_name)
+					if not isfile(config_path) then
+						library:notification({text = "Autoload config not found: " .. config_name, time = 3})
+						return
+					end
+
+					local loaded, err = pcall(function()
+						library:load_config(readfile(config_path))
+					end)
+					if not loaded then
+						warn("Failed to load autoload config: " .. tostring(err))
+						library:notification({text = "Failed to load autoload config: " .. config_name, time = 3})
+						return
+					end
+
+					config_holder.set(config_name)
+					library:notification({text = "Loaded Autoload Config: " .. config_name, time = 3})
+				end)
+			end
 		end
 
 		function library:get_config()
@@ -1945,6 +1987,22 @@
 					section:button_holder({})
 					section:button({name = "Refresh Configs", callback = function()
 						library:config_list_update()
+					end})
+					section:button({name = "Set as Autoload", callback = function()
+						local config_name = get_config_name(flags["config_name_list"])
+						if not config_name then
+							library:notification({text = "Select a config to set as autoload", time = 3})
+							return
+						end
+
+						if not isfile(get_config_path(config_name)) then
+							library:notification({text = "Config file not found: " .. config_name, time = 3})
+							library:config_list_update()
+							return
+						end
+
+						writefile(library.directory .. "/autoload.txt", config_name)
+						library:notification({text = "Set Autoload Config: " .. config_name, time = 3})
 					end})
 					section:button_holder({})
 					section:button({name = "Unload Config", callback = function()
