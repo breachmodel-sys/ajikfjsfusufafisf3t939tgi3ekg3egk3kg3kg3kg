@@ -5327,11 +5327,13 @@
 				if type(options) == "function" then 
 					return 
 				end 
-
+				
 				for _, v in next, cfg.option_instances do 
 					v:Destroy() 
 				end 
-
+				cfg.option_instances = {}
+				cfg.current_instance = nil
+				
 				for _, option in next, options do 
 					local button = cfg.render_option(option) 
 
