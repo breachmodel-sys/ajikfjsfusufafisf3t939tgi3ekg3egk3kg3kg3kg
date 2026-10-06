@@ -7226,7 +7226,7 @@
 			end
 
 			local is_executing = false
-			create_action_button("Execute", 10, function()
+			create_action_button("Load", 10, function()
 				if is_executing then
 					return
 				end
