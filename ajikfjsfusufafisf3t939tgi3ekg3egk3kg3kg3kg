@@ -6248,846 +6248,615 @@
 		function library:music_player(options)
 			options = options or {}
 
-			local function resolve_asset(target)
-				if not target or target == "" then return "" end
-				if typeof(target) == "number" or tonumber(target) then
-					return "rbxassetid://" .. tostring(target)
+			local environment = _G
+			if type(getgenv) == "function" then
+				local ok, value = pcall(getgenv)
+				if ok and type(value) == "table" then
+					environment = value
 				end
-				if target:sub(1, 13) == "rbxassetid://" or target:sub(1, 11) == "rbxthumb://" or target:sub(1, 11) == "rbxasset://" then
-					return target
-				end
-				local get_asset = getcustomasset or getsynasset
-				if get_asset then
-					local ok, res = pcall(get_asset, target)
-					if ok and res then
-						return res
-					end
-					local base_name = target:match("([^\\/]+)$")
-					if base_name then
-						local ok2, res2 = pcall(get_asset, base_name)
-						if ok2 and res2 then
-							return res2
-						end
-						local png_name = base_name:gsub("%.%w+$", ".png")
-						local ok3, res3 = pcall(get_asset, png_name)
-						if ok3 and res3 then
-							return res3
-						end
-					end
-				end
-				return target
 			end
 
-			local song_list = options.songs or {
-				{
-					id = [[C:\Users\breac\Downloads\ALONE, PART 3 - XXXTENTACION (youtube).mp3]],
-					name = "ALONE, PART 3",
-					artist = "XXXTENTACION",
-					cover = "alone_cover.png",
-					lyrics_lrc = [[
-[00:14.89]I can't seem to find someone's shoulder
-[00:22.65]Who will I rely on when it's over?
-[00:30.13]Took a chance with you, it made me colder
-[00:37.77]Better on my own when it's all over
-[00:44.00]So when I'm weak, who do I call?
-[00:47.90]My God it hurts, I can't be calm
-[00:51.65]What do I do?
-[00:53.36]Where do I run?
-[00:55.48]I'm tired of hate, I'm tired of love
-[00:59.15]I dug my nails into my arms
-[01:03.02]She turned and laughed at all my scars
-[01:06.75]What is my worth?
-[01:10.75]What is my worth?
-[01:15.59]Gave my love a piece of me
-[01:19.06]She put my heart beneath her feet
-[01:22.88]She turned and left, I question, "What's my worth?"
-[01:30.54]Gave my love a piece of me
-[01:34.17]She put my heart beneath her feet
-[01:37.93]She turned and left, I question, "What's my worth?"
-[01:43.19]My worth, my worth
-]],
-					lyrics = {
-						{t = 14.89, text = "I can't seem to find someone's shoulder"},
-						{t = 22.65, text = "Who will I rely on when it's over?"},
-						{t = 30.13, text = "Took a chance with you, it made me colder"},
-						{t = 37.77, text = "Better on my own when it's all over"},
-						{t = 44.00, text = "So when I'm weak, who do I call?"},
-						{t = 47.90, text = "My God it hurts, I can't be calm"},
-						{t = 51.65, text = "What do I do?"},
-						{t = 53.36, text = "Where do I run?"},
-						{t = 55.48, text = "I'm tired of hate, I'm tired of love"},
-						{t = 59.15, text = "I dug my nails into my arms"},
-						{t = 63.02, text = "She turned and laughed at all my scars"},
-						{t = 66.75, text = "What is my worth?"},
-						{t = 70.75, text = "What is my worth?"},
-						{t = 75.59, text = "Gave my love a piece of me"},
-						{t = 79.06, text = "She put my heart beneath her feet"},
-						{t = 82.88, text = "She turned and left, I question, \"What's my worth?\""},
-						{t = 90.54, text = "Gave my love a piece of me"},
-						{t = 94.17, text = "She put my heart beneath her feet"},
-						{t = 97.93, text = "She turned and left, I question, \"What's my worth?\""},
-						{t = 103.19, text = "My worth, my worth"},
-					},
-				},
-				{
-					id = [[C:\Users\breac\Downloads\congratulations you won_spotdown.org.mp3]],
-					name = "congratulations you won",
-					artist = "Lostallhope",
-					cover = "congratulations_cover.png",
-					lyrics_lrc = [[
-[00:18.00]Congratulations you won cause I won't sit here and argue with you
-[00:23.20]I'll just do my drugs everytime that I'm apart from you
-[00:28.40]And hope that makes me feel better, I'll try and not talk to you
-[00:33.60]My stupid feelings, they won't bother you
-[00:38.20]Oh, I double back again
-[00:42.40]I go back on everything I said and everytime that you make me feel less
-[00:48.20]I feel myself on meds, I get clean for like a month then I'll relapse again
-[00:56.00]So sing this if you
-[00:59.40]So sing this if you feel how I feel and need a friend
-[01:05.00]I hope you hear this when you feel how I feel and need a friend
-[01:10.40]If you ever feel like you want it to end, then you hit my dm
-[01:15.60]I don't got much advice to give but know I'll let you vent
-[01:20.80]I wouldn't be here for y'all, but I try to connect y'all
-[01:26.00]I'm goin' back on tens, I can't stay on the blue thirties
-[01:31.40]I get drunk and text, man, I really regret everything I sent
-[01:36.80]Take a pill, bottle in my face, I played y'all like some fed
-[01:42.00]I keep a strap on me, but I swear I'm nothing like they sketch
-[01:48.00]Congratulations you won cause I won't sit here and argue with you
-[01:53.20]I'll just do my drugs everytime that I'm apart from you
-[01:58.40]And hope that makes me feel better, I'll try and not talk to you
-[02:03.60]My stupid feelings, they won't bother you
-[02:08.20]Oh, I double back again
-[02:12.40]I go back on everything I said and everytime that you make me feel less
-[02:18.20]I feel myself on meds, I get clean for like a month then I'll relapse again
-]],
-					lyrics = {
-						{t = 18.0, text = "Congratulations you won cause I won't sit here and argue with you"},
-						{t = 23.2, text = "I'll just do my drugs everytime that I'm apart from you"},
-						{t = 28.4, text = "And hope that makes me feel better, I'll try and not talk to you"},
-						{t = 33.6, text = "My stupid feelings, they won't bother you"},
-						{t = 38.2, text = "Oh, I double back again"},
-						{t = 42.4, text = "I go back on everything I said and everytime that you make me feel less"},
-						{t = 48.2, text = "I feel myself on meds, I get clean for like a month then I'll relapse again"},
-						{t = 56.0, text = "So sing this if you"},
-						{t = 59.4, text = "So sing this if you feel how I feel and need a friend"},
-						{t = 65.0, text = "I hope you hear this when you feel how I feel and need a friend"},
-						{t = 70.4, text = "If you ever feel like you want it to end, then you hit my dm"},
-						{t = 75.6, text = "I don't got much advice to give but know I'll let you vent"},
-						{t = 80.8, text = "I wouldn't be here for y'all, but I try to connect y'all"},
-						{t = 86.0, text = "I'm goin' back on tens, I can't stay on the blue thirties"},
-						{t = 91.4, text = "I get drunk and text, man, I really regret everything I sent"},
-						{t = 96.8, text = "Take a pill, bottle in my face, I played y'all like some fed"},
-						{t = 102.0, text = "I keep a strap on me, but I swear I'm nothing like they sketch"},
-						{t = 108.0, text = "Congratulations you won cause I won't sit here and argue with you"},
-						{t = 113.2, text = "I'll just do my drugs everytime that I'm apart from you"},
-						{t = 118.4, text = "And hope that makes me feel better, I'll try and not talk to you"},
-						{t = 123.6, text = "My stupid feelings, they won't bother you"},
-						{t = 128.2, text = "Oh, I double back again"},
-						{t = 132.4, text = "I go back on everything I said and everytime that you make me feel less"},
-						{t = 138.2, text = "I feel myself on meds, I get clean for like a month then I'll relapse again"},
-					},
-				},
-				{
-					id = "CANDY HEARTS I MISS YOU Official Video - Bridge Nine Records (youtube).mp3",
-					name = "I Miss You",
-					artist = "Candy Hearts",
-					cover = "ab67616d00001e023ac5103405db3750b167c7ff.jpg",
-				},
-				{
-					id = "Magic - blair (youtube).mp3",
-					name = "Magic",
-					artist = "Blair",
-					cover = "ab67616d00001e020b2c8ca8b38d4dcb1d50419a.jpg",
-				},
-				{
-					id = "A Wall - lover boy (tiktok remix) - 3x.tobias (youtube).mp3",
-					name = "A Wall",
-					artist = "lover boy (tiktok remix) - 3x.tobias",
-					cover = "artworks-cCtYyL2CtkV6RxWL-EjRONQ-t500x500.jpg",
-				},
-			}
-			local current_song_idx = 1
+			local client_id = options.client_id or ""
+			local redirect_uri = options.redirect_uri or "http://127.0.0.1:8888/callback"
+			local access_token
+			local refresh_token
+			local token_expires_at = 0
+			local code_verifier
+			local oauth_state
 			local is_enabled = options.open == true
+			local is_playing = false
+			local track_duration = 0
+			local track_progress = 0
+			local last_sync = os.clock()
+			local auth_panel
+			local auth_status
+
+			local function request_http(method, url, headers, body)
+				local request_function = environment.request or environment.http_request or environment.httprequest
+				if not request_function and type(environment.syn) == "table" then
+					request_function = environment.syn.request
+				end
+				if type(request_function) == "function" then
+					local ok, response = pcall(request_function, {
+						Url = url,
+						Method = method,
+						Headers = headers or {},
+						Body = body,
+					})
+					if not ok then
+						return nil, tostring(response)
+					end
+					return response
+				end
+				local ok, response = pcall(function()
+					return http_service:RequestAsync({
+						Url = url,
+						Method = method,
+						Headers = headers or {},
+						Body = body,
+					})
+				end)
+				if not ok then
+					return nil, tostring(response)
+				end
+				return response
+			end
+
+			local function decode_response(response)
+				if not response or type(response.Body) ~= "string" or response.Body == "" then
+					return nil
+				end
+				local ok, decoded = pcall(function()
+					return http_service:JSONDecode(response.Body)
+				end)
+				if ok then
+					return decoded
+				end
+				return nil
+			end
+
+			local function response_status(response)
+				if not response then
+					return 0
+				end
+				return tonumber(response.StatusCode or response.status_code or response.Status) or 0
+			end
+
+			local function response_error(response, request_error)
+				if request_error then
+					return request_error
+				end
+				local decoded = decode_response(response)
+				if type(decoded) == "table" then
+					if type(decoded.error) == "table" then
+						return tostring(decoded.error.message or decoded.error_description or decoded.error.status or "Spotify request failed")
+					end
+					return tostring(decoded.error_description or decoded.error or decoded.message or "Spotify request failed")
+				end
+				return "Spotify request failed (HTTP " .. tostring(response_status(response)) .. ")"
+			end
+
+			local function form_encode(values)
+				local parts = {}
+				for key, value in pairs(values) do
+					table.insert(parts, http_service:UrlEncode(key) .. "=" .. http_service:UrlEncode(tostring(value)))
+				end
+				return table.concat(parts, "&")
+			end
+
+			local function hash_sha256(data)
+				local crypto = environment.crypt
+				if type(crypto) ~= "table" and type(environment.syn) == "table" then
+					crypto = environment.syn.crypt
+				end
+				if type(crypto) ~= "table" or type(crypto.hash) ~= "function" then
+					return nil, "This executor does not expose SHA-256 needed for Spotify PKCE"
+				end
+				local ok, digest = pcall(crypto.hash, data, "sha256")
+				if not ok or type(digest) ~= "string" then
+					return nil, "Executor SHA-256 failed: " .. tostring(digest)
+				end
+				if #digest == 32 then
+					return digest
+				end
+				if #digest == 64 and digest:match("^%x+$") then
+					return (digest:gsub("..", function(pair)
+						return string.char(tonumber(pair, 16))
+					end))
+				end
+				return nil, "Executor SHA-256 returned an unsupported digest format"
+			end
+
+			local function base64url(binary)
+				local alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+				local out = {}
+				for index = 1, #binary, 3 do
+					local a, b, c = string.byte(binary, index, index + 2)
+					b = b or 0
+					c = c or 0
+					local n = a * 65536 + b * 256 + c
+					local i1 = math.floor(n / 262144) % 64 + 1
+					local i2 = math.floor(n / 4096) % 64 + 1
+					local i3 = math.floor(n / 64) % 64 + 1
+				local i4 = n % 64 + 1
+				out[#out + 1] = alphabet:sub(i1, i1)
+				out[#out + 1] = alphabet:sub(i2, i2)
+				if index + 1 <= #binary then out[#out + 1] = alphabet:sub(i3, i3) end
+				if index + 2 <= #binary then out[#out + 1] = alphabet:sub(i4, i4) end
+			end
+				return table.concat(out)
+			end
+
+			local function create_verifier()
+				return http_service:GenerateGUID(false) .. http_service:GenerateGUID(false) .. http_service:GenerateGUID(false)
+			end
+
+			local function exchange_token(values)
+				local response, request_error = request_http("POST", "https://accounts.spotify.com/api/token", {
+					["Content-Type"] = "application/x-www-form-urlencoded",
+				}, form_encode(values))
+				local code = response_status(response)
+				if not response or code < 200 or code >= 300 then
+					return nil, response_error(response, request_error)
+				end
+				local token_data = decode_response(response)
+				if type(token_data) ~= "table" or type(token_data.access_token) ~= "string" then
+					return nil, "Spotify returned an invalid token response"
+				end
+				access_token = token_data.access_token
+				refresh_token = token_data.refresh_token or refresh_token
+				token_expires_at = os.time() + tonumber(token_data.expires_in or 3600)
+				return true
+			end
+
+			local function refresh_access_token()
+				if not refresh_token then
+					return false, "Reconnect Spotify to authorize this session"
+				end
+				return exchange_token({
+					client_id = client_id,
+					grant_type = "refresh_token",
+					refresh_token = refresh_token,
+				})
+			end
+
+			local function spotify_request(method, endpoint, body, retried)
+				if not access_token then
+					return false, "Connect Spotify first"
+				end
+				if token_expires_at <= os.time() + 45 then
+					local refreshed, refresh_error = refresh_access_token()
+					if not refreshed then
+						return false, refresh_error
+					end
+				end
+				local headers = {Authorization = "Bearer " .. access_token}
+				if body then
+					headers["Content-Type"] = "application/json"
+				end
+				local response, request_error = request_http(method, "https://api.spotify.com/v1" .. endpoint, headers, body)
+				local code = response_status(response)
+				if code == 401 and not retried then
+					local refreshed, refresh_error = refresh_access_token()
+					if not refreshed then
+						return false, refresh_error
+					end
+					return spotify_request(method, endpoint, body, true)
+				end
+				if not response or (code < 200 or code >= 300) and code ~= 204 then
+					return false, response_error(response, request_error)
+				end
+				return true, decode_response(response), code
+			end
+
+			local function label(parent, text, position, size, text_size, color, alignment)
+				return library:create("TextLabel", {
+					Parent = parent,
+					Position = position,
+					Size = size,
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					FontFace = library.font,
+					Text = text,
+					TextSize = text_size,
+					TextColor3 = color or themes.preset.text,
+					TextXAlignment = alignment or Enum.TextXAlignment.Left,
+					TextYAlignment = Enum.TextYAlignment.Center,
+					TextTruncate = Enum.TextTruncate.AtEnd,
+				})
+			end
+
+			local function format_clock(milliseconds)
+				local seconds = math.max(0, math.floor((milliseconds or 0) / 1000))
+				return string.format("%d:%02d", math.floor(seconds / 60), seconds % 60)
+			end
 
 			local play_asset = "rbxassetid://76386816441302"
 			local pause_asset = "rbxassetid://79610666871575"
 			local next_asset = "rbxassetid://121822124041513"
 			local prev_asset = "rbxassetid://137660494219613"
-
-			local music_sound = sound_service:FindFirstChild("Wizardhook_Music") or Instance.new("Sound")
-			music_sound.Name = "Wizardhook_Music"
-			music_sound.SoundId = resolve_asset(song_list[current_song_idx].id)
-			music_sound.Volume = 1
-			music_sound.Looped = false
-			music_sound.Parent = sound_service
-			library.music_sound = music_sound
-
-			local music_pos = options.position or dim2(0, (camera.ViewportSize.X / 2) - 170, 0, (camera.ViewportSize.Y / 2) - 40)
+			local width, height = 340, 190
 			local music_panel = library:panel({
-				name = "Audio Player",
+				name = "Spotify Player",
 				anchor_point = vec2(0, 0),
-				size = dim2(0, 340, 0, 368),
-				position = music_pos,
-				image = play_asset,
-				open = options.open or false,
+				size = dim2(0, width, 0, height),
+				position = options.position or dim2(0, (camera.ViewportSize.X / 2) - width / 2, 0, (camera.ViewportSize.Y / 2) - height / 2),
+				open = options.open == true,
 				dock = false,
-					hide_with_menu = false,
+				hide_with_menu = false,
 			})
 
-			if music_panel.items.holder:FindFirstChildOfClass("UIGradient") then
-				music_panel.items.holder:FindFirstChildOfClass("UIGradient"):Destroy()
-			end
-			music_panel.items.holder.BackgroundColor3 = rgb(18, 18, 18)
-
-			local header = library:create("Frame", {
-				Parent = music_panel.items.holder,
-				Position = dim2(0, 0, 0, 0),
-				Size = dim2(1, 0, 0, 92),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-			})
-
-			local album_outline = library:create("Frame", {
-				Parent = header,
-				Position = dim2(0, 0, 0, 0),
-				Size = dim2(0, 92, 0, 92),
+			local holder = music_panel.items.holder
+			local artwork_frame = library:create("Frame", {
+				Parent = holder,
+				Position = dim2(0, 8, 0, 8),
+				Size = dim2(0, 64, 0, 64),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
-			library:apply_theme(album_outline, "outline", "BackgroundColor3")
-
-			local album_inline = library:create("Frame", {
-				Parent = album_outline,
+			local artwork = library:create("ImageLabel", {
+				Parent = artwork_frame,
 				Position = dim2(0, 1, 0, 1),
 				Size = dim2(1, -2, 1, -2),
+				BackgroundColor3 = rgb(28, 28, 30),
+				BackgroundTransparency = 0,
 				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.inline,
-			})
-			library:apply_theme(album_inline, "inline", "BackgroundColor3")
-
-			local album_bg = library:create("Frame", {
-				Parent = album_inline,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(18, 18, 18),
-				ClipsDescendants = true,
-			})
-
-			local album_icon = library:create("ImageLabel", {
-				Parent = album_bg,
-				Position = dim2(0, 0, 0, 0),
-				Size = dim2(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Image = resolve_asset(song_list[current_song_idx].cover or song_list[current_song_idx].id),
-				ImageColor3 = rgb(255, 255, 255),
 				ScaleType = Enum.ScaleType.Crop,
-				BorderSizePixel = 0,
 			})
 
-			local track_info = library:create("Frame", {
-				Parent = header,
-				Position = dim2(0, 104, 0, 8),
-				Size = dim2(1, -104, 1, -16),
-				BackgroundTransparency = 1,
+			local title_label = label(holder, "Spotify not connected", dim2(0, 82, 0, 9), dim2(1, -91, 0, 22), 14, rgb(245, 245, 245))
+			local artist_label = label(holder, "Connect to show your current track", dim2(0, 82, 0, 31), dim2(1, -91, 0, 18), 11)
+			local album_label = label(holder, "Spotify Connect", dim2(0, 82, 0, 49), dim2(1, -91, 0, 16), 10, rgb(145, 145, 145))
+			local status_label = label(holder, "Not connected", dim2(0, 8, 0, 76), dim2(1, -16, 0, 14), 10, rgb(170, 170, 170))
+
+			local progress_outline = library:create("Frame", {
+				Parent = holder,
+				Position = dim2(0, 8, 0, 96),
+				Size = dim2(1, -16, 0, 4),
 				BorderSizePixel = 0,
+				BackgroundColor3 = rgb(55, 55, 55),
 			})
-
-			local track_title = library:create("TextLabel", {
-				Parent = track_info,
-				FontFace = library.font,
-				TextColor3 = themes.preset.accent,
-				Text = song_list[current_song_idx].name,
-				Size = dim2(1, 0, 0, 20),
-				Position = dim2(0, 0, 0.5, -18),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextSize = 15,
-				TextTruncate = Enum.TextTruncate.AtEnd,
-				ClipsDescendants = true,
-			})
-			library:apply_theme(track_title, "accent", "TextColor3")
-
-			local track_artist = library:create("TextLabel", {
-				Parent = track_info,
-				FontFace = library.font,
-				TextColor3 = themes.preset.text,
-				Text = song_list[current_song_idx].artist or "",
-				Size = dim2(1, 0, 0, 16),
-				Position = dim2(0, 0, 0.5, 4),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextSize = 12,
-				TextTruncate = Enum.TextTruncate.AtEnd,
-			})
-			library:apply_theme(track_artist, "text", "TextColor3")
-
-
-			local lyrics_outline = library:create("Frame", {
-				Parent = music_panel.items.holder,
-				Position = dim2(0, 0, 0, 100),
-				Size = dim2(1, 0, 1, -168),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			lyrics_outline.Visible = false
-			library:apply_theme(lyrics_outline, "outline", "BackgroundColor3")
-
-			local lyrics_inline = library:create("Frame", {
-				Parent = lyrics_outline,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(12, 12, 12),
-				ClipsDescendants = true,
-			})
-
-			local visualizer_bars = {}
-			local visualizer_bar_count = 28
-			for index = 1, visualizer_bar_count do
-				local bar = library:create("Frame", {
-					Parent = lyrics_inline,
-					AnchorPoint = vec2(0.5, 1),
-					Position = dim2((index - 0.5) / visualizer_bar_count, 0, 1, -8),
-					Size = dim2(0, 4, 0, 8),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent,
-				})
-				library:apply_theme(bar, "accent", "BackgroundColor3")
-				table.insert(visualizer_bars, bar)
-			end
-
-			local lyrics_header = library:create("TextLabel", {
-				Parent = lyrics_inline,
-				FontFace = library.font,
-				TextColor3 = rgb(90, 90, 90),
-				Text = "AUDIO VISUALIZER",
-				Size = dim2(1, -12, 0, 14),
-				Position = dim2(0, 6, 0, 4),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextSize = 10,
-			})
-
-			local lyric_prev = library:create("TextLabel", {
-				Parent = lyrics_inline,
-				FontFace = library.font,
-				TextColor3 = rgb(70, 70, 70),
-				Text = "",
-				Size = dim2(1, -20, 0, 28),
-				Position = dim2(0, 10, 0.5, -46),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				TextWrapped = true,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Bottom,
-				TextSize = 11,
-			})
-
-			local lyric_now = library:create("TextLabel", {
-				Parent = lyrics_inline,
-				FontFace = library.font,
-				TextColor3 = themes.preset.accent,
-				Text = "",
-				Size = dim2(1, -20, 0, 40),
-				Position = dim2(0, 10, 0.5, -16),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				TextWrapped = true,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				TextSize = 13,
-			})
-			library:apply_theme(lyric_now, "accent", "TextColor3")
-
-			local lyric_next = library:create("TextLabel", {
-				Parent = lyrics_inline,
-				FontFace = library.font,
-				TextColor3 = rgb(90, 90, 90),
-				Text = "",
-				Size = dim2(1, -20, 0, 28),
-				Position = dim2(0, 10, 0.5, 26),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				TextWrapped = true,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Top,
-				TextSize = 11,
-			})
-			lyric_prev.Visible = false
-			lyric_now.Visible = false
-			lyric_next.Visible = false
-
-			local progress_row = library:create("Frame", {
-				Parent = music_panel.items.holder,
-				Position = dim2(0, 0, 1, -60),
-				Size = dim2(1, 0, 0, 28),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-			})
-
-			local time_now = library:create("TextLabel", {
-				Parent = progress_row,
-				FontFace = library.font,
-				TextColor3 = themes.preset.text,
-				Text = "00:00",
-				Size = dim2(0, 36, 0, 10),
-				Position = dim2(0, 0, 0, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextSize = 10,
-			})
-			library:apply_theme(time_now, "text", "TextColor3")
-
-			local time_end = library:create("TextLabel", {
-				Parent = progress_row,
-				FontFace = library.font,
-				TextColor3 = themes.preset.text,
-				Text = "00:00",
-				Size = dim2(0, 36, 0, 10),
-				Position = dim2(1, -36, 0, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				TextXAlignment = Enum.TextXAlignment.Right,
-				TextSize = 10,
-			})
-			library:apply_theme(time_end, "text", "TextColor3")
-
-			local bar_outline = library:create("Frame", {
-				Parent = progress_row,
-				Position = dim2(0, 0, 0, 16),
-				Size = dim2(1, 0, 0, 6),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(bar_outline, "outline", "BackgroundColor3")
-
-			local bar_bg = library:create("Frame", {
-				Parent = bar_outline,
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(8, 8, 8),
-			})
-
-			local bar_fill = library:create("Frame", {
-				Parent = bar_bg,
-				Position = dim2(0, 0, 0, 0),
+			local progress_fill = library:create("Frame", {
+				Parent = progress_outline,
 				Size = dim2(0, 0, 1, 0),
 				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.accent,
+				BackgroundColor3 = rgb(30, 215, 96),
 			})
-			library:apply_theme(bar_fill, "accent", "BackgroundColor3")
+			local elapsed_label = label(holder, "0:00", dim2(0, 8, 0, 101), dim2(0, 42, 0, 12), 9, rgb(155, 155, 155))
+			local duration_label = label(holder, "0:00", dim2(1, -50, 0, 101), dim2(0, 42, 0, 12), 9, rgb(155, 155, 155), Enum.TextXAlignment.Right)
 
-			local bar_dragging = false
-			local function update_progress(input_pos_x)
-				local pos_x = bar_bg.AbsolutePosition.X
-				local size_x = bar_bg.AbsoluteSize.X
-				if size_x <= 0 then return end
-				local pct = math.clamp((input_pos_x - pos_x) / size_x, 0, 1)
-				local len = music_sound.TimeLength or 0
-				if len > 0 then
-					music_sound.TimePosition = pct * len
-					bar_fill.Size = dim2(pct, 0, 1, 0)
-				end
+			local function make_action_button(parent, text, position, size, callback)
+				local button = library:create("TextButton", {
+					Parent = parent,
+					Position = position,
+					Size = size,
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.outline,
+					Text = "",
+				})
+				library:hoverify(button, button)
+				library:apply_theme(button, "outline", "BackgroundColor3")
+				local inline = library:create("Frame", {
+					Parent = button,
+					Position = dim2(0, 1, 0, 1),
+					Size = dim2(1, -2, 1, -2),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.inline,
+					ZIndex = 2,
+				})
+				library:apply_theme(inline, "inline", "BackgroundColor3")
+				local background = library:create("Frame", {
+					Parent = inline,
+					Position = dim2(0, 1, 0, 1),
+					Size = dim2(1, -2, 1, -2),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.accent,
+					ZIndex = 2,
+				})
+				library:apply_theme(background, "accent", "BackgroundColor3")
+				local contrast = library:create("Frame", {
+					Parent = background,
+					Size = dim2(1, 0, 1, 0),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.high_contrast,
+					ZIndex = 2,
+				})
+				local button_label = label(contrast, text, dim2(0, 3, 0, 0), dim2(1, -6, 1, 0), 11, themes.preset.text, Enum.TextXAlignment.Center)
+				button_label.ZIndex = 3
+				library:create("UIStroke", {Parent = button_label, LineJoinMode = Enum.LineJoinMode.Miter})
+				button.MouseButton1Click:Connect(callback)
+				return button
 			end
 
-			bar_bg.InputBegan:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 then
-					bar_dragging = true
-					update_progress(input.Position.X)
+			local open_auth_panel
+			make_action_button(holder, "Connect Spotify", dim2(1, -112, 0, 121), dim2(0, 104, 0, 22), function()
+				if open_auth_panel then
+					open_auth_panel()
 				end
 			end)
-
-			local controls_holder = library:create("Frame", {
-				Parent = music_panel.items.holder,
-				Position = dim2(0, 0, 1, -26),
-				Size = dim2(1, 0, 0, 24),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-			})
-
-			library:create("UIListLayout", {
-				Parent = controls_holder,
-				FillDirection = Enum.FillDirection.Horizontal,
-				HorizontalAlignment = Enum.HorizontalAlignment.Center,
-				VerticalAlignment = Enum.VerticalAlignment.Center,
-				Padding = dim(0, 22),
-				SortOrder = Enum.SortOrder.LayoutOrder,
-			})
-
-			local current_song_idx_live = current_song_idx
-			local current_song = song_list[current_song_idx]
-			local lyric_idx = 0
-			local lyric_delay = 0.6
-			local lyric_transition_hold = 0.7
-			local lyric_tracker = {
-				loud = 0,
-				intro_peak = 0,
-				quiet_for = 0,
-				vocal_on = false,
-				start_pos = nil,
-				last_advance = 0,
-				last_t = 0,
-				idx = 0,
-				pending_idx = 0,
-				pending_since = 0,
-				audio_quiet_for = 0,
-				audio_loud = 0,
-				audio_previous_loud = 0,
-			}
-
-			local function lyric_lines(song)
-				local out = {}
-				local source = song and (song.lyrics_lrc or song.lyrics) or {}
-				if type(source) == "string" then
-					for minutes, seconds, text in string.gmatch(source, "%[(%d+):(%d+%.?%d*)%]([^\r\n]*)") do
-						text = text:gsub("^%s+", ""):gsub("%s+$", "")
-						if text ~= "" then
-							table.insert(out, {
-								text = text,
-								time = tonumber(minutes) * 60 + tonumber(seconds),
-							})
-						end
-					end
-					return out
-				end
-
-				for _, line in ipairs(source) do
-					local text = line
-					local time = nil
-					if type(line) == "table" then
-						text = line.text or ""
-						time = tonumber(line.t or line.time or line.timestamp)
-					end
-					if type(text) == "string" and text ~= "" then
-						table.insert(out, {text = text, time = time})
-					end
-				end
-				return out
-			end
-
-			local function show_lyrics(lines, idx)
-				lyric_idx = idx or 0
-				if not lines or lyric_idx <= 0 then
-					lyric_prev.Text = ""
-					lyric_now.Text = ""
-					lyric_next.Text = ""
-					return
-				end
-				lyric_prev.Text = lines[lyric_idx - 1] and lines[lyric_idx - 1].text or ""
-				lyric_now.Text = lines[lyric_idx] and lines[lyric_idx].text or ""
-				lyric_next.Text = lines[lyric_idx + 1] and lines[lyric_idx + 1].text or ""
-			end
-
-			local function reset_lyric_tracker()
-				lyric_tracker.loud = 0
-				lyric_tracker.intro_peak = 0
-				lyric_tracker.quiet_for = 0
-				lyric_tracker.vocal_on = false
-				lyric_tracker.start_pos = nil
-				lyric_tracker.last_advance = 0
-				lyric_tracker.last_t = 0
-				lyric_tracker.idx = 0
-				lyric_tracker.pending_idx = 0
-				lyric_tracker.pending_since = 0
-				lyric_tracker.audio_quiet_for = 0
-				lyric_tracker.audio_loud = 0
-				lyric_tracker.audio_previous_loud = 0
-				show_lyrics(nil, 0)
-			end
-
-			local function sync_lyrics(song, t)
-				t = t or 0
-				local lines = lyric_lines(song)
-				if #lines == 0 then
-					lyric_prev.Text = ""
-					lyric_now.Text = "No lyrics for this track"
-					lyric_next.Text = ""
-					return
-				end
-
-				local timed_idx = 0
-				local lyric_time = t - lyric_delay
-				for index, line in ipairs(lines) do
-					if line.time then
-						local line_time = line.time + (index > 1 and lyric_transition_hold or 0)
-						if line_time <= lyric_time then
-							timed_idx = index
-						else
-							break
-						end
-					end
-				end
-				lyric_tracker.idx = timed_idx
-				lyric_tracker.last_t = t
-				if lyric_tracker.idx > 0 then
-					show_lyrics(lines, lyric_tracker.idx)
-					return
-				end
-				if lines[1].time then
-					show_lyrics(lines, 0)
-					return
-				end
-
-				if math.abs(t - (lyric_tracker.last_t or 0)) > 1.2 then
-					lyric_tracker.vocal_on = false
-					lyric_tracker.start_pos = nil
-					lyric_tracker.idx = 0
-					lyric_tracker.quiet_for = 0
-					lyric_tracker.last_advance = t
-					lyric_tracker.intro_peak = 0
-				end
-				lyric_tracker.last_t = t
-
-				local len = music_sound.TimeLength or 0
-				local loud_raw = 0
-				pcall(function()
-					loud_raw = music_sound.PlaybackLoudness or 0
-				end)
-				lyric_tracker.loud = lyric_tracker.loud * 0.6 + loud_raw * 0.4
-				local loud = lyric_tracker.loud
-				local dt = 0.08
-
-				if not music_sound.IsPlaying then
-					show_lyrics(lines, lyric_tracker.idx)
-					return
-				end
-
-				if not lyric_tracker.vocal_on then
-					if t < 2.5 then
-						lyric_tracker.intro_peak = math.max(lyric_tracker.intro_peak, loud)
-						show_lyrics(lines, 0)
-						return
-					end
-					if t < 12 then
-						lyric_tracker.intro_peak = math.max(lyric_tracker.intro_peak, loud * 0.92)
-					end
-					if loud < 42 then
-						lyric_tracker.quiet_for = lyric_tracker.quiet_for + dt
-					else
-						lyric_tracker.quiet_for = 0
-					end
-
-					local jumped = loud > (lyric_tracker.intro_peak * 1.22 + 18) and loud > 70
-					local after_gap = lyric_tracker.quiet_for > 0.22 and loud > 75
-					local fallback = len > 0 and t >= math.clamp(len * 0.12, 12, 24) and loud > 35
-					if jumped or after_gap or fallback then
-						lyric_tracker.vocal_on = true
-						lyric_tracker.idx = 1
-						lyric_tracker.start_pos = t
-						lyric_tracker.last_advance = t
-						lyric_tracker.quiet_for = 0
-					end
-					show_lyrics(lines, lyric_tracker.idx)
-					return
-				end
-
-				local vocal_end = len > 0 and (len * 0.94) or (t + 30)
-				local span = math.max(8, vocal_end - (lyric_tracker.start_pos or 0))
-				local progress = math.clamp((t - (lyric_tracker.start_pos or 0)) / span, 0, 0.999)
-				local expected = math.clamp(math.floor(progress * #lines) + 1, 1, #lines)
-
-				if loud < 40 then
-					lyric_tracker.quiet_for = lyric_tracker.quiet_for + dt
-				else
-					if lyric_tracker.quiet_for >= 0.16 and (t - lyric_tracker.last_advance) >= 1.45 then
-						lyric_tracker.idx = math.min(lyric_tracker.idx + 1, #lines)
-						lyric_tracker.last_advance = t
-					end
-					lyric_tracker.quiet_for = 0
-				end
-
-				if (t - lyric_tracker.last_advance) >= 7.5 and lyric_tracker.idx < #lines then
-					lyric_tracker.idx = lyric_tracker.idx + 1
-					lyric_tracker.last_advance = t
-				end
-
-				if lyric_tracker.idx < expected - 1 then
-					lyric_tracker.idx = expected - 1
-					lyric_tracker.last_advance = t
-				elseif lyric_tracker.idx > expected + 1 then
-					lyric_tracker.idx = expected + 1
-				end
-
-				show_lyrics(lines, lyric_tracker.idx)
-			end
-
-			local function play_song(idx)
-				if idx < 1 then idx = #song_list end
-				if idx > #song_list then idx = 1 end
-				current_song_idx_live = idx
-				current_song = song_list[idx]
-				pcall(function()
-					music_sound:Stop()
-					music_sound.SoundId = resolve_asset(current_song.id)
-					music_sound.TimePosition = 0
-					music_sound.Volume = 1
-					if is_enabled then
-						music_sound:Play()
-					end
-				end)
-				track_title.Text = current_song.name
-				track_artist.Text = current_song.artist or ""
-				album_icon.Image = resolve_asset(current_song.cover or current_song.id)
-				reset_lyric_tracker()
-			end
-
-			local function load_track(idx)
-				play_song(idx)
-			end
-
-			music_sound.Ended:Connect(function()
-				play_song(current_song_idx_live + 1)
-			end)
-
-			local prev_btn = library:create("ImageButton", {
-				Parent = controls_holder,
+			local previous_button = library:create("ImageButton", {
+				Parent = holder,
+				Position = dim2(0, 20, 0, 123),
 				Size = dim2(0, 16, 0, 16),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				Image = prev_asset,
 				ImageColor3 = rgb(220, 220, 220),
 				AutoButtonColor = false,
-				LayoutOrder = 1,
 			})
-
-			prev_btn.MouseButton1Click:Connect(function()
-				if music_sound.TimePosition > 2 then
-					pcall(function()
-						music_sound.TimePosition = 0
-						if is_enabled then
-							music_sound:Play()
-						end
-					end)
-					reset_lyric_tracker()
-				else
-					play_song(current_song_idx_live - 1)
-				end
-			end)
-
-			local play_btn = library:create("ImageButton", {
-				Parent = controls_holder,
+			local toggle_button = library:create("ImageButton", {
+				Parent = holder,
+				Position = dim2(0, 54, 0, 120),
 				Size = dim2(0, 22, 0, 22),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				Image = play_asset,
 				ImageColor3 = rgb(255, 255, 255),
 				AutoButtonColor = false,
-				LayoutOrder = 2,
 			})
-
-			play_btn.MouseButton1Click:Connect(function()
-				if not is_enabled then return end
-				if music_sound.IsPlaying then
-					pcall(function()
-						music_sound:Pause()
-					end)
-					play_btn.Image = play_asset
-				else
-					pcall(function()
-						music_sound:Play()
-					end)
-					play_btn.Image = pause_asset
-				end
-			end)
-
-			local next_btn = library:create("ImageButton", {
-				Parent = controls_holder,
+			local next_button = library:create("ImageButton", {
+				Parent = holder,
+				Position = dim2(0, 94, 0, 123),
 				Size = dim2(0, 16, 0, 16),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				Image = next_asset,
 				ImageColor3 = rgb(220, 220, 220),
 				AutoButtonColor = false,
-				LayoutOrder = 3,
 			})
 
-			next_btn.MouseButton1Click:Connect(function()
-				play_song(current_song_idx_live + 1)
-			end)
-
-			reset_lyric_tracker()
-
-			library:connection(uis.InputChanged, function(input)
-				if bar_dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-					update_progress(input.Position.X)
+			local function format_api_error(err)
+				local message = tostring(err or "Unknown Spotify error")
+				if message:find("403", 1, true) then
+					return "Premium and an active Spotify device are required for playback controls"
 				end
-			end)
+				return message
+			end
 
-			library:connection(uis.InputEnded, function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 then
-					bar_dragging = false
+			local function update_status(text, color)
+				status_label.Text = text
+				status_label.TextColor3 = color or rgb(170, 170, 170)
+			end
+
+			local function refresh_track()
+				local ok, data, code = spotify_request("GET", "/me/player/currently-playing")
+				if not ok then
+					update_status(format_api_error(data), rgb(235, 135, 135))
+					return false, data
 				end
+				if code == 204 or type(data) ~= "table" or type(data.item) ~= "table" then
+					title_label.Text = "Nothing playing"
+					artist_label.Text = "Start playback in Spotify"
+					album_label.Text = ""
+					artwork.Image = ""
+					track_duration = 0
+					track_progress = 0
+					is_playing = false
+					progress_fill.Size = dim2(0, 0, 1, 0)
+					elapsed_label.Text = "0:00"
+					duration_label.Text = "0:00"
+					toggle_button.Image = play_asset
+					update_status("No active Spotify playback")
+					return true
+				end
+
+				local item = data.item
+				local artists = {}
+				for _, artist in ipairs(item.artists or {}) do
+					if artist.name then table.insert(artists, artist.name) end
+				end
+				title_label.Text = tostring(item.name or "Unknown track")
+				artist_label.Text = table.concat(artists, ", ")
+				album_label.Text = tostring(item.album and item.album.name or "")
+				local images = item.album and item.album.images or {}
+				artwork.Image = images[1] and images[1].url or ""
+				track_duration = tonumber(item.duration_ms) or 0
+				track_progress = tonumber(data.progress_ms) or 0
+				last_sync = os.clock()
+				is_playing = data.is_playing == true
+				progress_fill.Size = dim2(track_duration > 0 and math.clamp(track_progress / track_duration, 0, 1) or 0, 0, 1, 0)
+				elapsed_label.Text = format_clock(track_progress)
+				duration_label.Text = format_clock(track_duration)
+				toggle_button.Image = is_playing and pause_asset or play_asset
+				local device = data.device and data.device.name
+				update_status(device and ("Spotify Connect · " .. tostring(device)) or "Spotify Connect", rgb(115, 210, 145))
+				return true
+			end
+
+			local function playback_command(method, endpoint)
+				local ok, err = spotify_request(method, endpoint)
+				if not ok then
+					update_status(format_api_error(err), rgb(235, 135, 135))
+					return
+				end
+				task.delay(0.4, refresh_track)
+			end
+
+			previous_button.MouseButton1Click:Connect(function()
+				playback_command("POST", "/me/player/previous")
+			end)
+			next_button.MouseButton1Click:Connect(function()
+				playback_command("POST", "/me/player/next")
+			end)
+			toggle_button.MouseButton1Click:Connect(function()
+				playback_command("PUT", is_playing and "/me/player/pause" or "/me/player/play")
 			end)
 
-			local function format_clock(secs)
-				secs = math.max(0, math.floor(secs or 0))
-				local m = math.floor(secs / 60)
-				local s = secs % 60
-				return string.format("%02d:%02d", m, s)
+			local function decode_query(value)
+				return (value:gsub("%+", " "):gsub("%%(%x%x)", function(hex)
+					return string.char(tonumber(hex, 16))
+				end))
+			end
+
+			local function query_value(url, key)
+				local escaped_key = key:gsub("([^%w])", "%%%1")
+				local value = url:match("[?&]" .. escaped_key .. "=([^&#]+)")
+				return value and decode_query(value) or nil
+			end
+
+			open_auth_panel = function()
+				if auth_panel then
+					auth_panel.items.sgui.Enabled = true
+					return
+				end
+				local cam_x = camera and camera.ViewportSize.X or 1280
+				local cam_y = camera and camera.ViewportSize.Y or 720
+				auth_panel = library:panel({
+					name = "Connect Spotify",
+					size = dim2(0, 390, 0, 255),
+					position = dim2(0, math.floor((cam_x - 390) / 2), 0, math.floor((cam_y - 255) / 2)),
+					close_button = true,
+					dock = false,
+					hide_with_menu = false,
+				})
+				if auth_panel.items.glow then auth_panel.items.glow:Destroy() end
+				local auth_holder = auth_panel.items.holder
+				local function auth_label(text, y, h, color)
+					return label(auth_holder, text, dim2(0, 7, 0, y), dim2(1, -14, 0, h), 10, color)
+				end
+				auth_label("Paste your Spotify app Client ID. Do not enter a client secret.", 2, 15)
+				local client_box = library:create("TextBox", {
+					Parent = auth_holder,
+					Position = dim2(0, 7, 0, 20),
+					Size = dim2(1, -14, 0, 23),
+					BackgroundColor3 = themes.preset.high_contrast,
+					BorderSizePixel = 0,
+					ClearTextOnFocus = false,
+					FontFace = library.font,
+					PlaceholderText = "Spotify Client ID",
+					Text = client_id,
+					TextSize = 10,
+					TextColor3 = themes.preset.text,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				})
+				local redirect_label = auth_label("Redirect URI: " .. redirect_uri, 45, 15, rgb(160, 160, 160))
+				redirect_label.TextTruncate = Enum.TextTruncate.AtEnd
+				local auth_url_box = library:create("TextBox", {
+					Parent = auth_holder,
+					Position = dim2(0, 7, 0, 63),
+					Size = dim2(1, -14, 0, 32),
+					BackgroundColor3 = themes.preset.high_contrast,
+					BorderSizePixel = 0,
+					ClearTextOnFocus = false,
+					FontFace = library.font,
+					PlaceholderText = "Authorize URL will appear here",
+					Text = "",
+					TextSize = 9,
+					TextColor3 = themes.preset.text,
+					TextWrapped = true,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				})
+				local redirect_box = library:create("TextBox", {
+					Parent = auth_holder,
+					Position = dim2(0, 7, 0, 101),
+					Size = dim2(1, -14, 0, 23),
+					BackgroundColor3 = themes.preset.high_contrast,
+					BorderSizePixel = 0,
+					ClearTextOnFocus = false,
+					FontFace = library.font,
+					PlaceholderText = "Paste the final browser redirect URL here",
+					Text = "",
+					TextSize = 9,
+					TextColor3 = themes.preset.text,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				})
+				auth_status = auth_label("Add the redirect URI above to your Spotify app settings.", 128, 30, rgb(170, 170, 170))
+				local function auth_button(text, x, callback)
+					return make_action_button(auth_holder, text, dim2(0, x, 1, -29), dim2(0, 170, 0, 22), callback)
+				end
+				auth_button("Create Login URL", 7, function()
+					client_id = client_box.Text:gsub("^%s+", ""):gsub("%s+$", "")
+					if client_id == "" then
+						auth_status.Text = "Enter your Spotify app Client ID first."
+						return
+					end
+					code_verifier = create_verifier()
+					local digest, hash_error = hash_sha256(code_verifier)
+					if not digest then
+						auth_status.Text = hash_error
+						return
+					end
+					oauth_state = http_service:GenerateGUID(false):gsub("-", "")
+					local challenge = base64url(digest)
+					local params = {
+						client_id = client_id,
+						response_type = "code",
+						redirect_uri = redirect_uri,
+						scope = "user-read-currently-playing user-read-playback-state user-modify-playback-state",
+						code_challenge_method = "S256",
+						code_challenge = challenge,
+						state = oauth_state,
+					}
+					auth_url_box.Text = "https://accounts.spotify.com/authorize?" .. form_encode(params)
+					local clipboard = environment.setclipboard or environment.toclipboard
+					if type(clipboard) == "function" then
+						local copied, copy_error = pcall(clipboard, auth_url_box.Text)
+						auth_status.Text = copied and "Login URL copied. Open it in a browser, then paste the final redirect URL below." or ("Copy the URL above manually: " .. tostring(copy_error))
+					else
+						auth_status.Text = "Copy the URL above, open it in a browser, then paste the final redirect URL below."
+					end
+				end)
+				auth_button("Finish Login", 191, function()
+					local pasted_url = redirect_box.Text
+					local code = query_value(pasted_url, "code")
+					local returned_state = query_value(pasted_url, "state")
+					if not code or not code_verifier then
+						auth_status.Text = "Create a login URL and paste the redirected browser URL first."
+						return
+					end
+					if returned_state ~= oauth_state then
+						auth_status.Text = "OAuth state did not match. Create a fresh login URL and retry."
+						return
+					end
+					local token_ok, token_error = exchange_token({
+						client_id = client_id,
+						grant_type = "authorization_code",
+						code = code,
+						redirect_uri = redirect_uri,
+						code_verifier = code_verifier,
+					})
+					if not token_ok then
+						auth_status.Text = "Spotify sign-in failed: " .. tostring(token_error)
+						return
+					end
+					auth_panel.items.sgui.Enabled = false
+					update_status("Connected. Checking Spotify playback...", rgb(115, 210, 145))
+					refresh_track()
+				end)
 			end
 
 			local player_obj = {}
-
 			if music_panel.items.close then
 				music_panel.items.close.MouseButton1Click:Connect(function()
-					pcall(function()
-						music_sound:Pause()
-					end)
 					is_enabled = false
-					if player_obj.on_close then
-						player_obj.on_close()
-					end
+					if player_obj.on_close then player_obj.on_close() end
 				end)
 			end
 
 			task.spawn(function()
-				while task.wait(0.08) do
-					pcall(function()
-						local pos = music_sound.TimePosition or 0
-						local len = music_sound.TimeLength or 0
-						if len > 0 then
-							if not bar_dragging then
-								bar_fill.Size = dim2(math.clamp(pos / len, 0, 1), 0, 1, 0)
-							end
-							time_now.Text = format_clock(pos)
-							time_end.Text = format_clock(len)
-						else
-							bar_fill.Size = dim2(0, 0, 1, 0)
-							time_now.Text = format_clock(pos)
-							time_end.Text = "--:--"
+				while music_panel.items.sgui.Parent do
+					task.wait(5)
+					if is_enabled and access_token then
+						local ok, err = pcall(refresh_track)
+						if not ok then
+							update_status("Spotify update failed: " .. tostring(err), rgb(235, 135, 135))
 						end
-						if music_sound.IsPlaying then
-							play_btn.Image = pause_asset
-						else
-							play_btn.Image = play_asset
-						end
-					end)
+					end
 				end
 			end)
 
 			player_obj.panel = music_panel
-			player_obj.sound = music_sound
-			player_obj.load_track = load_track
+			player_obj.load_track = function()
+				return refresh_track()
+			end
+			player_obj.connect = open_auth_panel
 			player_obj.set_visible = function(visible)
 				music_panel.items.sgui.Enabled = visible
 				is_enabled = visible
-				if visible then
-					pcall(function()
-						music_sound:Play()
-					end)
-				else
-					pcall(function()
-						music_sound:Pause()
-					end)
+				if visible and access_token then
+					refresh_track()
 				end
 			end
-
 			return setmetatable(player_obj, library)
 		end
 
