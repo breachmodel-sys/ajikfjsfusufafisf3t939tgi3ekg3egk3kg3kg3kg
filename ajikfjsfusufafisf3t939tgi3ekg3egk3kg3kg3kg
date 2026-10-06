@@ -7188,15 +7188,14 @@
 					Size = dim2(0, 105, 0, 22),
 					BorderColor3 = rgb(0, 0, 0),
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.outline,
+					BackgroundColor3 = rgb(31, 31, 34),
 					Text = "",
 				})
-				library:apply_theme(button, "outline", "BackgroundColor3")
 
 				local hover = library:create("Frame", {
 					Parent = button,
 					Size = dim2(1, 0, 1, 0),
-					BackgroundColor3 = rgb(65, 65, 72),
+					BackgroundColor3 = rgb(37, 37, 40),
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					ZIndex = 1,
@@ -7212,17 +7211,16 @@
 					Parent = button,
 					Position = dim2(0, 1, 0, 1),
 					Size = dim2(1, -2, 1, -2),
-					BackgroundColor3 = themes.preset.inline,
+					BackgroundColor3 = rgb(24, 24, 27),
 					BorderSizePixel = 0,
 					ZIndex = 2,
 				})
-				library:apply_theme(inline, "inline", "BackgroundColor3")
 
 				local background = library:create("Frame", {
 					Parent = inline,
 					Position = dim2(0, 1, 0, 1),
 					Size = dim2(1, -2, 1, -2),
-					BackgroundColor3 = rgb(28, 28, 31),
+					BackgroundColor3 = rgb(20, 20, 23),
 					BorderSizePixel = 0,
 					ZIndex = 2,
 				})
@@ -7230,8 +7228,8 @@
 					Parent = background,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(40, 40, 44)),
-						rgbkey(1, rgb(27, 27, 30)),
+						rgbkey(0, rgb(23, 23, 26)),
+						rgbkey(1, rgb(17, 17, 20)),
 					},
 				})
 
@@ -7246,8 +7244,8 @@
 					Parent = contrast,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(34, 34, 37)),
-						rgbkey(1, rgb(25, 25, 28)),
+						rgbkey(0, rgb(22, 22, 25)),
+						rgbkey(1, rgb(16, 16, 19)),
 					},
 				})
 				library:create("TextLabel", {
