@@ -7222,24 +7222,19 @@
 				BackgroundColor3 = themes.preset.outline,
 			})
 
-			local _, icon_frame = outlined_box(holder, dim2(0, 7, 0, 151), dim2(0, 42, 0, 42))
-			icon_frame.BackgroundColor3 = rgb(30, 30, 30)
-			local icon_mark = library:create("Frame", {
-				Parent = icon_frame,
-				Position = dim2(0.28, 0, 0.16, 0),
-				Size = dim2(0.44, 0, 0.68, 0),
+			local _, avatar_frame = outlined_box(holder, dim2(0, 7, 0, 151), dim2(0, 42, 0, 42))
+			avatar_frame.BackgroundColor3 = rgb(30, 30, 30)
+			library:create("ImageLabel", {
+				Parent = avatar_frame,
+				Size = dim2(1, 0, 1, 0),
+				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(235, 235, 235),
-				Rotation = 45,
-			})
-			library:create("UICorner", {
-				Parent = icon_mark,
-				CornerRadius = dim(1, 0),
+				Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(lp.UserId) .. "&w=150&h=150",
+				ScaleType = Enum.ScaleType.Crop,
 			})
 
-			local details_title = label(holder, "Select a product", dim2(0, 57, 0, 149), dim2(1, -177, 0, 13), 10, rgb(235, 235, 235))
-			local details_updated = label(holder, "Last Updated: N/A", dim2(0, 57, 0, 162), dim2(1, -177, 0, 12), 9)
-			local details_status = label(holder, "Status: Unknown", dim2(0, 57, 0, 174), dim2(1, -177, 0, 12), 9)
+			label(holder, lp.DisplayName, dim2(0, 57, 0, 153), dim2(1, -177, 0, 15), 10, rgb(235, 235, 235))
+			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 169), dim2(1, -177, 0, 13), 9)
 
 			local function create_action_button(text, y, on_click)
 				local button = library:create("TextButton", {
@@ -7320,21 +7315,6 @@
 
 			local selected_index
 			local product_rows = {}
-			local function update_details()
-				local product = selected_index and products[selected_index]
-				if not product then
-					details_title.Text = "Select a product"
-					details_updated.Text = "Last Updated: N/A"
-					details_status.Text = "Status: Unknown"
-					details_status.TextColor3 = themes.preset.text
-					return
-				end
-				details_title.Text = "Game: " .. tostring(product.name or product.title or "Unknown")
-				details_updated.Text = "Last Updated: " .. tostring(product.last_updated or "N/A")
-				details_status.Text = "Status: " .. tostring(product.status or "Unknown")
-				details_status.TextColor3 = product.status_color or rgb(110, 220, 110)
-			end
-			details_status.TextTruncate = Enum.TextTruncate.AtEnd
 
 			local function select_product(index)
 				selected_index = index
@@ -7347,7 +7327,6 @@
 					selected.button.BackgroundColor3 = themes.preset.low_contrast
 					selected.accent.Visible = true
 				end
-				update_details()
 			end
 
 			local function update_filter()
