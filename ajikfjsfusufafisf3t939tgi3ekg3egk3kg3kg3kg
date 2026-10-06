@@ -5561,6 +5561,7 @@
 		end 
 
 		function library:button(options)
+			local loader_style = options.style == "loader"
 			local cfg = {
 				callback = options.callback or function() end, 
 				name = options.text or options.name or "Button",
@@ -5578,7 +5579,24 @@
 			})
 			cfg.instance = button
 
-			library:hoverify(button, button)
+			if loader_style then
+				local hover = library:create("Frame", {
+					Parent = button,
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					BackgroundColor3 = rgb(70, 70, 78),
+					Size = dim2(1, 0, 1, 0),
+					ZIndex = 1,
+				})
+				button.MouseEnter:Connect(function()
+					library:tween(hover, {BackgroundTransparency = 0})
+				end)
+				button.MouseLeave:Connect(function()
+					library:tween(hover, {BackgroundTransparency = 1})
+				end)
+			else
+				library:hoverify(button, button)
+			end
 			
 			library:apply_theme(button, "outline", "BackgroundColor3") 
 			
@@ -5603,22 +5621,29 @@
 				BorderColor3 = rgb(0, 0, 0),
 				Size = dim2(1, -2, 1, -2),
 				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.accent
+				BackgroundColor3 = loader_style and rgb(28, 28, 31) or themes.preset.accent
 			})
 			
-			library:apply_theme(background, "accent", "BackgroundColor3") 
+			if not loader_style then
+				library:apply_theme(background, "accent", "BackgroundColor3")
+			end
 			
 			local _UIGradient = library:create("UIGradient", {
 				Parent = background,
 				Name = "",
 				Rotation = 90,
-				Color = rgbseq{
+				Color = loader_style and rgbseq{
+					rgbkey(0, rgb(40, 40, 44)),
+					rgbkey(1, rgb(27, 27, 30))
+				} or rgbseq{
 					rgbkey(0, rgb(255, 255, 255)),
 					rgbkey(1, rgb(167, 167, 167))
 				}
 			})
 			
-			library:apply_theme(_UIGradient, "contrast", "Color") 
+			if not loader_style then
+				library:apply_theme(_UIGradient, "contrast", "Color")
+			end
 			
 			local contrast = library:create("Frame", {
 				Parent = background,
@@ -5634,13 +5659,18 @@
 				Parent = contrast,
 				Name = "",
 				Rotation = 90,
-				Color = rgbseq{
+				Color = loader_style and rgbseq{
+					rgbkey(0, rgb(39, 39, 43)),
+					rgbkey(1, rgb(29, 29, 33))
+				} or rgbseq{
 					rgbkey(0, rgb(41, 41, 55)),
 					rgbkey(1, rgb(35, 35, 47))
 				}
 			})
 			
-			library:apply_theme(UIGradient, "contrast", "Color") 
+			if not loader_style then
+				library:apply_theme(UIGradient, "contrast", "Color")
+			end
 			
 			local text = library:create("TextLabel", {
 				Parent = contrast,
@@ -5656,7 +5686,8 @@
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				BorderSizePixel = 0,
 				FontFace = library.font,
-				TextSize = 12,
+				TextSize = loader_style and 10 or 12,
+				TextXAlignment = loader_style and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left,
 				BackgroundColor3 = rgb(255, 255, 255)
 			})
 			
@@ -7100,6 +7131,15 @@
 			local loader_title = options.title or options.name or "Loader"
 			local callback = options.on_load or options.callback
 			local products = options.products or {}
+			local loading_current_game = #products == 0
+			if loading_current_game then
+				products = {{
+					name = "Current Roblox experience",
+					game = "Place ID: " .. tostring(game.PlaceId),
+					description = "Loading game information...",
+					on_load = callback,
+				}}
+			end
 
 			local cam_x = camera and camera.ViewportSize.X or 1280
 			local cam_y = camera and camera.ViewportSize.Y or 720
@@ -7169,11 +7209,11 @@
 				return outline, inside
 			end
 
-			label(holder, "Roblox", dim2(0, 7, 0, 0), dim2(0, 62, 0, 16), 11, rgb(235, 235, 235))
+			label(holder, "Current Game", dim2(0, 7, 0, 0), dim2(0, 82, 0, 16), 11, rgb(235, 235, 235))
 			local heading_line = library:create("Frame", {
 				Parent = holder,
-				Position = dim2(0, 68, 0, 8),
-				Size = dim2(1, -76, 0, 1),
+				Position = dim2(0, 90, 0, 8),
+				Size = dim2(1, -98, 0, 1),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.accent,
 			})
@@ -7243,6 +7283,7 @@
 					position = dim2(1, -112, 0, y),
 					size = dim2(0, 105, 0, 22),
 					text = text,
+					style = "loader",
 					callback = on_click,
 				})
 				return button.instance
@@ -7318,15 +7359,31 @@
 					product = product,
 					button = row,
 					accent = row_accent,
+					title = title,
+					game_name = game_name,
+					description = description,
 				})
 			end
 
-			if #products > 0 then
-				select_product(1)
-			else
-				label(product_list, "No products available", dim2(0, 8, 0, 4), dim2(1, -16, 0, 20), 10, rgb(155, 155, 155))
-			end
+			select_product(1)
 			search:GetPropertyChangedSignal("Text"):Connect(update_filter)
+			if loading_current_game and game.PlaceId > 0 then
+				task.spawn(function()
+					local ok, game_info = pcall(function()
+						return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
+					end)
+					if ok and game_info and game_info.Name then
+						local current = products[1]
+						current.name = game_info.Name
+						current.description = "Current Roblox experience"
+						product_rows[1].title.Text = game_info.Name
+						product_rows[1].description.Text = current.description
+						update_filter()
+					else
+						warn("Loader could not get the current game name: " .. tostring(game_info))
+					end
+				end)
+			end
 
 			local is_executing = false
 			create_action_button("Execute", 151, function()
