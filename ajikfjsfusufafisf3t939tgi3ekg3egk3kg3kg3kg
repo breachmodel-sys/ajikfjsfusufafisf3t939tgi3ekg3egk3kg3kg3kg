@@ -6474,7 +6474,7 @@
 			local pause_asset = "rbxassetid://79610666871575"
 			local next_asset = "rbxassetid://121822124041513"
 			local prev_asset = "rbxassetid://137660494219613"
-			local width, height = 340, 190
+			local width, height = 340, 235
 			local music_panel = library:panel({
 				name = "Spotify Player",
 				anchor_point = vec2(0, 0),
@@ -6603,6 +6603,59 @@
 				ImageColor3 = rgb(220, 220, 220),
 				AutoButtonColor = false,
 			})
+			local redirect_box = library:create("TextBox", {
+				Parent = holder,
+				Position = dim2(0, 8, 0, 151),
+				Size = dim2(1, -16, 0, 22),
+				BackgroundColor3 = themes.preset.high_contrast,
+				BorderSizePixel = 0,
+				ClearTextOnFocus = false,
+				FontFace = library.font,
+				PlaceholderText = "Paste the full browser URL after Spotify login",
+				Text = "",
+				TextSize = 9,
+				TextColor3 = themes.preset.text,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			make_action_button(holder, "Finish Login", dim2(1, -104, 0, 178), dim2(0, 96, 0, 22), function()
+				local function query_value(url, key)
+					local escaped_key = key:gsub("([^%w])", "%%%1")
+					local value = url:match("[?&]" .. escaped_key .. "=([^&#]+)")
+					return value and http_service:UrlDecode(value) or nil
+				end
+				local pasted_url = redirect_box.Text
+				local code = query_value(pasted_url, "code")
+				local returned_state = query_value(pasted_url, "state")
+				local auth_error = query_value(pasted_url, "error")
+				if auth_error then
+					update_status("Spotify authorization failed: " .. auth_error, rgb(235, 135, 135))
+					return
+				end
+				if not code or not code_verifier then
+					update_status("Connect Spotify, approve access, then paste the browser URL", rgb(235, 135, 135))
+					return
+				end
+				if returned_state ~= oauth_state then
+					update_status("OAuth state mismatch. Start Connect Spotify again.", rgb(235, 135, 135))
+					return
+				end
+				local token_ok, token_error = exchange_token({
+					client_id = client_id,
+					grant_type = "authorization_code",
+					code = code,
+					redirect_uri = redirect_uri,
+					code_verifier = code_verifier,
+				})
+				if not token_ok then
+					update_status("Spotify sign-in failed: " .. tostring(token_error), rgb(235, 135, 135))
+					return
+				end
+				code_verifier = nil
+				oauth_state = nil
+				redirect_box.Text = ""
+				update_status("Connected. Checking Spotify playback...", rgb(115, 210, 145))
+				refresh_track()
+			end)
 			local function format_api_error(err)
 				local message = tostring(err or "Unknown Spotify error")
 				if message:find("403", 1, true) then
@@ -6732,8 +6785,7 @@
 					update_status("Could not open browser; login URL copied if clipboard is available", rgb(235, 135, 135))
 					return
 				end
-				is_enabled = false
-				music_panel.items.sgui.Enabled = false
+				update_status("Browser opened. After approval, paste its full redirect URL here.", rgb(235, 195, 120))
 			end
 
 			local player_obj = {}
