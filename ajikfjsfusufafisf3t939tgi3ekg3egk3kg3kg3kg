@@ -7134,7 +7134,7 @@
 			local cam_x = camera and camera.ViewportSize.X or 1280
 			local cam_y = camera and camera.ViewportSize.Y or 720
 			local width = math.max(320, math.min(420, cam_x - 24))
-			local height = 115
+			local height = 230
 			local panel = library:panel({
 				name = loader_title,
 				size = dim2(0, width, 0, height),
