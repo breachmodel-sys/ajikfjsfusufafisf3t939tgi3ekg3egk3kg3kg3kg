@@ -7188,30 +7188,15 @@
 					Size = dim2(0, 105, 0, 22),
 					BorderColor3 = rgb(0, 0, 0),
 					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(31, 31, 34),
+					BackgroundColor3 = themes.preset.outline,
 					Text = "",
 				})
-
-				local hover = library:create("Frame", {
-					Parent = button,
-					Size = dim2(1, 0, 1, 0),
-					BackgroundColor3 = rgb(37, 37, 40),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					ZIndex = 1,
-				})
-				button.MouseEnter:Connect(function()
-					library:tween(hover, {BackgroundTransparency = 0})
-				end)
-				button.MouseLeave:Connect(function()
-					library:tween(hover, {BackgroundTransparency = 1})
-				end)
 
 				local inline = library:create("Frame", {
 					Parent = button,
 					Position = dim2(0, 1, 0, 1),
 					Size = dim2(1, -2, 1, -2),
-					BackgroundColor3 = rgb(24, 24, 27),
+					BackgroundColor3 = themes.preset.inline,
 					BorderSizePixel = 0,
 					ZIndex = 2,
 				})
@@ -7220,7 +7205,7 @@
 					Parent = inline,
 					Position = dim2(0, 1, 0, 1),
 					Size = dim2(1, -2, 1, -2),
-					BackgroundColor3 = rgb(20, 20, 23),
+					BackgroundColor3 = rgb(39, 39, 43),
 					BorderSizePixel = 0,
 					ZIndex = 2,
 				})
@@ -7228,8 +7213,8 @@
 					Parent = background,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(23, 23, 26)),
-						rgbkey(1, rgb(17, 17, 20)),
+						rgbkey(0, rgb(48, 48, 53)),
+						rgbkey(1, rgb(34, 34, 38)),
 					},
 				})
 
@@ -7240,15 +7225,15 @@
 					BorderSizePixel = 0,
 					ZIndex = 2,
 				})
-				library:create("UIGradient", {
+				local contrast_gradient = library:create("UIGradient", {
 					Parent = contrast,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(22, 22, 25)),
-						rgbkey(1, rgb(16, 16, 19)),
+						rgbkey(0, rgb(43, 43, 48)),
+						rgbkey(1, rgb(31, 31, 35)),
 					},
 				})
-				library:create("TextLabel", {
+				local text_label = library:create("TextLabel", {
 					Parent = contrast,
 					Size = dim2(1, -4, 1, 0),
 					Position = dim2(0, 2, 0, -1),
@@ -7262,6 +7247,36 @@
 					TextYAlignment = Enum.TextYAlignment.Center,
 					ZIndex = 2,
 				})
+				library:create("UIStroke", {
+					Parent = text_label,
+					LineJoinMode = Enum.LineJoinMode.Miter,
+				})
+
+				local normal_gradient = rgbseq{
+					rgbkey(0, rgb(43, 43, 48)),
+					rgbkey(1, rgb(31, 31, 35)),
+				}
+				local hover_gradient = rgbseq{
+					rgbkey(0, rgb(57, 57, 63)),
+					rgbkey(1, rgb(42, 42, 47)),
+				}
+				button.MouseEnter:Connect(function()
+					library:tween(contrast_gradient, {Color = hover_gradient})
+					text_label.TextColor3 = rgb(255, 255, 255)
+				end)
+				button.MouseLeave:Connect(function()
+					library:tween(contrast_gradient, {Color = normal_gradient})
+					text_label.TextColor3 = themes.preset.text
+				end)
+				button.MouseButton1Down:Connect(function()
+					contrast_gradient.Color = rgbseq{
+						rgbkey(0, rgb(29, 29, 33)),
+						rgbkey(1, rgb(22, 22, 25)),
+					}
+				end)
+				button.MouseButton1Up:Connect(function()
+					contrast_gradient.Color = hover_gradient
+				end)
 				button.MouseButton1Click:Connect(on_click)
 				return button
 			end
