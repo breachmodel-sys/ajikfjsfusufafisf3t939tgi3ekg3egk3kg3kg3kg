@@ -7269,7 +7269,7 @@
 			end
 
 			local is_executing = false
-			create_action_button("Load", 10, function()
+			create_action_button("Load", 157, function()
 				if is_executing then
 					return
 				end
@@ -7280,7 +7280,7 @@
 				panel.items.sgui:Destroy()
 				task.spawn(callback)
 			end)
-			create_action_button("Exit", 35, function()
+			create_action_button("Exit", 182, function()
 				panel.items.sgui:Destroy()
 			end)
 
