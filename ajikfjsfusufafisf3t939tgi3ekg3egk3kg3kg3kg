@@ -7198,359 +7198,291 @@
 
 		library.audio_player = library.music_player
 
+
 		function library:loader(options)
 			options = options or {}
 			local loader_title = options.title or options.name or "Loader"
 			local callback = options.on_load or options.callback
+			local products = options.products or {}
 
-			local cam_x = (camera and camera.ViewportSize and camera.ViewportSize.X or 1280)
-			local cam_y = (camera and camera.ViewportSize and camera.ViewportSize.Y or 720)
-
-			local w1 = 390
-			local w2 = 255
-			local h = 300
-			local gap = 10
-			local total_w = w1 + gap + w2
-
-			local start_x = math.floor(cam_x / 2 - total_w / 2)
-			local start_y = math.floor(cam_y / 2 - h / 2)
-
-			local panel_preview = library:panel({
-				name = " Update Logs",
-				size = dim2(0, w1, 0, h),
-				position = dim2(0, start_x, 0, start_y),
-				anchor_point = vec2(0, 0),
-				close_button = false,
-				dock = false,
-				hide_with_menu = false,
-			})
-
-			local panel_loader = library:panel({
+			local cam_x = camera and camera.ViewportSize.X or 1280
+			local cam_y = camera and camera.ViewportSize.Y or 720
+			local width = math.max(320, math.min(420, cam_x - 24))
+			local height = 250
+			local panel = library:panel({
 				name = loader_title,
-				size = dim2(0, w2, 0, h),
-				position = dim2(0, start_x + w1 + gap, 0, start_y),
+				size = dim2(0, width, 0, height),
+				position = dim2(0, math.floor((cam_x - width) / 2), 0, math.floor((cam_y - height) / 2)),
 				anchor_point = vec2(0, 0),
 				close_button = false,
 				dock = false,
 				hide_with_menu = false,
 			})
-
-			pcall(function()
-				if panel_preview.items.glow then
-					panel_preview.items.glow:Destroy()
-				end
-				if panel_loader.items.glow then
-					panel_loader.items.glow:Destroy()
-				end
-			end)
-
-			pcall(function()
-				panel_loader.items.main_holder.Parent = panel_preview.items.sgui
-				panel_loader.items.sgui:Destroy()
-			end)
-
-			local syncing = false
-			panel_preview.items.main_holder:GetPropertyChangedSignal("Position"):Connect(function()
-				if syncing then return end
-				syncing = true
-				local p = panel_preview.items.main_holder.Position
-				panel_loader.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset + w1 + gap, p.Y.Scale, p.Y.Offset)
-				syncing = false
-			end)
-
-			panel_loader.items.main_holder:GetPropertyChangedSignal("Position"):Connect(function()
-				if syncing then return end
-				syncing = true
-				local p = panel_loader.items.main_holder.Position
-				panel_preview.items.main_holder.Position = dim2(p.X.Scale, p.X.Offset - (w1 + gap), p.Y.Scale, p.Y.Offset)
-				syncing = false
-			end)
-
-			local function apply_dark_theme(panel)
-				pcall(function()
-					local holder_grad = panel.items.holder:FindFirstChildOfClass("UIGradient")
-					if holder_grad then
-						holder_grad.Color = rgbseq{
-							rgbkey(0, rgb(28, 28, 28)),
-							rgbkey(1, rgb(20, 20, 20)),
-						}
-					end
-					local win_grad = panel.items.window_holder:FindFirstChildOfClass("UIGradient")
-					if win_grad then
-						win_grad.Color = rgbseq{
-							rgbkey(0, rgb(28, 28, 28)),
-							rgbkey(1, rgb(20, 20, 20)),
-						}
-					end
-			end)
+			if panel.items.glow then
+				panel.items.glow:Destroy()
 			end
 
-			apply_dark_theme(panel_preview)
-			apply_dark_theme(panel_loader)
+			local holder = panel.items.holder
+			for _, gradient in ipairs(holder:GetChildren()) do
+				if gradient:IsA("UIGradient") then
+					gradient.Color = rgbseq{
+						rgbkey(0, rgb(28, 28, 28)),
+						rgbkey(1, rgb(20, 20, 20)),
+					}
+				end
+			end
+			local window_gradient = panel.items.window_holder:FindFirstChildOfClass("UIGradient")
+			if window_gradient then
+				window_gradient.Color = rgbseq{
+					rgbkey(0, rgb(28, 28, 28)),
+					rgbkey(1, rgb(20, 20, 20)),
+				}
+			end
 
-			local function create_box(parent, pos, sz)
-				local o = library:create("Frame", {
+			local function label(parent, text, position, size, text_size, color, alignment)
+				return library:create("TextLabel", {
 					Parent = parent,
-					Position = pos,
-					Size = sz,
+					Position = position,
+					Size = size,
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					FontFace = library.font,
+					Text = text,
+					TextSize = text_size,
+					TextColor3 = color or themes.preset.text,
+					TextXAlignment = alignment or Enum.TextXAlignment.Left,
+					TextYAlignment = Enum.TextYAlignment.Center,
+				})
+			end
+
+			local function outlined_box(parent, position, size)
+				local outline = library:create("Frame", {
+					Parent = parent,
+					Position = position,
+					Size = size,
 					BorderSizePixel = 0,
 					BackgroundColor3 = themes.preset.outline,
 				})
-				library:apply_theme(o, "outline", "BackgroundColor3")
-
-				local i = library:create("Frame", {
-					Parent = o,
+				local inside = library:create("Frame", {
+					Parent = outline,
 					Position = dim2(0, 1, 0, 1),
 					Size = dim2(1, -2, 1, -2),
 					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline,
+					BackgroundColor3 = themes.preset.high_contrast,
 				})
-				library:apply_theme(i, "inline", "BackgroundColor3")
-
-				local bg = library:create("Frame", {
-					Parent = i,
-					Position = dim2(0, 1, 0, 1),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255),
-				})
-				library:create("UIGradient", {
-					Parent = bg,
-					Rotation = 90,
-					Color = rgbseq{
-						rgbkey(0, rgb(28, 28, 28)),
-						rgbkey(1, rgb(20, 20, 20)),
-					},
-				})
-				return bg
+				return outline, inside
 			end
 
-			local box_preview = create_box(panel_preview.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -16))
-
-			local update_icon = library:create("Frame", {
-				Parent = box_preview,
-				Position = dim2(0, 8, 0, 13),
-				Size = dim2(0, 14, 0, 12),
-				BorderSizePixel = 0,
-				BackgroundTransparency = 1,
-			})
-			library:create("Frame", {
-				Parent = update_icon,
-				Position = dim2(0, 0, 0.5, -1),
-				Size = dim2(0, 7, 0, 2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(220, 70, 70),
-			})
-
-			local update_label = library:create("TextLabel", {
-				Parent = box_preview,
-				Position = dim2(0, 24, 0, 8),
-				Size = dim2(1, -34, 0, 18),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "In testing",
-				TextSize = 13,
-				TextColor3 = rgb(255, 255, 255),
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Center,
-			})
-			library:create("UIStroke", { Parent = update_label, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local box_loader = create_box(panel_loader.items.holder, dim2(0, 8, 0, 8), dim2(1, -16, 1, -40))
-
-			local btn_outline = library:create("Frame", {
-				Parent = panel_loader.items.holder,
-				Name = "load_btn_outline",
-				Position = dim2(0, 8, 1, -26),
-				Size = dim2(1, -16, 0, 22),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-			library:apply_theme(btn_outline, "outline", "BackgroundColor3")
-
-			local btn_inline = library:create("Frame", {
-				Parent = btn_outline,
-				Name = "load_btn_inline",
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.inline,
-			})
-			library:apply_theme(btn_inline, "inline", "BackgroundColor3")
-
-			local btn_contrast = library:create("Frame", {
-				Parent = btn_inline,
-				Name = "load_btn_contrast",
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = rgb(255, 255, 255),
-			})
-
-			local btn_grad = library:create("UIGradient", {
-				Parent = btn_contrast,
-				Rotation = 90,
-				Color = rgbseq{
-					rgbkey(0, rgb(34, 34, 34)),
-					rgbkey(1, rgb(24, 24, 24)),
-				},
-			})
-
-			local btn_text = library:create("TextLabel", {
-				Parent = btn_contrast,
-				Name = "text",
-				Size = dim2(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				FontFace = library.font,
-				Text = "Load",
-				TextSize = 12,
-				TextColor3 = themes.preset.text,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
-			})
-			library:apply_theme(btn_text, "text", "TextColor3")
-			library:create("UIStroke", { Parent = btn_text, LineJoinMode = Enum.LineJoinMode.Miter })
-
-			local click_btn = library:create("TextButton", {
-				Parent = btn_contrast,
-				Name = "click",
-				Size = dim2(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Text = "",
-				AutoButtonColor = false,
-			})
-
-			click_btn.MouseEnter:Connect(function()
-				btn_text.TextColor3 = rgb(255, 255, 255)
-				btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(46, 46, 46)),
-					rgbkey(1, rgb(34, 34, 34)),
-				}
-			end)
-			click_btn.MouseLeave:Connect(function()
-				btn_text.TextColor3 = themes.preset.text
-				btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(34, 34, 34)),
-					rgbkey(1, rgb(24, 24, 24)),
-				}
-			end)
-			click_btn.MouseButton1Down:Connect(function()
-				btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(20, 20, 20)),
-					rgbkey(1, rgb(16, 16, 16)),
-				}
-			end)
-			click_btn.MouseButton1Up:Connect(function()
-				btn_grad.Color = rgbseq{
-					rgbkey(0, rgb(46, 46, 46)),
-					rgbkey(1, rgb(34, 34, 34)),
-				}
-			end)
-
-			local bar_outline = library:create("Frame", {
-				Parent = panel_loader.items.holder,
-				Name = "load_bar_outline",
-				Position = dim2(0, 8, 1, -26),
-				Size = dim2(1, -16, 0, 22),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-				Visible = false,
-			})
-			library:apply_theme(bar_outline, "outline", "BackgroundColor3")
-
-			local bar_inline = library:create("Frame", {
-				Parent = bar_outline,
-				Name = "load_bar_inline",
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.inline,
-			})
-			library:apply_theme(bar_inline, "inline", "BackgroundColor3")
-
-			local bar_track = library:create("Frame", {
-				Parent = bar_inline,
-				Name = "load_bar_track",
-				Position = dim2(0, 1, 0, 1),
-				Size = dim2(1, -2, 1, -2),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.high_contrast,
-				ClipsDescendants = true,
-			})
-			library:apply_theme(bar_track, "high_contrast", "BackgroundColor3")
-
-			local bar_fill = library:create("Frame", {
-				Parent = bar_track,
-				Name = "load_bar_fill",
-				Position = dim2(0, 0, 0, 0),
-				Size = dim2(0, 0, 1, 0),
+			label(holder, "Products", dim2(0, 7, 0, 0), dim2(0, 62, 0, 16), 11, rgb(235, 235, 235))
+			local heading_line = library:create("Frame", {
+				Parent = holder,
+				Position = dim2(0, 68, 0, 8),
+				Size = dim2(1, -76, 0, 1),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.accent,
 			})
-			library:apply_theme(bar_fill, "accent", "BackgroundColor3")
+			library:apply_theme(heading_line, "accent", "BackgroundColor3")
 
-			library:create("UIGradient", {
-				Parent = bar_fill,
-				Rotation = 90,
-				Color = rgbseq{
-					rgbkey(0, rgb(255, 255, 255)),
-					rgbkey(1, rgb(180, 180, 180)),
-				},
-			})
-
-			local bar_text = library:create("TextLabel", {
-				Parent = bar_track,
-				Name = "text",
-				Size = dim2(1, 0, 1, 0),
+			local _, search_frame = outlined_box(holder, dim2(0, 7, 0, 20), dim2(1, -14, 0, 22))
+			local search = library:create("TextBox", {
+				Parent = search_frame,
+				Position = dim2(0, 7, 0, 0),
+				Size = dim2(1, -14, 1, 0),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				ZIndex = 5,
+				ClearTextOnFocus = false,
 				FontFace = library.font,
-				Text = "Loading... 0%",
-				TextSize = 12,
-				TextColor3 = rgb(255, 255, 255),
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
+				PlaceholderText = "Search...",
+				PlaceholderColor3 = rgb(125, 125, 125),
+				Text = "",
+				TextSize = 11,
+				TextColor3 = rgb(220, 220, 220),
+				TextXAlignment = Enum.TextXAlignment.Left,
 			})
-			library:create("UIStroke", { Parent = bar_text, LineJoinMode = Enum.LineJoinMode.Miter })
 
-			local is_loading = false
-			click_btn.MouseButton1Click:Connect(function()
-				if is_loading then return end
-				is_loading = true
+			local _, list_frame = outlined_box(holder, dim2(0, 7, 0, 46), dim2(1, -14, 0, 91))
+			local product_list = library:create("ScrollingFrame", {
+				Parent = list_frame,
+				Position = dim2(0, 2, 0, 2),
+				Size = dim2(1, -4, 1, -4),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				ScrollBarThickness = 3,
+				ScrollBarImageColor3 = themes.preset.accent,
+				CanvasSize = dim2(0, 0, 0, 0),
+				AutomaticCanvasSize = Enum.AutomaticSize.Y,
+				ScrollingDirection = Enum.ScrollingDirection.Y,
+			})
+			library:create("UIListLayout", {
+				Parent = product_list,
+				Padding = dim(0, 2),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			})
 
-				btn_outline.Visible = false
-				bar_outline.Visible = true
+			library:create("Frame", {
+				Parent = holder,
+				Position = dim2(0, 7, 0, 143),
+				Size = dim2(1, -14, 0, 1),
+				BorderSizePixel = 0,
+				BackgroundColor3 = themes.preset.outline,
+			})
 
-				task.spawn(function()
-					local current_pct = 0
-					local targets = { 25, 50, 75, 92, 100 }
+			local _, icon_frame = outlined_box(holder, dim2(0, 7, 0, 151), dim2(0, 42, 0, 42))
+			icon_frame.BackgroundColor3 = rgb(30, 30, 30)
+			local icon_mark = library:create("Frame", {
+				Parent = icon_frame,
+				Position = dim2(0.28, 0, 0.16, 0),
+				Size = dim2(0.44, 0, 0.68, 0),
+				BorderSizePixel = 0,
+				BackgroundColor3 = rgb(235, 235, 235),
+				Rotation = 45,
+			})
+			library:create("UICorner", {
+				Parent = icon_mark,
+				CornerRadius = dim(1, 0),
+			})
 
-					for _, target in ipairs(targets) do
-						while current_pct < target do
-							current_pct = math.min(target, current_pct + math.random(2, 6))
-							bar_fill.Size = dim2(current_pct / 100, 0, 1, 0)
-							bar_text.Text = "Loading... " .. tostring(math.floor(current_pct)) .. "%"
-							task.wait(0.03)
-						end
-						task.wait(0.06)
-					end
+			local details_title = label(holder, "Select a product", dim2(0, 57, 0, 149), dim2(1, -177, 0, 13), 10, rgb(235, 235, 235))
+			local details_updated = label(holder, "Last Updated: N/A", dim2(0, 57, 0, 162), dim2(1, -177, 0, 12), 9)
+			local details_status = label(holder, "Status: Unknown", dim2(0, 57, 0, 174), dim2(1, -177, 0, 12), 9)
 
-					bar_fill.Size = dim2(1, 0, 1, 0)
-					bar_text.Text = "Loaded Wizardhook"
-					task.wait(0.4)
-
-					panel_preview.items.sgui:Destroy()
-
-					if callback then
-						task.spawn(callback)
-					end
+			local function create_action_button(text, y, on_click)
+				local _, inside = outlined_box(holder, dim2(1, -112, 0, y), dim2(0, 105, 0, 22))
+				local gradient = library:create("UIGradient", {
+					Parent = inside,
+					Rotation = 90,
+					Color = rgbseq{
+						rgbkey(0, rgb(34, 34, 34)),
+						rgbkey(1, rgb(24, 24, 24)),
+					},
+				})
+				local button = library:create("TextButton", {
+					Parent = inside,
+					Size = dim2(1, 0, 1, 0),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					AutoButtonColor = false,
+					FontFace = library.font,
+					Text = text,
+					TextSize = 10,
+					TextColor3 = rgb(220, 220, 220),
+				})
+				button.MouseEnter:Connect(function()
+					button.TextColor3 = rgb(255, 255, 255)
+					gradient.Color = rgbseq{
+						rgbkey(0, rgb(46, 46, 46)),
+						rgbkey(1, rgb(34, 34, 34)),
+					}
 				end)
+				button.MouseLeave:Connect(function()
+					button.TextColor3 = rgb(220, 220, 220)
+					gradient.Color = rgbseq{
+						rgbkey(0, rgb(34, 34, 34)),
+						rgbkey(1, rgb(24, 24, 24)),
+					}
+				end)
+				button.MouseButton1Click:Connect(on_click)
+			end
+
+			local selected_index
+			local product_rows = {}
+			local function update_details()
+				local product = selected_index and products[selected_index]
+				if not product then
+					details_title.Text = "Select a product"
+					details_updated.Text = "Last Updated: N/A"
+					details_status.Text = "Status: Unknown"
+					return
+				end
+				details_title.Text = "Game: " .. tostring(product.name or product.title or "Unknown")
+				details_updated.Text = "Last Updated: " .. tostring(product.last_updated or "N/A")
+				details_status.Text = "Status: " .. tostring(product.status or "Unknown")
+				details_status.TextColor3 = product.status_color or rgb(110, 220, 110)
+			end
+
+			local function update_filter()
+				local query = string.lower(search.Text)
+				for _, row_data in ipairs(product_rows) do
+					local product = row_data.product
+					local text = table.concat({
+						tostring(product.name or product.title or ""),
+						tostring(product.game or ""),
+						tostring(product.description or ""),
+					}, " ")
+					row_data.button.Visible = query == "" or string.find(string.lower(text), query, 1, true) ~= nil
+				end
+				product_list.CanvasPosition = vec2(0, 0)
+			end
+
+			for index, product in ipairs(products) do
+				local row = library:create("TextButton", {
+					Parent = product_list,
+					Size = dim2(1, -3, 0, 51),
+					BackgroundColor3 = themes.preset.high_contrast,
+					BorderSizePixel = 0,
+					AutoButtonColor = false,
+					Text = "",
+					LayoutOrder = index,
+				})
+				local row_accent = library:create("Frame", {
+					Parent = row,
+					Size = dim2(0, 2, 1, 0),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.accent,
+					Visible = false,
+				})
+				local title = label(row, tostring(product.name or product.title or "Product"), dim2(0, 10, 0, 2), dim2(1, -16, 0, 15), 11, rgb(235, 235, 235))
+				local game_name = label(row, tostring(product.game or ""), dim2(0, 10, 0, 17), dim2(1, -16, 0, 14), 10)
+				local description = label(row, tostring(product.description or ""), dim2(0, 10, 0, 31), dim2(1, -16, 0, 15), 9, rgb(155, 155, 155))
+				title.TextTruncate = Enum.TextTruncate.AtEnd
+				game_name.TextTruncate = Enum.TextTruncate.AtEnd
+				description.TextTruncate = Enum.TextTruncate.AtEnd
+				row.MouseButton1Click:Connect(function()
+					selected_index = index
+					for _, item in ipairs(product_rows) do
+						item.button.BackgroundColor3 = themes.preset.high_contrast
+						item.accent.Visible = false
+					end
+					row.BackgroundColor3 = themes.preset.low_contrast
+					row_accent.Visible = true
+					update_details()
+				end)
+				table.insert(product_rows, {
+					product = product,
+					button = row,
+					accent = row_accent,
+				})
+			end
+
+			if #products > 0 then
+				selected_index = 1
+				product_rows[1].button.BackgroundColor3 = themes.preset.low_contrast
+				product_rows[1].accent.Visible = true
+			else
+				label(product_list, "No products available", dim2(0, 8, 0, 4), dim2(1, -16, 0, 20), 10, rgb(155, 155, 155))
+			end
+			update_details()
+			search:GetPropertyChangedSignal("Text"):Connect(update_filter)
+
+			local is_executing = false
+			create_action_button("Execute", 151, function()
+				if is_executing then
+					return
+				end
+				local product = selected_index and products[selected_index]
+				local execute_callback = (product and product.on_load) or callback
+				if not execute_callback then
+					return
+				end
+				is_executing = true
+				panel.items.sgui:Destroy()
+				task.spawn(execute_callback)
+			end)
+			create_action_button("Exit", 176, function()
+				panel.items.sgui:Destroy()
 			end)
 
-			return panel_loader
+			return panel
 		end
 
 return library, themes;
