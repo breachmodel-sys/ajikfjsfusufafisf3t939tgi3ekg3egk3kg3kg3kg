@@ -5660,8 +5660,8 @@
 				Name = "",
 				Rotation = 90,
 				Color = loader_style and rgbseq{
-					rgbkey(0, rgb(39, 39, 43)),
-					rgbkey(1, rgb(29, 29, 33))
+					rgbkey(0, rgb(34, 34, 37)),
+					rgbkey(1, rgb(25, 25, 28))
 				} or rgbseq{
 					rgbkey(0, rgb(41, 41, 55)),
 					rgbkey(1, rgb(35, 35, 47))
@@ -7144,7 +7144,7 @@
 			local cam_x = camera and camera.ViewportSize.X or 1280
 			local cam_y = camera and camera.ViewportSize.Y or 720
 			local width = math.max(320, math.min(420, cam_x - 24))
-			local height = 250
+			local height = 230
 			local panel = library:panel({
 				name = loader_title,
 				size = dim2(0, width, 0, height),
@@ -7219,24 +7219,7 @@
 			})
 			library:apply_theme(heading_line, "accent", "BackgroundColor3")
 
-			local _, search_frame = outlined_box(holder, dim2(0, 7, 0, 20), dim2(1, -14, 0, 22))
-			local search = library:create("TextBox", {
-				Parent = search_frame,
-				Position = dim2(0, 7, 0, 0),
-				Size = dim2(1, -14, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				ClearTextOnFocus = false,
-				FontFace = library.font,
-				PlaceholderText = "Search...",
-				PlaceholderColor3 = rgb(125, 125, 125),
-				Text = "",
-				TextSize = 11,
-				TextColor3 = rgb(220, 220, 220),
-				TextXAlignment = Enum.TextXAlignment.Left,
-			})
-
-			local _, list_frame = outlined_box(holder, dim2(0, 7, 0, 46), dim2(1, -14, 0, 91))
+			local _, list_frame = outlined_box(holder, dim2(0, 7, 0, 22), dim2(1, -14, 0, 120))
 			local product_list = library:create("ScrollingFrame", {
 				Parent = list_frame,
 				Position = dim2(0, 2, 0, 2),
@@ -7257,13 +7240,13 @@
 
 			library:create("Frame", {
 				Parent = holder,
-				Position = dim2(0, 7, 0, 143),
+				Position = dim2(0, 7, 0, 149),
 				Size = dim2(1, -14, 0, 1),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 			})
 
-			local _, avatar_frame = outlined_box(holder, dim2(0, 7, 0, 151), dim2(0, 42, 0, 42))
+			local _, avatar_frame = outlined_box(holder, dim2(0, 7, 0, 157), dim2(0, 42, 0, 42))
 			avatar_frame.BackgroundColor3 = rgb(30, 30, 30)
 			library:create("ImageLabel", {
 				Parent = avatar_frame,
@@ -7274,8 +7257,8 @@
 				ScaleType = Enum.ScaleType.Crop,
 			})
 
-			label(holder, lp.DisplayName, dim2(0, 57, 0, 153), dim2(1, -177, 0, 15), 10, rgb(235, 235, 235))
-			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 169), dim2(1, -177, 0, 13), 9)
+			label(holder, lp.DisplayName, dim2(0, 57, 0, 159), dim2(1, -177, 0, 15), 10, rgb(235, 235, 235))
+			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 175), dim2(1, -177, 0, 13), 9)
 
 			local function create_action_button(text, y, on_click)
 				local button = library:button({
@@ -7303,29 +7286,6 @@
 					selected.button.BackgroundColor3 = themes.preset.low_contrast
 					selected.accent.Visible = true
 				end
-			end
-
-			local function update_filter()
-				local query = string.lower(search.Text)
-				local selected_visible = false
-				local first_visible
-				for _, row_data in ipairs(product_rows) do
-					local product = row_data.product
-					local text = table.concat({
-						tostring(product.name or product.title or ""),
-						tostring(product.game or ""),
-						tostring(product.description or ""),
-					}, " ")
-					row_data.button.Visible = query == "" or string.find(string.lower(text), query, 1, true) ~= nil
-					if row_data.button.Visible then
-						first_visible = first_visible or row_data.index
-						selected_visible = selected_visible or row_data.index == selected_index
-					end
-				end
-				if not selected_visible then
-					select_product(first_visible)
-				end
-				product_list.CanvasPosition = vec2(0, 0)
 			end
 
 			for index, product in ipairs(products) do
@@ -7366,7 +7326,6 @@
 			end
 
 			select_product(1)
-			search:GetPropertyChangedSignal("Text"):Connect(update_filter)
 			if loading_current_game and game.PlaceId > 0 then
 				task.spawn(function()
 					local ok, game_info = pcall(function()
@@ -7378,7 +7337,6 @@
 						current.description = "Current Roblox experience"
 						product_rows[1].title.Text = game_info.Name
 						product_rows[1].description.Text = current.description
-						update_filter()
 					else
 						warn("Loader could not get the current game name: " .. tostring(game_info))
 					end
@@ -7386,7 +7344,7 @@
 			end
 
 			local is_executing = false
-			create_action_button("Execute", 151, function()
+			create_action_button("Execute", 157, function()
 				if is_executing then
 					return
 				end
@@ -7399,7 +7357,7 @@
 				panel.items.sgui:Destroy()
 				task.spawn(execute_callback)
 			end)
-			create_action_button("Exit", 176, function()
+			create_action_button("Exit", 182, function()
 				panel.items.sgui:Destroy()
 			end)
 
