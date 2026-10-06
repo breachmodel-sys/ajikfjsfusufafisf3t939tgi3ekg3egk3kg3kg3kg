@@ -5561,42 +5561,23 @@
 		end 
 
 		function library:button(options)
-			local loader_style = options.style == "loader"
 			local cfg = {
 				callback = options.callback or function() end, 
 				name = options.text or options.name or "Button",
 			}   
 
 			local button = library:create("TextButton", {
-				Parent = options.parent or self.current_holder or self.holder,
+				Parent = self.current_holder or self.holder,
 				Name = "",
-				Position = options.position or dim2(0, 0, 0, 2),
+				Position = dim2(0, 0, 0, 2),
 				BorderColor3 = rgb(0, 0, 0),
-				Size = options.size or dim2(1, -27, 0, 18),
+				Size = dim2(1, -27, 0, 18),
 				BorderSizePixel = 0,
 				BackgroundColor3 = themes.preset.outline,
 				Text = ""
 			})
-			cfg.instance = button
 
-			if loader_style then
-				local hover = library:create("Frame", {
-					Parent = button,
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(70, 70, 78),
-					Size = dim2(1, 0, 1, 0),
-					ZIndex = 1,
-				})
-				button.MouseEnter:Connect(function()
-					library:tween(hover, {BackgroundTransparency = 0})
-				end)
-				button.MouseLeave:Connect(function()
-					library:tween(hover, {BackgroundTransparency = 1})
-				end)
-			else
-				library:hoverify(button, button)
-			end
+			library:hoverify(button, button)
 			
 			library:apply_theme(button, "outline", "BackgroundColor3") 
 			
@@ -5621,29 +5602,22 @@
 				BorderColor3 = rgb(0, 0, 0),
 				Size = dim2(1, -2, 1, -2),
 				BorderSizePixel = 0,
-				BackgroundColor3 = loader_style and rgb(28, 28, 31) or themes.preset.accent
+				BackgroundColor3 = themes.preset.accent
 			})
 			
-			if not loader_style then
-				library:apply_theme(background, "accent", "BackgroundColor3")
-			end
+			library:apply_theme(background, "accent", "BackgroundColor3") 
 			
 			local _UIGradient = library:create("UIGradient", {
 				Parent = background,
 				Name = "",
 				Rotation = 90,
-				Color = loader_style and rgbseq{
-					rgbkey(0, rgb(40, 40, 44)),
-					rgbkey(1, rgb(27, 27, 30))
-				} or rgbseq{
+				Color = rgbseq{
 					rgbkey(0, rgb(255, 255, 255)),
 					rgbkey(1, rgb(167, 167, 167))
 				}
 			})
 			
-			if not loader_style then
-				library:apply_theme(_UIGradient, "contrast", "Color")
-			end
+			library:apply_theme(_UIGradient, "contrast", "Color") 
 			
 			local contrast = library:create("Frame", {
 				Parent = background,
@@ -5659,18 +5633,13 @@
 				Parent = contrast,
 				Name = "",
 				Rotation = 90,
-				Color = loader_style and rgbseq{
-					rgbkey(0, rgb(34, 34, 37)),
-					rgbkey(1, rgb(25, 25, 28))
-				} or rgbseq{
+				Color = rgbseq{
 					rgbkey(0, rgb(41, 41, 55)),
 					rgbkey(1, rgb(35, 35, 47))
 				}
 			})
 			
-			if not loader_style then
-				library:apply_theme(UIGradient, "contrast", "Color")
-			end
+			library:apply_theme(UIGradient, "contrast", "Color") 
 			
 			local text = library:create("TextLabel", {
 				Parent = contrast,
@@ -5686,8 +5655,7 @@
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				BorderSizePixel = 0,
 				FontFace = library.font,
-				TextSize = loader_style and 10 or 12,
-				TextXAlignment = loader_style and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left,
+				TextSize = 12,
 				BackgroundColor3 = rgb(255, 255, 255)
 			})
 			
@@ -7214,15 +7182,90 @@
 			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 29), dim2(1, -177, 0, 13), 9)
 
 			local function create_action_button(text, y, on_click)
-				local button = library:button({
-					parent = holder,
-					position = dim2(1, -112, 0, y),
-					size = dim2(0, 105, 0, 22),
-					text = text,
-					style = "loader",
-					callback = on_click,
+				local button = library:create("TextButton", {
+					Parent = holder,
+					Position = dim2(1, -112, 0, y),
+					Size = dim2(0, 105, 0, 22),
+					BorderColor3 = rgb(0, 0, 0),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.outline,
+					Text = "",
 				})
-				return button.instance
+				library:apply_theme(button, "outline", "BackgroundColor3")
+
+				local hover = library:create("Frame", {
+					Parent = button,
+					Size = dim2(1, 0, 1, 0),
+					BackgroundColor3 = rgb(65, 65, 72),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					ZIndex = 1,
+				})
+				button.MouseEnter:Connect(function()
+					library:tween(hover, {BackgroundTransparency = 0})
+				end)
+				button.MouseLeave:Connect(function()
+					library:tween(hover, {BackgroundTransparency = 1})
+				end)
+
+				local inline = library:create("Frame", {
+					Parent = button,
+					Position = dim2(0, 1, 0, 1),
+					Size = dim2(1, -2, 1, -2),
+					BackgroundColor3 = themes.preset.inline,
+					BorderSizePixel = 0,
+					ZIndex = 2,
+				})
+				library:apply_theme(inline, "inline", "BackgroundColor3")
+
+				local background = library:create("Frame", {
+					Parent = inline,
+					Position = dim2(0, 1, 0, 1),
+					Size = dim2(1, -2, 1, -2),
+					BackgroundColor3 = rgb(28, 28, 31),
+					BorderSizePixel = 0,
+					ZIndex = 2,
+				})
+				library:create("UIGradient", {
+					Parent = background,
+					Rotation = 90,
+					Color = rgbseq{
+						rgbkey(0, rgb(40, 40, 44)),
+						rgbkey(1, rgb(27, 27, 30)),
+					},
+				})
+
+				local contrast = library:create("Frame", {
+					Parent = background,
+					Size = dim2(1, 0, 1, 0),
+					BackgroundColor3 = rgb(255, 255, 255),
+					BorderSizePixel = 0,
+					ZIndex = 2,
+				})
+				library:create("UIGradient", {
+					Parent = contrast,
+					Rotation = 90,
+					Color = rgbseq{
+						rgbkey(0, rgb(34, 34, 37)),
+						rgbkey(1, rgb(25, 25, 28)),
+					},
+				})
+				library:create("TextLabel", {
+					Parent = contrast,
+					Size = dim2(1, -4, 1, 0),
+					Position = dim2(0, 2, 0, -1),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					FontFace = library.font,
+					Text = text,
+					TextSize = 10,
+					TextColor3 = themes.preset.text,
+					TextXAlignment = Enum.TextXAlignment.Center,
+					TextYAlignment = Enum.TextYAlignment.Center,
+					ZIndex = 2,
+				})
+				button.MouseButton1Click:Connect(on_click)
+				return button
 			end
 
 			local is_executing = false
