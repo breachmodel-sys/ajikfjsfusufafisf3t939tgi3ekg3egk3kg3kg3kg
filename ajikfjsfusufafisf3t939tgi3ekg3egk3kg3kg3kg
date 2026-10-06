@@ -6567,7 +6567,7 @@
 				return button
 			end
 
-			local start_authorization
+			local start_authorization, update_status, refresh_track
 			make_action_button(holder, "Connect Spotify", dim2(1, -112, 0, 121), dim2(0, 104, 0, 22), function()
 				if start_authorization then
 					start_authorization()
@@ -6611,12 +6611,12 @@
 				return message
 			end
 
-			local function update_status(text, color)
+			update_status = function(text, color)
 				status_label.Text = text
 				status_label.TextColor3 = color or rgb(170, 170, 170)
 			end
 
-			local function refresh_track()
+			refresh_track = function()
 				local ok, data, code = spotify_request("GET", "/me/player/currently-playing")
 				if not ok then
 					update_status(format_api_error(data), rgb(235, 135, 135))
@@ -6732,7 +6732,8 @@
 					update_status("Could not open browser; login URL copied if clipboard is available", rgb(235, 135, 135))
 					return
 				end
-				update_status("Spotify opened in your browser. A callback is required to connect playback.", rgb(235, 195, 120))
+				is_enabled = false
+				music_panel.items.sgui.Enabled = false
 			end
 
 			local player_obj = {}
