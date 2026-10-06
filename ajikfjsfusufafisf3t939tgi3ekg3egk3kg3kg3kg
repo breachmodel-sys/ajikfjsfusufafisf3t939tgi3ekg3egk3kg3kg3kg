@@ -7242,41 +7242,80 @@
 			local details_status = label(holder, "Status: Unknown", dim2(0, 57, 0, 174), dim2(1, -177, 0, 12), 9)
 
 			local function create_action_button(text, y, on_click)
-				local _, inside = outlined_box(holder, dim2(1, -112, 0, y), dim2(0, 105, 0, 22))
-				local gradient = library:create("UIGradient", {
-					Parent = inside,
+				local button = library:create("TextButton", {
+					Parent = holder,
+					Position = dim2(1, -112, 0, y),
+					Size = dim2(0, 105, 0, 22),
+					BorderColor3 = rgb(0, 0, 0),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.outline,
+					Text = "",
+				})
+				library:hoverify(button, button)
+				library:apply_theme(button, "outline", "BackgroundColor3")
+
+				local inline = library:create("Frame", {
+					Parent = button,
+					ZIndex = 2,
+					Position = dim2(0, 1, 0, 1),
+					Size = dim2(1, -2, 1, -2),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.inline,
+				})
+				library:apply_theme(inline, "inline", "BackgroundColor3")
+
+				local background = library:create("Frame", {
+					Parent = inline,
+					ZIndex = 2,
+					Position = dim2(0, 1, 0, 1),
+					Size = dim2(1, -2, 1, -2),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.accent,
+				})
+				library:apply_theme(background, "accent", "BackgroundColor3")
+				local accent_gradient = library:create("UIGradient", {
+					Parent = background,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(34, 34, 34)),
-						rgbkey(1, rgb(24, 24, 24)),
+						rgbkey(0, rgb(255, 255, 255)),
+						rgbkey(1, rgb(167, 167, 167)),
 					},
 				})
-				local button = library:create("TextButton", {
-					Parent = inside,
+				library:apply_theme(accent_gradient, "contrast", "Color")
+
+				local contrast = library:create("Frame", {
+					Parent = background,
+					ZIndex = 2,
 					Size = dim2(1, 0, 1, 0),
+					BorderSizePixel = 0,
+					BackgroundColor3 = rgb(255, 255, 255),
+				})
+				local gradient = library:create("UIGradient", {
+					Parent = contrast,
+					Rotation = 90,
+					Color = rgbseq{
+						rgbkey(0, rgb(41, 41, 55)),
+						rgbkey(1, rgb(35, 35, 47)),
+					},
+				})
+				library:apply_theme(gradient, "contrast", "Color")
+
+				library:create("TextLabel", {
+					Parent = contrast,
+					ZIndex = 2,
+					Size = dim2(1, -4, 1, 0),
+					Position = dim2(0, 4, 0, -1),
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
-					AutoButtonColor = false,
 					FontFace = library.font,
 					Text = text,
-					TextSize = 10,
-					TextColor3 = rgb(220, 220, 220),
+					TextSize = 12,
+					TextColor3 = themes.preset.text,
+					TextXAlignment = Enum.TextXAlignment.Center,
+					TextYAlignment = Enum.TextYAlignment.Center,
 				})
-				button.MouseEnter:Connect(function()
-					button.TextColor3 = rgb(255, 255, 255)
-					gradient.Color = rgbseq{
-						rgbkey(0, rgb(46, 46, 46)),
-						rgbkey(1, rgb(34, 34, 34)),
-					}
-				end)
-				button.MouseLeave:Connect(function()
-					button.TextColor3 = rgb(220, 220, 220)
-					gradient.Color = rgbseq{
-						rgbkey(0, rgb(34, 34, 34)),
-						rgbkey(1, rgb(24, 24, 24)),
-					}
-				end)
 				button.MouseButton1Click:Connect(on_click)
+				return button
 			end
 
 			local selected_index
@@ -7287,6 +7326,7 @@
 					details_title.Text = "Select a product"
 					details_updated.Text = "Last Updated: N/A"
 					details_status.Text = "Status: Unknown"
+					details_status.TextColor3 = themes.preset.text
 					return
 				end
 				details_title.Text = "Game: " .. tostring(product.name or product.title or "Unknown")
@@ -7294,6 +7334,7 @@
 				details_status.Text = "Status: " .. tostring(product.status or "Unknown")
 				details_status.TextColor3 = product.status_color or rgb(110, 220, 110)
 			end
+			details_status.TextTruncate = Enum.TextTruncate.AtEnd
 
 			local function select_product(index)
 				selected_index = index
@@ -7381,8 +7422,6 @@
 				local product = selected_index and products[selected_index]
 				local execute_callback = (product and product.on_load) or callback
 				if not execute_callback then
-					details_status.Text = "Status: No execute handler"
-					details_status.TextColor3 = rgb(220, 90, 90)
 					return
 				end
 				is_executing = true
