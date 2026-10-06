@@ -6256,7 +6256,7 @@
 				end
 			end
 
-			local client_id = options.client_id or ""
+			local client_id = options.client_id or environment.SPOTIFY_CLIENT_ID or ""
 			local redirect_uri = options.redirect_uri or "http://127.0.0.1:8888/callback"
 			local access_token
 			local refresh_token
@@ -6267,9 +6267,6 @@
 			local is_playing = false
 			local track_duration = 0
 			local track_progress = 0
-			local last_sync = os.clock()
-			local auth_panel
-			local auth_status
 
 			local function request_http(method, url, headers, body)
 				local request_function = environment.request or environment.http_request or environment.httprequest
@@ -6327,13 +6324,15 @@
 					return request_error
 				end
 				local decoded = decode_response(response)
+				local status = response_status(response)
+				local prefix = status > 0 and ("HTTP " .. tostring(status) .. ": ") or ""
 				if type(decoded) == "table" then
 					if type(decoded.error) == "table" then
-						return tostring(decoded.error.message or decoded.error_description or decoded.error.status or "Spotify request failed")
+						return prefix .. tostring(decoded.error.message or decoded.error_description or decoded.error.status or "Spotify request failed")
 					end
-					return tostring(decoded.error_description or decoded.error or decoded.message or "Spotify request failed")
+					return prefix .. tostring(decoded.error_description or decoded.error or decoded.message or "Spotify request failed")
 				end
-				return "Spotify request failed (HTTP " .. tostring(response_status(response)) .. ")"
+				return prefix .. "Spotify request failed"
 			end
 
 			local function form_encode(values)
@@ -6378,12 +6377,12 @@
 					local i1 = math.floor(n / 262144) % 64 + 1
 					local i2 = math.floor(n / 4096) % 64 + 1
 					local i3 = math.floor(n / 64) % 64 + 1
-				local i4 = n % 64 + 1
-				out[#out + 1] = alphabet:sub(i1, i1)
-				out[#out + 1] = alphabet:sub(i2, i2)
-				if index + 1 <= #binary then out[#out + 1] = alphabet:sub(i3, i3) end
-				if index + 2 <= #binary then out[#out + 1] = alphabet:sub(i4, i4) end
-			end
+					local i4 = n % 64 + 1
+					out[#out + 1] = alphabet:sub(i1, i1)
+					out[#out + 1] = alphabet:sub(i2, i2)
+					if index + 1 <= #binary then out[#out + 1] = alphabet:sub(i3, i3) end
+					if index + 2 <= #binary then out[#out + 1] = alphabet:sub(i4, i4) end
+				end
 				return table.concat(out)
 			end
 
@@ -6568,10 +6567,10 @@
 				return button
 			end
 
-			local open_auth_panel
+			local start_authorization, finish_login
 			make_action_button(holder, "Connect Spotify", dim2(1, -112, 0, 121), dim2(0, 104, 0, 22), function()
-				if open_auth_panel then
-					open_auth_panel()
+				if start_authorization then
+					start_authorization()
 				end
 			end)
 			local previous_button = library:create("ImageButton", {
@@ -6604,6 +6603,25 @@
 				ImageColor3 = rgb(220, 220, 220),
 				AutoButtonColor = false,
 			})
+			local redirect_box = library:create("TextBox", {
+				Parent = holder,
+				Position = dim2(0, 8, 0, 151),
+				Size = dim2(1, -116, 0, 22),
+				BackgroundColor3 = themes.preset.high_contrast,
+				BorderSizePixel = 0,
+				ClearTextOnFocus = false,
+				FontFace = library.font,
+				PlaceholderText = "Paste browser redirect URL after login",
+				Text = "",
+				TextSize = 9,
+				TextColor3 = themes.preset.text,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			})
+			make_action_button(holder, "Finish Login", dim2(1, -104, 0, 151), dim2(0, 96, 0, 22), function()
+				if finish_login then
+					finish_login()
+				end
+			end)
 
 			local function format_api_error(err)
 				local message = tostring(err or "Unknown Spotify error")
@@ -6652,7 +6670,6 @@
 				artwork.Image = images[1] and images[1].url or ""
 				track_duration = tonumber(item.duration_ms) or 0
 				track_progress = tonumber(data.progress_ms) or 0
-				last_sync = os.clock()
 				is_playing = data.is_playing == true
 				progress_fill.Size = dim2(track_duration > 0 and math.clamp(track_progress / track_duration, 0, 1) or 0, 0, 1, 0)
 				elapsed_label.Text = format_clock(track_progress)
@@ -6694,135 +6711,99 @@
 				return value and decode_query(value) or nil
 			end
 
-			open_auth_panel = function()
-				if auth_panel then
-					auth_panel.items.sgui.Enabled = true
+			local function open_browser(url)
+				local openers = {}
+				for _, name in ipairs({"open_url", "openurl", "openbrowser"}) do
+					local opener = environment[name]
+					if type(opener) == "function" then
+						table.insert(openers, opener)
+					end
+				end
+				if type(environment.syn) == "table" then
+					if type(environment.syn.open) == "function" then
+						table.insert(openers, environment.syn.open)
+					end
+				end
+				for _, opener in ipairs(openers) do
+					if type(opener) == "function" then
+						local ok, result = pcall(opener, url)
+						if ok and result ~= false then
+							return true
+						end
+					end
+				end
+				local ok = pcall(function()
+					gui_service:OpenBrowserWindow(url)
+				end)
+				return ok
+			end
+
+			start_authorization = function()
+				if client_id == "" then
+					update_status("Set SPOTIFY_CLIENT_ID in executor environment first", rgb(235, 135, 135))
 					return
 				end
-				local cam_x = camera and camera.ViewportSize.X or 1280
-				local cam_y = camera and camera.ViewportSize.Y or 720
-				auth_panel = library:panel({
-					name = "Connect Spotify",
-					size = dim2(0, 390, 0, 255),
-					position = dim2(0, math.floor((cam_x - 390) / 2), 0, math.floor((cam_y - 255) / 2)),
-					close_button = true,
-					dock = false,
-					hide_with_menu = false,
-				})
-				if auth_panel.items.glow then auth_panel.items.glow:Destroy() end
-				local auth_holder = auth_panel.items.holder
-				local function auth_label(text, y, h, color)
-					return label(auth_holder, text, dim2(0, 7, 0, y), dim2(1, -14, 0, h), 10, color)
+				code_verifier = create_verifier()
+				local digest, hash_error = hash_sha256(code_verifier)
+				if not digest then
+					update_status(hash_error, rgb(235, 135, 135))
+					return
 				end
-				auth_label("Paste your Spotify app Client ID. Do not enter a client secret.", 2, 15)
-				local client_box = library:create("TextBox", {
-					Parent = auth_holder,
-					Position = dim2(0, 7, 0, 20),
-					Size = dim2(1, -14, 0, 23),
-					BackgroundColor3 = themes.preset.high_contrast,
-					BorderSizePixel = 0,
-					ClearTextOnFocus = false,
-					FontFace = library.font,
-					PlaceholderText = "Spotify Client ID",
-					Text = client_id,
-					TextSize = 10,
-					TextColor3 = themes.preset.text,
-					TextXAlignment = Enum.TextXAlignment.Left,
-				})
-				local redirect_label = auth_label("Redirect URI: " .. redirect_uri, 45, 15, rgb(160, 160, 160))
-				redirect_label.TextTruncate = Enum.TextTruncate.AtEnd
-				local auth_url_box = library:create("TextBox", {
-					Parent = auth_holder,
-					Position = dim2(0, 7, 0, 63),
-					Size = dim2(1, -14, 0, 32),
-					BackgroundColor3 = themes.preset.high_contrast,
-					BorderSizePixel = 0,
-					ClearTextOnFocus = false,
-					FontFace = library.font,
-					PlaceholderText = "Authorize URL will appear here",
-					Text = "",
-					TextSize = 9,
-					TextColor3 = themes.preset.text,
-					TextWrapped = true,
-					TextXAlignment = Enum.TextXAlignment.Left,
-				})
-				local redirect_box = library:create("TextBox", {
-					Parent = auth_holder,
-					Position = dim2(0, 7, 0, 101),
-					Size = dim2(1, -14, 0, 23),
-					BackgroundColor3 = themes.preset.high_contrast,
-					BorderSizePixel = 0,
-					ClearTextOnFocus = false,
-					FontFace = library.font,
-					PlaceholderText = "Paste the final browser redirect URL here",
-					Text = "",
-					TextSize = 9,
-					TextColor3 = themes.preset.text,
-					TextXAlignment = Enum.TextXAlignment.Left,
-				})
-				auth_status = auth_label("Add the redirect URI above to your Spotify app settings.", 128, 30, rgb(170, 170, 170))
-				local function auth_button(text, x, callback)
-					return make_action_button(auth_holder, text, dim2(0, x, 1, -29), dim2(0, 170, 0, 22), callback)
-				end
-				auth_button("Create Login URL", 7, function()
-					client_id = client_box.Text:gsub("^%s+", ""):gsub("%s+$", "")
-					if client_id == "" then
-						auth_status.Text = "Enter your Spotify app Client ID first."
-						return
-					end
-					code_verifier = create_verifier()
-					local digest, hash_error = hash_sha256(code_verifier)
-					if not digest then
-						auth_status.Text = hash_error
-						return
-					end
-					oauth_state = http_service:GenerateGUID(false):gsub("-", "")
-					local challenge = base64url(digest)
-					local params = {
-						client_id = client_id,
-						response_type = "code",
-						redirect_uri = redirect_uri,
-						scope = "user-read-currently-playing user-read-playback-state user-modify-playback-state",
-						code_challenge_method = "S256",
-						code_challenge = challenge,
-						state = oauth_state,
-					}
-					auth_url_box.Text = "https://accounts.spotify.com/authorize?" .. form_encode(params)
+				oauth_state = http_service:GenerateGUID(false):gsub("-", "")
+				local params = {
+					client_id = client_id,
+					response_type = "code",
+					redirect_uri = redirect_uri,
+					scope = "user-read-currently-playing user-read-playback-state user-modify-playback-state",
+					code_challenge_method = "S256",
+					code_challenge = base64url(digest),
+					state = oauth_state,
+				}
+				local url = "https://accounts.spotify.com/authorize?" .. form_encode(params)
+				if not open_browser(url) then
 					local clipboard = environment.setclipboard or environment.toclipboard
 					if type(clipboard) == "function" then
-						local copied, copy_error = pcall(clipboard, auth_url_box.Text)
-						auth_status.Text = copied and "Login URL copied. Open it in a browser, then paste the final redirect URL below." or ("Copy the URL above manually: " .. tostring(copy_error))
-					else
-						auth_status.Text = "Copy the URL above, open it in a browser, then paste the final redirect URL below."
+						pcall(clipboard, url)
 					end
-				end)
-				auth_button("Finish Login", 191, function()
-					local pasted_url = redirect_box.Text
-					local code = query_value(pasted_url, "code")
-					local returned_state = query_value(pasted_url, "state")
-					if not code or not code_verifier then
-						auth_status.Text = "Create a login URL and paste the redirected browser URL first."
-						return
-					end
-					if returned_state ~= oauth_state then
-						auth_status.Text = "OAuth state did not match. Create a fresh login URL and retry."
-						return
-					end
-					local token_ok, token_error = exchange_token({
-						client_id = client_id,
-						grant_type = "authorization_code",
-						code = code,
-						redirect_uri = redirect_uri,
-						code_verifier = code_verifier,
-					})
-					if not token_ok then
-						auth_status.Text = "Spotify sign-in failed: " .. tostring(token_error)
-						return
-					end
-					auth_panel.items.sgui.Enabled = false
-					update_status("Connected. Checking Spotify playback...", rgb(115, 210, 145))
-					refresh_track()
-				end)
+					update_status("Could not open browser; login URL copied if clipboard is available", rgb(235, 135, 135))
+					return
+				end
+				update_status("Spotify login opened. Paste the redirected URL below when done.", rgb(115, 210, 145))
+			end
+
+			finish_login = function()
+				local pasted_url = redirect_box.Text
+				local code = query_value(pasted_url, "code")
+				local auth_error = query_value(pasted_url, "error")
+				local returned_state = query_value(pasted_url, "state")
+				if auth_error then
+					update_status("Spotify authorization failed: " .. auth_error, rgb(235, 135, 135))
+					return
+				end
+				if not code or not code_verifier then
+					update_status("Click Connect Spotify, finish browser login, then paste its redirect URL", rgb(235, 135, 135))
+					return
+				end
+				if returned_state ~= oauth_state then
+					update_status("OAuth state mismatch. Click Connect Spotify and retry.", rgb(235, 135, 135))
+					return
+				end
+				local token_ok, token_error = exchange_token({
+					client_id = client_id,
+					grant_type = "authorization_code",
+					code = code,
+					redirect_uri = redirect_uri,
+					code_verifier = code_verifier,
+				})
+				if not token_ok then
+					update_status("Spotify sign-in failed: " .. tostring(token_error), rgb(235, 135, 135))
+					return
+				end
+				code_verifier = nil
+				oauth_state = nil
+				redirect_box.Text = ""
+				update_status("Connected. Checking Spotify playback...", rgb(115, 210, 145))
+				refresh_track()
 			end
 
 			local player_obj = {}
@@ -6834,12 +6815,21 @@
 			end
 
 			task.spawn(function()
+				local next_refresh = 0
 				while music_panel.items.sgui.Parent do
-					task.wait(5)
+					task.wait(1)
 					if is_enabled and access_token then
-						local ok, err = pcall(refresh_track)
-						if not ok then
-							update_status("Spotify update failed: " .. tostring(err), rgb(235, 135, 135))
+						if is_playing and track_duration > 0 then
+							track_progress = math.min(track_duration, track_progress + 1000)
+							progress_fill.Size = dim2(math.clamp(track_progress / track_duration, 0, 1), 0, 1, 0)
+							elapsed_label.Text = format_clock(track_progress)
+						end
+						if os.clock() >= next_refresh then
+							next_refresh = os.clock() + 4
+							local ok, err = pcall(refresh_track)
+							if not ok then
+								update_status("Spotify update failed: " .. tostring(err), rgb(235, 135, 135))
+							end
 						end
 					end
 				end
@@ -6849,7 +6839,7 @@
 			player_obj.load_track = function()
 				return refresh_track()
 			end
-			player_obj.connect = open_auth_panel
+			player_obj.connect = start_authorization
 			player_obj.set_visible = function(visible)
 				music_panel.items.sgui.Enabled = visible
 				is_enabled = visible
