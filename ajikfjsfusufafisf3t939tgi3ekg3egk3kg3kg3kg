@@ -7167,7 +7167,7 @@
 				return outline, inside
 			end
 
-			local _, avatar_frame = outlined_box(holder, dim2(0, 7, 0, 10), dim2(0, 42, 0, 42))
+			local _, avatar_frame = outlined_box(holder, dim2(0, 7, 0, 157), dim2(0, 42, 0, 42))
 			avatar_frame.BackgroundColor3 = rgb(30, 30, 30)
 			library:create("ImageLabel", {
 				Parent = avatar_frame,
@@ -7178,8 +7178,8 @@
 				ScaleType = Enum.ScaleType.Crop,
 			})
 
-			label(holder, lp.DisplayName, dim2(0, 57, 0, 13), dim2(1, -177, 0, 15), 10, rgb(235, 235, 235))
-			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 29), dim2(1, -177, 0, 13), 9)
+			label(holder, lp.DisplayName, dim2(0, 57, 0, 159), dim2(1, -177, 0, 15), 10, rgb(235, 235, 235))
+			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 175), dim2(1, -177, 0, 13), 9)
 
 			local function create_action_button(text, y, on_click)
 				local button = library:create("TextButton", {
@@ -7191,92 +7191,73 @@
 					BackgroundColor3 = themes.preset.outline,
 					Text = "",
 				})
+				library:hoverify(button, button)
+				library:apply_theme(button, "outline", "BackgroundColor3")
 
 				local inline = library:create("Frame", {
 					Parent = button,
+					ZIndex = 2,
 					Position = dim2(0, 1, 0, 1),
 					Size = dim2(1, -2, 1, -2),
 					BackgroundColor3 = themes.preset.inline,
 					BorderSizePixel = 0,
-					ZIndex = 2,
 				})
+				library:apply_theme(inline, "inline", "BackgroundColor3")
 
 				local background = library:create("Frame", {
 					Parent = inline,
+					ZIndex = 2,
 					Position = dim2(0, 1, 0, 1),
 					Size = dim2(1, -2, 1, -2),
-					BackgroundColor3 = rgb(39, 39, 43),
+					BackgroundColor3 = themes.preset.accent,
 					BorderSizePixel = 0,
-					ZIndex = 2,
 				})
-				library:create("UIGradient", {
+				library:apply_theme(background, "accent", "BackgroundColor3")
+				local accent_gradient = library:create("UIGradient", {
 					Parent = background,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(48, 48, 53)),
-						rgbkey(1, rgb(34, 34, 38)),
+						rgbkey(0, rgb(255, 255, 255)),
+						rgbkey(1, rgb(167, 167, 167)),
 					},
 				})
+				library:apply_theme(accent_gradient, "contrast", "Color")
 
 				local contrast = library:create("Frame", {
 					Parent = background,
+					ZIndex = 2,
 					Size = dim2(1, 0, 1, 0),
 					BackgroundColor3 = rgb(255, 255, 255),
 					BorderSizePixel = 0,
-					ZIndex = 2,
 				})
-				local contrast_gradient = library:create("UIGradient", {
+				local inner_gradient = library:create("UIGradient", {
 					Parent = contrast,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(43, 43, 48)),
-						rgbkey(1, rgb(31, 31, 35)),
+						rgbkey(0, rgb(41, 41, 55)),
+						rgbkey(1, rgb(35, 35, 47)),
 					},
 				})
+				library:apply_theme(inner_gradient, "contrast", "Color")
 				local text_label = library:create("TextLabel", {
 					Parent = contrast,
+					ZIndex = 2,
 					Size = dim2(1, -4, 1, 0),
-					Position = dim2(0, 2, 0, -1),
+					Position = dim2(0, 4, 0, -1),
 					BackgroundTransparency = 1,
 					BorderSizePixel = 0,
 					FontFace = library.font,
 					Text = text,
-					TextSize = 10,
+					TextSize = 12,
 					TextColor3 = themes.preset.text,
-					TextXAlignment = Enum.TextXAlignment.Center,
+					TextXAlignment = Enum.TextXAlignment.Left,
 					TextYAlignment = Enum.TextYAlignment.Center,
-					ZIndex = 2,
 				})
 				library:create("UIStroke", {
 					Parent = text_label,
 					LineJoinMode = Enum.LineJoinMode.Miter,
 				})
 
-				local normal_gradient = rgbseq{
-					rgbkey(0, rgb(43, 43, 48)),
-					rgbkey(1, rgb(31, 31, 35)),
-				}
-				local hover_gradient = rgbseq{
-					rgbkey(0, rgb(57, 57, 63)),
-					rgbkey(1, rgb(42, 42, 47)),
-				}
-				button.MouseEnter:Connect(function()
-					library:tween(contrast_gradient, {Color = hover_gradient})
-					text_label.TextColor3 = rgb(255, 255, 255)
-				end)
-				button.MouseLeave:Connect(function()
-					library:tween(contrast_gradient, {Color = normal_gradient})
-					text_label.TextColor3 = themes.preset.text
-				end)
-				button.MouseButton1Down:Connect(function()
-					contrast_gradient.Color = rgbseq{
-						rgbkey(0, rgb(29, 29, 33)),
-						rgbkey(1, rgb(22, 22, 25)),
-					}
-				end)
-				button.MouseButton1Up:Connect(function()
-					contrast_gradient.Color = hover_gradient
-				end)
 				button.MouseButton1Click:Connect(on_click)
 				return button
 			end
