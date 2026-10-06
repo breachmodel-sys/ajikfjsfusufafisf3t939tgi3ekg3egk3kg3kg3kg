@@ -6474,7 +6474,7 @@
 			local pause_asset = "rbxassetid://79610666871575"
 			local next_asset = "rbxassetid://121822124041513"
 			local prev_asset = "rbxassetid://137660494219613"
-			local width, height = 340, 190
+			local width, height = 340, 220
 			local music_panel = library:panel({
 				name = "Spotify Player",
 				anchor_point = vec2(0, 0),
