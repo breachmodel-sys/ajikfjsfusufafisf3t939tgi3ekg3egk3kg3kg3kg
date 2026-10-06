@@ -7130,21 +7130,11 @@
 			options = options or {}
 			local loader_title = options.title or options.name or "Loader"
 			local callback = options.on_load or options.callback
-			local products = options.products or {}
-			local loading_current_game = #products == 0
-			if loading_current_game then
-				products = {{
-					name = "Current Roblox experience",
-					game = "Place ID: " .. tostring(game.PlaceId),
-					description = "Loading game information...",
-					on_load = callback,
-				}}
-			end
 
 			local cam_x = camera and camera.ViewportSize.X or 1280
 			local cam_y = camera and camera.ViewportSize.Y or 720
 			local width = math.max(320, math.min(420, cam_x - 24))
-			local height = 230
+			local height = 115
 			local panel = library:panel({
 				name = loader_title,
 				size = dim2(0, width, 0, height),
@@ -7209,44 +7199,7 @@
 				return outline, inside
 			end
 
-			label(holder, "Current Game", dim2(0, 7, 0, 0), dim2(0, 82, 0, 16), 11, rgb(235, 235, 235))
-			local heading_line = library:create("Frame", {
-				Parent = holder,
-				Position = dim2(0, 90, 0, 8),
-				Size = dim2(1, -98, 0, 1),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.accent,
-			})
-			library:apply_theme(heading_line, "accent", "BackgroundColor3")
-
-			local _, list_frame = outlined_box(holder, dim2(0, 7, 0, 22), dim2(1, -14, 0, 120))
-			local product_list = library:create("ScrollingFrame", {
-				Parent = list_frame,
-				Position = dim2(0, 2, 0, 2),
-				Size = dim2(1, -4, 1, -4),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				ScrollBarThickness = 3,
-				ScrollBarImageColor3 = themes.preset.accent,
-				CanvasSize = dim2(0, 0, 0, 0),
-				AutomaticCanvasSize = Enum.AutomaticSize.Y,
-				ScrollingDirection = Enum.ScrollingDirection.Y,
-			})
-			library:create("UIListLayout", {
-				Parent = product_list,
-				Padding = dim(0, 2),
-				SortOrder = Enum.SortOrder.LayoutOrder,
-			})
-
-			library:create("Frame", {
-				Parent = holder,
-				Position = dim2(0, 7, 0, 149),
-				Size = dim2(1, -14, 0, 1),
-				BorderSizePixel = 0,
-				BackgroundColor3 = themes.preset.outline,
-			})
-
-			local _, avatar_frame = outlined_box(holder, dim2(0, 7, 0, 157), dim2(0, 42, 0, 42))
+			local _, avatar_frame = outlined_box(holder, dim2(0, 7, 0, 10), dim2(0, 42, 0, 42))
 			avatar_frame.BackgroundColor3 = rgb(30, 30, 30)
 			library:create("ImageLabel", {
 				Parent = avatar_frame,
@@ -7257,8 +7210,8 @@
 				ScaleType = Enum.ScaleType.Crop,
 			})
 
-			label(holder, lp.DisplayName, dim2(0, 57, 0, 159), dim2(1, -177, 0, 15), 10, rgb(235, 235, 235))
-			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 175), dim2(1, -177, 0, 13), 9)
+			label(holder, lp.DisplayName, dim2(0, 57, 0, 13), dim2(1, -177, 0, 15), 10, rgb(235, 235, 235))
+			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 29), dim2(1, -177, 0, 13), 9)
 
 			local function create_action_button(text, y, on_click)
 				local button = library:button({
@@ -7272,92 +7225,19 @@
 				return button.instance
 			end
 
-			local selected_index
-			local product_rows = {}
-
-			local function select_product(index)
-				selected_index = index
-				for _, item in ipairs(product_rows) do
-					item.button.BackgroundColor3 = themes.preset.high_contrast
-					item.accent.Visible = false
-				end
-				local selected = product_rows[index]
-				if selected then
-					selected.button.BackgroundColor3 = themes.preset.low_contrast
-					selected.accent.Visible = true
-				end
-			end
-
-			for index, product in ipairs(products) do
-				local row = library:create("TextButton", {
-					Parent = product_list,
-					Size = dim2(1, -3, 0, 51),
-					BackgroundColor3 = themes.preset.high_contrast,
-					BorderSizePixel = 0,
-					AutoButtonColor = false,
-					Text = "",
-					LayoutOrder = index,
-				})
-				local row_accent = library:create("Frame", {
-					Parent = row,
-					Size = dim2(0, 2, 1, 0),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.accent,
-					Visible = false,
-				})
-				local title = label(row, tostring(product.name or product.title or "Product"), dim2(0, 10, 0, 2), dim2(1, -16, 0, 15), 11, rgb(235, 235, 235))
-				local game_name = label(row, tostring(product.game or ""), dim2(0, 10, 0, 17), dim2(1, -16, 0, 14), 10)
-				local description = label(row, tostring(product.description or ""), dim2(0, 10, 0, 31), dim2(1, -16, 0, 15), 9, rgb(155, 155, 155))
-				title.TextTruncate = Enum.TextTruncate.AtEnd
-				game_name.TextTruncate = Enum.TextTruncate.AtEnd
-				description.TextTruncate = Enum.TextTruncate.AtEnd
-				row.MouseButton1Click:Connect(function()
-					select_product(index)
-				end)
-				table.insert(product_rows, {
-					index = index,
-					product = product,
-					button = row,
-					accent = row_accent,
-					title = title,
-					game_name = game_name,
-					description = description,
-				})
-			end
-
-			select_product(1)
-			if loading_current_game and game.PlaceId > 0 then
-				task.spawn(function()
-					local ok, game_info = pcall(function()
-						return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
-					end)
-					if ok and game_info and game_info.Name then
-						local current = products[1]
-						current.name = game_info.Name
-						current.description = "Current Roblox experience"
-						product_rows[1].title.Text = game_info.Name
-						product_rows[1].description.Text = current.description
-					else
-						warn("Loader could not get the current game name: " .. tostring(game_info))
-					end
-				end)
-			end
-
 			local is_executing = false
-			create_action_button("Execute", 157, function()
+			create_action_button("Execute", 10, function()
 				if is_executing then
 					return
 				end
-				local product = selected_index and products[selected_index]
-				local execute_callback = (product and product.on_load) or callback
-				if not execute_callback then
+				if not callback then
 					return
 				end
 				is_executing = true
 				panel.items.sgui:Destroy()
-				task.spawn(execute_callback)
+				task.spawn(callback)
 			end)
-			create_action_button("Exit", 182, function()
+			create_action_button("Exit", 35, function()
 				panel.items.sgui:Destroy()
 			end)
 
