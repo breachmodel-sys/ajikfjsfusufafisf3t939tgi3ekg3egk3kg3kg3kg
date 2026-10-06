@@ -6247,6 +6247,20 @@
 
 		function library:music_player(options)
 			options = options or {}
+			for _, screen_gui in ipairs(gethui():GetChildren()) do
+				if screen_gui:IsA("ScreenGui") then
+					local is_spotify_panel = false
+					for _, descendant in ipairs(screen_gui:GetDescendants()) do
+						if descendant:IsA("TextLabel") and descendant.Text == "Spotify Player" then
+							is_spotify_panel = true
+							break
+						end
+					end
+					if is_spotify_panel then
+						screen_gui:Destroy()
+					end
+				end
+			end
 
 			local environment = _G
 			if type(getgenv) == "function" then
