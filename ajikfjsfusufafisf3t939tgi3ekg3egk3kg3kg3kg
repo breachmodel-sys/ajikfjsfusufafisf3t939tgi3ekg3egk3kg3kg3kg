@@ -7167,7 +7167,7 @@
 				return outline, inside
 			end
 
-			local _, avatar_frame = outlined_box(holder, dim2(0, 7, 0, 157), dim2(0, 42, 0, 42))
+			local _, avatar_frame = outlined_box(holder, dim2(0, 7, 0, 149), dim2(0, 42, 0, 42))
 			avatar_frame.BackgroundColor3 = rgb(30, 30, 30)
 			library:create("ImageLabel", {
 				Parent = avatar_frame,
@@ -7178,8 +7178,8 @@
 				ScaleType = Enum.ScaleType.Crop,
 			})
 
-			label(holder, lp.DisplayName, dim2(0, 57, 0, 159), dim2(1, -177, 0, 15), 10, rgb(235, 235, 235))
-			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 175), dim2(1, -177, 0, 13), 9)
+			label(holder, lp.DisplayName, dim2(0, 57, 0, 151), dim2(1, -177, 0, 15), 10, rgb(235, 235, 235))
+			label(holder, "@" .. lp.Name, dim2(0, 57, 0, 167), dim2(1, -177, 0, 13), 9)
 
 			local function create_action_button(text, y, on_click)
 				local button = library:create("TextButton", {
@@ -7212,16 +7212,14 @@
 					BackgroundColor3 = themes.preset.accent,
 					BorderSizePixel = 0,
 				})
-				library:apply_theme(background, "accent", "BackgroundColor3")
 				local accent_gradient = library:create("UIGradient", {
 					Parent = background,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(255, 255, 255)),
-						rgbkey(1, rgb(167, 167, 167)),
+						rgbkey(0, rgb(40, 40, 44)),
+						rgbkey(1, rgb(27, 27, 30)),
 					},
 				})
-				library:apply_theme(accent_gradient, "contrast", "Color")
 
 				local contrast = library:create("Frame", {
 					Parent = background,
@@ -7234,11 +7232,10 @@
 					Parent = contrast,
 					Rotation = 90,
 					Color = rgbseq{
-						rgbkey(0, rgb(41, 41, 55)),
-						rgbkey(1, rgb(35, 35, 47)),
+						rgbkey(0, rgb(34, 34, 37)),
+						rgbkey(1, rgb(25, 25, 28)),
 					},
 				})
-				library:apply_theme(inner_gradient, "contrast", "Color")
 				local text_label = library:create("TextLabel", {
 					Parent = contrast,
 					ZIndex = 2,
@@ -7250,7 +7247,7 @@
 					Text = text,
 					TextSize = 12,
 					TextColor3 = themes.preset.text,
-					TextXAlignment = Enum.TextXAlignment.Left,
+					TextXAlignment = Enum.TextXAlignment.Center,
 					TextYAlignment = Enum.TextYAlignment.Center,
 				})
 				library:create("UIStroke", {
@@ -7258,12 +7255,29 @@
 					LineJoinMode = Enum.LineJoinMode.Miter,
 				})
 
+				local normal_gradient = rgbseq{
+					rgbkey(0, rgb(34, 34, 37)),
+					rgbkey(1, rgb(25, 25, 28)),
+				}
+				local hover_gradient = rgbseq{
+					rgbkey(0, rgb(46, 46, 50)),
+					rgbkey(1, rgb(34, 34, 38)),
+				}
+				button.MouseEnter:Connect(function()
+					library:tween(inner_gradient, {Color = hover_gradient})
+					text_label.TextColor3 = rgb(255, 255, 255)
+				end)
+				button.MouseLeave:Connect(function()
+					library:tween(inner_gradient, {Color = normal_gradient})
+					text_label.TextColor3 = themes.preset.text
+				end)
+
 				button.MouseButton1Click:Connect(on_click)
 				return button
 			end
 
 			local is_executing = false
-			create_action_button("Load", 157, function()
+			create_action_button("Load", 149, function()
 				if is_executing then
 					return
 				end
@@ -7274,7 +7288,7 @@
 				panel.items.sgui:Destroy()
 				task.spawn(callback)
 			end)
-			create_action_button("Exit", 182, function()
+			create_action_button("Exit", 174, function()
 				panel.items.sgui:Destroy()
 			end)
 
