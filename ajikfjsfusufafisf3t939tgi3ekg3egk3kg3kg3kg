@@ -6249,217 +6249,64 @@
 			options = options or {}
 			for _, screen_gui in ipairs(gethui():GetChildren()) do
 				if screen_gui:IsA("ScreenGui") then
-					local is_spotify_panel = false
+					local stale_player = false
 					for _, descendant in ipairs(screen_gui:GetDescendants()) do
-						if descendant:IsA("TextLabel") and descendant.Text == "Spotify Player" then
-							is_spotify_panel = true
+						if descendant:IsA("TextLabel") and descendant.Text == "Music Player" then
+							stale_player = true
 							break
 						end
 					end
-					if is_spotify_panel then
-						screen_gui:Destroy()
-					end
+					if stale_player then screen_gui:Destroy() end
 				end
 			end
 
 			local environment = _G
 			if type(getgenv) == "function" then
 				local ok, value = pcall(getgenv)
-				if ok and type(value) == "table" then
-					environment = value
-				end
+				if ok and type(value) == "table" then environment = value end
 			end
 
-			local client_id = options.client_id or environment.SPOTIFY_CLIENT_ID or "83b3b60c179e40bcb8f3daa5f239ec27"
-			local redirect_uri = options.redirect_uri or "http://127.0.0.1:8888/callback"
-			local access_token
-			local refresh_token
-			local token_expires_at = 0
-			local code_verifier
-			local oauth_state
+			local music_directory = options.music_directory or environment.WIZARDHOOK_MUSIC_DIRECTORY or "C:\\Users\\breac\\Downloads\\error"
+			local tracks = options.tracks or {
+				{title = "A Wall (TikTok Remix)", artist = "3x.tobias", file = "A Wall - lover boy (tiktok remix) - 3x.tobias (youtube).mp3"},
+				{title = "CANDY HEARTS I MISS YOU", artist = "Bridge Nine Records", file = "CANDY HEARTS I MISS YOU Official Video - Bridge Nine Records (youtube).mp3"},
+				{title = "congratulations you won", artist = "Local Library", file = "congratulations you won_spotdown.org.mp3"},
+				{title = "Magic", artist = "blair", file = "Magic - blair (youtube).mp3"},
+			}
+			local current_index = 1
 			local is_enabled = options.open == true
 			local is_playing = false
 			local track_duration = 0
-			local track_progress = 0
+			local music_sound = sound_service:FindFirstChild("WizardhookLocalMusic")
+			if music_sound then music_sound:Destroy() end
+			music_sound = Instance.new("Sound")
+			music_sound.Name = "WizardhookLocalMusic"
+			music_sound.Volume = options.volume or 0.5
+			music_sound.Looped = false
+			music_sound.Parent = sound_service
 
-			local function request_http(method, url, headers, body)
-				local request_function = environment.request or environment.http_request or environment.httprequest
-				if not request_function and type(environment.syn) == "table" then
-					request_function = environment.syn.request
+			local function resolve_asset(filename)
+				local loaders = {}
+				for _, name in ipairs({"getcustomasset", "getsynasset"}) do
+					local loader = environment[name] or _G[name]
+					if type(loader) == "function" then table.insert(loaders, loader) end
 				end
-				if type(request_function) == "function" then
-					local ok, response = pcall(request_function, {
-						Url = url,
-						Method = method,
-						Headers = headers or {},
-						Body = body,
-					})
-					if not ok then
-						return nil, tostring(response)
-					end
-					return response
-				end
-				local ok, response = pcall(function()
-					return http_service:RequestAsync({
-						Url = url,
-						Method = method,
-						Headers = headers or {},
-						Body = body,
-					})
-				end)
-				if not ok then
-					return nil, tostring(response)
-				end
-				return response
-			end
-
-			local function decode_response(response)
-				if not response or type(response.Body) ~= "string" or response.Body == "" then
-					return nil
-				end
-				local ok, decoded = pcall(function()
-					return http_service:JSONDecode(response.Body)
-				end)
-				if ok then
-					return decoded
-				end
-				return nil
-			end
-
-			local function response_status(response)
-				if not response then
-					return 0
-				end
-				return tonumber(response.StatusCode or response.status_code or response.Status) or 0
-			end
-
-			local function response_error(response, request_error)
-				if request_error then
-					return request_error
-				end
-				local decoded = decode_response(response)
-				local status = response_status(response)
-				local prefix = status > 0 and ("HTTP " .. tostring(status) .. ": ") or ""
-				if type(decoded) == "table" then
-					if type(decoded.error) == "table" then
-						return prefix .. tostring(decoded.error.message or decoded.error_description or decoded.error.status or "Spotify request failed")
-					end
-					return prefix .. tostring(decoded.error_description or decoded.error or decoded.message or "Spotify request failed")
-				end
-				return prefix .. "Spotify request failed"
-			end
-
-			local function form_encode(values)
-				local parts = {}
-				for key, value in pairs(values) do
-					table.insert(parts, http_service:UrlEncode(key) .. "=" .. http_service:UrlEncode(tostring(value)))
-				end
-				return table.concat(parts, "&")
-			end
-
-			local function hash_sha256(data)
-				local crypto = environment.crypt
-				if type(crypto) ~= "table" and type(environment.syn) == "table" then
-					crypto = environment.syn.crypt
-				end
-				if type(crypto) ~= "table" or type(crypto.hash) ~= "function" then
-					return nil, "This executor does not expose SHA-256 needed for Spotify PKCE"
-				end
-				local ok, digest = pcall(crypto.hash, data, "sha256")
-				if not ok or type(digest) ~= "string" then
-					return nil, "Executor SHA-256 failed: " .. tostring(digest)
-				end
-				if #digest == 32 then
-					return digest
-				end
-				if #digest == 64 and digest:match("^%x+$") then
-					return (digest:gsub("..", function(pair)
-						return string.char(tonumber(pair, 16))
-					end))
-				end
-				return nil, "Executor SHA-256 returned an unsupported digest format"
-			end
-
-			local function base64url(binary)
-				local alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
-				local out = {}
-				for index = 1, #binary, 3 do
-					local a, b, c = string.byte(binary, index, index + 2)
-					b = b or 0
-					c = c or 0
-					local n = a * 65536 + b * 256 + c
-					local i1 = math.floor(n / 262144) % 64 + 1
-					local i2 = math.floor(n / 4096) % 64 + 1
-					local i3 = math.floor(n / 64) % 64 + 1
-					local i4 = n % 64 + 1
-					out[#out + 1] = alphabet:sub(i1, i1)
-					out[#out + 1] = alphabet:sub(i2, i2)
-					if index + 1 <= #binary then out[#out + 1] = alphabet:sub(i3, i3) end
-					if index + 2 <= #binary then out[#out + 1] = alphabet:sub(i4, i4) end
-				end
-				return table.concat(out)
-			end
-
-			local function create_verifier()
-				return http_service:GenerateGUID(false) .. http_service:GenerateGUID(false) .. http_service:GenerateGUID(false)
-			end
-
-			local function exchange_token(values)
-				local response, request_error = request_http("POST", "https://accounts.spotify.com/api/token", {
-					["Content-Type"] = "application/x-www-form-urlencoded",
-				}, form_encode(values))
-				local code = response_status(response)
-				if not response or code < 200 or code >= 300 then
-					return nil, response_error(response, request_error)
-				end
-				local token_data = decode_response(response)
-				if type(token_data) ~= "table" or type(token_data.access_token) ~= "string" then
-					return nil, "Spotify returned an invalid token response"
-				end
-				access_token = token_data.access_token
-				refresh_token = token_data.refresh_token or refresh_token
-				token_expires_at = os.time() + tonumber(token_data.expires_in or 3600)
-				return true
-			end
-
-			local function refresh_access_token()
-				if not refresh_token then
-					return false, "Reconnect Spotify to authorize this session"
-				end
-				return exchange_token({
-					client_id = client_id,
-					grant_type = "refresh_token",
-					refresh_token = refresh_token,
-				})
-			end
-
-			local function spotify_request(method, endpoint, body, retried)
-				if not access_token then
-					return false, "Connect Spotify first"
-				end
-				if token_expires_at <= os.time() + 45 then
-					local refreshed, refresh_error = refresh_access_token()
-					if not refreshed then
-						return false, refresh_error
+				local candidates = {
+					filename,
+					music_directory .. "\\" .. filename,
+					music_directory .. "/" .. filename,
+					library.directory .. "/music/" .. filename,
+					"music/" .. filename,
+				}
+				local last_error
+				for _, loader in ipairs(loaders) do
+					for _, candidate in ipairs(candidates) do
+						local ok, asset = pcall(loader, candidate)
+						if ok and type(asset) == "string" and asset ~= "" then return asset end
+						if not ok then last_error = asset end
 					end
 				end
-				local headers = {Authorization = "Bearer " .. access_token}
-				if body then
-					headers["Content-Type"] = "application/json"
-				end
-				local response, request_error = request_http(method, "https://api.spotify.com/v1" .. endpoint, headers, body)
-				local code = response_status(response)
-				if code == 401 and not retried then
-					local refreshed, refresh_error = refresh_access_token()
-					if not refreshed then
-						return false, refresh_error
-					end
-					return spotify_request(method, endpoint, body, true)
-				end
-				if not response or (code < 200 or code >= 300) and code ~= 204 then
-					return false, response_error(response, request_error)
-				end
-				return true, decode_response(response), code
+				return nil, last_error or "No executor custom-asset loader is available"
 			end
 
 			local function label(parent, text, position, size, text_size, color, alignment)
@@ -6479,9 +6326,20 @@
 				})
 			end
 
-			local function format_clock(milliseconds)
-				local seconds = math.max(0, math.floor((milliseconds or 0) / 1000))
+			local function format_clock(seconds)
+				seconds = math.max(0, math.floor(seconds or 0))
 				return string.format("%d:%02d", math.floor(seconds / 60), seconds % 60)
+			end
+
+			local progress_fill, elapsed_label, duration_label
+			local function update_progress()
+				local position = music_sound.TimePosition
+				local duration = music_sound.TimeLength
+				if duration > 0 then track_duration = duration end
+				local fraction = track_duration > 0 and math.clamp(position / track_duration, 0, 1) or 0
+				progress_fill.Size = dim2(fraction, 0, 1, 0)
+				elapsed_label.Text = format_clock(position)
+				duration_label.Text = format_clock(track_duration)
 			end
 
 			local play_asset = "rbxassetid://76386816441302"
@@ -6490,7 +6348,7 @@
 			local prev_asset = "rbxassetid://137660494219613"
 			local width, height = 340, 190
 			local music_panel = library:panel({
-				name = "Spotify Player",
+				name = "Music Player",
 				anchor_point = vec2(0, 0),
 				size = dim2(0, width, 0, height),
 				position = options.position or dim2(0, (camera.ViewportSize.X / 2) - width / 2, 0, (camera.ViewportSize.Y / 2) - height / 2),
@@ -6516,11 +6374,13 @@
 				BorderSizePixel = 0,
 				ScaleType = Enum.ScaleType.Crop,
 			})
+			local artwork_asset = resolve_asset(options.artwork or "song_icon.png")
+			if artwork_asset then artwork.Image = artwork_asset end
 
-			local title_label = label(holder, "Spotify not connected", dim2(0, 82, 0, 9), dim2(1, -91, 0, 22), 14, rgb(245, 245, 245))
-			local artist_label = label(holder, "Connect to show your current track", dim2(0, 82, 0, 31), dim2(1, -91, 0, 18), 11)
-			local album_label = label(holder, "Spotify Connect", dim2(0, 82, 0, 49), dim2(1, -91, 0, 16), 10, rgb(145, 145, 145))
-			local status_label = label(holder, "Not connected", dim2(0, 8, 0, 76), dim2(1, -16, 0, 14), 10, rgb(170, 170, 170))
+			local title_label = label(holder, "Local music", dim2(0, 82, 0, 9), dim2(1, -91, 0, 22), 14, rgb(245, 245, 245))
+			local artist_label = label(holder, "Choose a track", dim2(0, 82, 0, 31), dim2(1, -91, 0, 18), 11)
+			local album_label = label(holder, "Local files", dim2(0, 82, 0, 49), dim2(1, -91, 0, 16), 10, rgb(145, 145, 145))
+			local status_label = label(holder, "Local audio", dim2(0, 8, 0, 76), dim2(1, -16, 0, 14), 10, rgb(170, 170, 170))
 
 			local progress_outline = library:create("Frame", {
 				Parent = holder,
@@ -6529,14 +6389,14 @@
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(55, 55, 55),
 			})
-			local progress_fill = library:create("Frame", {
+			progress_fill = library:create("Frame", {
 				Parent = progress_outline,
 				Size = dim2(0, 0, 1, 0),
 				BorderSizePixel = 0,
 				BackgroundColor3 = rgb(30, 215, 96),
 			})
-			local elapsed_label = label(holder, "0:00", dim2(0, 8, 0, 101), dim2(0, 42, 0, 12), 9, rgb(155, 155, 155))
-			local duration_label = label(holder, "0:00", dim2(1, -50, 0, 101), dim2(0, 42, 0, 12), 9, rgb(155, 155, 155), Enum.TextXAlignment.Right)
+			elapsed_label = label(holder, "0:00", dim2(0, 8, 0, 101), dim2(0, 42, 0, 12), 9, rgb(155, 155, 155))
+			duration_label = label(holder, "0:00", dim2(1, -50, 0, 101), dim2(0, 42, 0, 12), 9, rgb(155, 155, 155), Enum.TextXAlignment.Right)
 
 			local function make_action_button(parent, text, position, size, callback)
 				local button = library:create("TextButton", {
@@ -6581,15 +6441,9 @@
 				return button
 			end
 
-			local start_authorization, update_status, refresh_track
-			make_action_button(holder, "Connect Spotify", dim2(1, -112, 0, 121), dim2(0, 104, 0, 22), function()
-				if start_authorization then
-					start_authorization()
-				end
-			end)
 			local previous_button = library:create("ImageButton", {
 				Parent = holder,
-				Position = dim2(0, 20, 0, 123),
+				Position = dim2(0, 115, 0, 121),
 				Size = dim2(0, 16, 0, 16),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -6599,7 +6453,7 @@
 			})
 			local toggle_button = library:create("ImageButton", {
 				Parent = holder,
-				Position = dim2(0, 54, 0, 120),
+				Position = dim2(0, 153, 0, 118),
 				Size = dim2(0, 22, 0, 22),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -6609,7 +6463,7 @@
 			})
 			local next_button = library:create("ImageButton", {
 				Parent = holder,
-				Position = dim2(0, 94, 0, 123),
+				Position = dim2(0, 197, 0, 121),
 				Size = dim2(0, 16, 0, 16),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
@@ -6617,261 +6471,132 @@
 				ImageColor3 = rgb(220, 220, 220),
 				AutoButtonColor = false,
 			})
-			local function format_api_error(err)
-				local message = tostring(err or "Unknown Spotify error")
-				if message:find("403", 1, true) then
-					return "Premium and an active Spotify device are required for playback controls"
+
+			local function update_track_information()
+				local track = tracks[current_index]
+				if not track then
+					title_label.Text = "No local tracks configured"
+					artist_label.Text = "Add MP3 files to the music folder"
+					return
 				end
-				return message
+				title_label.Text = track.title or track.file or "Unknown track"
+				artist_label.Text = track.artist or "Local file"
+				album_label.Text = string.format("Local file %d / %d", current_index, #tracks)
 			end
 
-			update_status = function(text, color)
-				status_label.Text = text
-				status_label.TextColor3 = color or rgb(170, 170, 170)
-			end
-
-			refresh_track = function()
-				local ok, data, code = spotify_request("GET", "/me/player/currently-playing")
-				if not ok then
-					update_status(format_api_error(data), rgb(235, 135, 135))
-					return false, data
+			local function select_track(index, should_play)
+				if #tracks == 0 then
+					status_label.Text = "No tracks configured"
+					return false
 				end
-				if code == 204 or type(data) ~= "table" or type(data.item) ~= "table" then
-					title_label.Text = "Nothing playing"
-					artist_label.Text = "Start playback in Spotify"
-					album_label.Text = ""
-					artwork.Image = ""
-					track_duration = 0
-					track_progress = 0
-					is_playing = false
-					progress_fill.Size = dim2(0, 0, 1, 0)
-					elapsed_label.Text = "0:00"
-					duration_label.Text = "0:00"
-					toggle_button.Image = play_asset
-					update_status("No active Spotify playback")
-					return true
+				current_index = ((index - 1) % #tracks) + 1
+				local track = tracks[current_index]
+				music_sound:Stop()
+				is_playing = false
+				toggle_button.Image = play_asset
+				track_duration = 0
+				track_progress = 0
+				progress_fill.Size = dim2(0, 0, 1, 0)
+				elapsed_label.Text = "0:00"
+				duration_label.Text = "0:00"
+				update_track_information()
+				local asset, asset_error = resolve_asset(track.file)
+				if not asset then
+					music_sound.SoundId = ""
+					status_label.Text = "Can't load local file: " .. tostring(asset_error)
+					status_label.TextColor3 = rgb(235, 135, 135)
+					return false
 				end
-
-				local item = data.item
-				local artists = {}
-				for _, artist in ipairs(item.artists or {}) do
-					if artist.name then table.insert(artists, artist.name) end
+				music_sound.SoundId = asset
+				status_label.Text = "Ready - Local audio"
+				status_label.TextColor3 = rgb(170, 170, 170)
+				if should_play then
+					local ok, err = pcall(function() music_sound:Play() end)
+					if not ok then
+						status_label.Text = "Playback failed: " .. tostring(err)
+						status_label.TextColor3 = rgb(235, 135, 135)
+						return false
+					end
+					is_playing = true
+					toggle_button.Image = pause_asset
 				end
-				title_label.Text = tostring(item.name or "Unknown track")
-				artist_label.Text = table.concat(artists, ", ")
-				album_label.Text = tostring(item.album and item.album.name or "")
-				local images = item.album and item.album.images or {}
-				artwork.Image = images[1] and images[1].url or ""
-				track_duration = tonumber(item.duration_ms) or 0
-				track_progress = tonumber(data.progress_ms) or 0
-				is_playing = data.is_playing == true
-				progress_fill.Size = dim2(track_duration > 0 and math.clamp(track_progress / track_duration, 0, 1) or 0, 0, 1, 0)
-				elapsed_label.Text = format_clock(track_progress)
-				duration_label.Text = format_clock(track_duration)
-				toggle_button.Image = is_playing and pause_asset or play_asset
-				local device = data.device and data.device.name
-				update_status(device and ("Spotify Connect · " .. tostring(device)) or "Spotify Connect", rgb(115, 210, 145))
 				return true
 			end
 
-			local function playback_command(method, endpoint)
-				local ok, err = spotify_request(method, endpoint)
-				if not ok then
-					update_status(format_api_error(err), rgb(235, 135, 135))
-					return
-				end
-				task.delay(0.4, refresh_track)
-			end
-
 			previous_button.MouseButton1Click:Connect(function()
-				playback_command("POST", "/me/player/previous")
+				select_track(current_index - 1, is_playing)
 			end)
 			next_button.MouseButton1Click:Connect(function()
-				playback_command("POST", "/me/player/next")
+				select_track(current_index + 1, is_playing)
 			end)
 			toggle_button.MouseButton1Click:Connect(function()
-				playback_command("PUT", is_playing and "/me/player/pause" or "/me/player/play")
+				if is_playing then
+					music_sound:Pause()
+					is_playing = false
+					toggle_button.Image = play_asset
+					status_label.Text = "Paused - Local audio"
+				elseif music_sound.SoundId ~= "" then
+					local ok, err = pcall(function() music_sound:Play() end)
+					if ok then
+						is_playing = true
+						toggle_button.Image = pause_asset
+						status_label.Text = "Playing - Local audio"
+					else
+						status_label.Text = "Playback failed: " .. tostring(err)
+						status_label.TextColor3 = rgb(235, 135, 135)
+					end
+				else
+					select_track(current_index, true)
+				end
 			end)
 
-			local function open_browser(url)
-				local openers = {}
-				for _, name in ipairs({"open_url", "openurl", "openbrowser"}) do
-					local opener = environment[name]
-					if type(opener) == "function" then
-						table.insert(openers, opener)
-					end
-				end
-				if type(environment.syn) == "table" then
-					if type(environment.syn.open) == "function" then
-						table.insert(openers, environment.syn.open)
-					end
-				end
-				for _, opener in ipairs(openers) do
-					if type(opener) == "function" then
-						local ok, result = pcall(opener, url)
-						if ok and result ~= false then
-							return true
+			music_sound.Ended:Connect(function()
+				select_track(current_index + 1, true)
+			end)
+
+			task.spawn(function()
+				while music_panel.items.sgui.Parent do
+					task.wait(0.25)
+					if is_enabled and music_sound.SoundId ~= "" then
+						update_progress()
+						if is_playing and not music_sound.IsPlaying and music_sound.TimeLength > 0 then
+							is_playing = false
+							toggle_button.Image = play_asset
+							status_label.Text = "Playback stopped"
 						end
 					end
 				end
-				local ok = pcall(function()
-					gui_service:OpenBrowserWindow(url)
-				end)
-				return ok
-			end
+			end)
 
-			local function poll_callback(state, verifier)
-				local expiry = os.clock() + 180
-				local result_url = "http://127.0.0.1:8888/result?state=" .. http_service:UrlEncode(state)
-				while os.clock() < expiry do
-					task.wait(1)
-					local response, request_error = request_http("GET", result_url)
-					if response then
-						local status = response_status(response)
-						if status == 200 then
-							local result = decode_response(response)
-							if type(result) == "table" and not result.pending then
-								if result.state ~= state then
-									update_status("Spotify callback state did not match", rgb(235, 135, 135))
-									is_enabled = true
-									music_panel.items.sgui.Enabled = true
-									return
-								end
-								if result.error then
-									update_status("Spotify authorization failed: " .. tostring(result.error), rgb(235, 135, 135))
-									is_enabled = true
-									music_panel.items.sgui.Enabled = true
-									return
-								end
-								if type(result.code) ~= "string" or result.code == "" then
-									update_status("Spotify callback did not include an authorization code", rgb(235, 135, 135))
-									is_enabled = true
-									music_panel.items.sgui.Enabled = true
-									return
-								end
-								local token_ok, token_error = exchange_token({
-									client_id = client_id,
-									grant_type = "authorization_code",
-									code = result.code,
-									redirect_uri = redirect_uri,
-									code_verifier = verifier,
-								})
-								if not token_ok then
-									update_status("Spotify sign-in failed: " .. tostring(token_error), rgb(235, 135, 135))
-									is_enabled = true
-									music_panel.items.sgui.Enabled = true
-									return
-								end
-								code_verifier = nil
-								oauth_state = nil
-								is_enabled = true
-								music_panel.items.sgui.Enabled = true
-								update_status("Connected. Checking Spotify playback...", rgb(115, 210, 145))
-								refresh_track()
-								return
-							end
-						elseif status >= 400 then
-							update_status("Spotify callback helper error (HTTP " .. tostring(status) .. ")", rgb(235, 135, 135))
-							is_enabled = true
-							music_panel.items.sgui.Enabled = true
-							return
-						end
-					elseif request_error then
-						update_status("Lost connection to Spotify callback helper: " .. request_error, rgb(235, 135, 135))
-						is_enabled = true
-						music_panel.items.sgui.Enabled = true
-						return
-					end
-				end
-				update_status("Spotify login timed out. Start the connection again.", rgb(235, 135, 135))
-				is_enabled = true
-				music_panel.items.sgui.Enabled = true
-			end
-
-			start_authorization = function()
-				local health_response, health_error = request_http("GET", "http://127.0.0.1:8888/health")
-				if response_status(health_response) ~= 200 then
-					update_status("Start spotify-callback.js before connecting", rgb(235, 135, 135))
-					if health_error then
-						warn("Spotify callback helper unavailable: " .. health_error)
-					end
-					return
-				end
-				code_verifier = create_verifier()
-				local digest, hash_error = hash_sha256(code_verifier)
-				if not digest then
-					update_status(hash_error, rgb(235, 135, 135))
-					return
-				end
-				oauth_state = http_service:GenerateGUID(false):gsub("-", "")
-				local params = {
-					client_id = client_id,
-					response_type = "code",
-					redirect_uri = redirect_uri,
-					scope = "user-read-currently-playing user-read-playback-state user-modify-playback-state",
-					code_challenge_method = "S256",
-					code_challenge = base64url(digest),
-					state = oauth_state,
-				}
-				local url = "https://accounts.spotify.com/authorize?" .. form_encode(params)
-				if not open_browser(url) then
-					local clipboard = environment.setclipboard or environment.toclipboard
-					if type(clipboard) == "function" then
-						pcall(clipboard, url)
-					end
-					update_status("Could not open browser; login URL copied if clipboard is available", rgb(235, 135, 135))
-					return
-				end
-				local state = oauth_state
-				local verifier = code_verifier
-				is_enabled = false
-				music_panel.items.sgui.Enabled = false
-				task.spawn(function()
-					poll_callback(state, verifier)
-				end)
-			end
-
-			local player_obj = {}
+			local player_obj = {panel = music_panel}
 			if music_panel.items.close then
 				music_panel.items.close.MouseButton1Click:Connect(function()
 					is_enabled = false
+					music_sound:Pause()
+					is_playing = false
 					if player_obj.on_close then player_obj.on_close() end
 				end)
 			end
-
-			task.spawn(function()
-				local next_refresh = 0
-				while music_panel.items.sgui.Parent do
-					task.wait(1)
-					if is_enabled and access_token then
-						if is_playing and track_duration > 0 then
-							track_progress = math.min(track_duration, track_progress + 1000)
-							progress_fill.Size = dim2(math.clamp(track_progress / track_duration, 0, 1), 0, 1, 0)
-							elapsed_label.Text = format_clock(track_progress)
-						end
-						if os.clock() >= next_refresh then
-							next_refresh = os.clock() + 4
-							local ok, err = pcall(refresh_track)
-							if not ok then
-								update_status("Spotify update failed: " .. tostring(err), rgb(235, 135, 135))
-							end
-						end
-					end
-				end
-			end)
-
-			player_obj.panel = music_panel
-			player_obj.load_track = function()
-				return refresh_track()
+			update_track_information()
+			select_track(current_index, false)
+			player_obj.load_track = function(index)
+				return select_track(index or current_index, false)
 			end
-			player_obj.connect = start_authorization
+			player_obj.connect = function()
+				return false, "This player uses local audio files"
+			end
 			player_obj.set_visible = function(visible)
 				music_panel.items.sgui.Enabled = visible
 				is_enabled = visible
-				if visible and access_token then
-					refresh_track()
+				if not visible then
+					music_sound:Pause()
+					is_playing = false
+					toggle_button.Image = play_asset
+				elseif music_sound.SoundId == "" then
+					select_track(current_index, false)
 				end
 			end
+			player_obj.sound = music_sound
 			return setmetatable(player_obj, library)
 		end
 
